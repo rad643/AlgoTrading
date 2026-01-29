@@ -8,11 +8,11 @@ def test_avg_expected_resp():
 
     # arange 
     test_list = [ ("2023-01-16", 100), ("2023-01-17",200)  ]
-    N = 5
+    N = 2
     # act
-    avg = ind.avg(N=N, listInsert=test_list)
+    avg = ind.aaverage_up_to_n_day(N=N, listInsert=test_list)
     # assert 
-    expected_output = 150
+    expected_output = 100
     assert avg == expected_output   
     print(avg)
 
@@ -20,5 +20,5 @@ def test_avg_expected_resp():
 def test_avg_N_longer_than_list():
     test_list = [ ("2023-01-16", 100), ("2023-01-17",200)  ]
     N = 5
-    result = ind.avg(N=N, listInsert=test_list)
+    result = ind.aaverage_up_to_n_day(N=N, listInsert=test_list)
     assert result == None

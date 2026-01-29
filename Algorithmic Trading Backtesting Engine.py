@@ -1,4 +1,4 @@
-import indicators as ind
+import helpers.indicators as ind
 
 #initiliaze var
 new_list=[]
@@ -40,7 +40,7 @@ with open("aapl_us_d.csv", 'r') as f:
         elif(currentDay==1):
               continue
         else:
-            average=ind.avg(currentDay,new_list)
+            average=ind.aaverage_up_to_n_day(currentDay,new_list)
 
 
 

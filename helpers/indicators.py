@@ -1,4 +1,4 @@
-def avg(N,listInsert):
+def aaverage_up_to_n_day(N,listInsert):
     """
     Calculate an average given a current day (N)
 
@@ -20,3 +20,7 @@ def avg(N,listInsert):
             result+=(listInsert[N-i-1][1])
     result=result/(N-1)
     return result
+
+
+def calculate_sum(a, b):
+    return a+b
