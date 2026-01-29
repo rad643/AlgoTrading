@@ -1,0 +1,1995 @@
+Day 1 | Date: 2024-01-16 | Close: 182.534 | Avg: N/A | Action: NONE
+Day 2 | Date: 2024-01-17 | Close: 181.589 | Avg: N/A | Action: NONE
+Day 3 | Date: 2024-01-18 | Close: 187.504 | Avg: 182.061 | Trend: BUY | Position: 0 | Entry: 187.504
+Day 3 | Date: 2024-01-18 | Close: 187.504 | Avg: 182.061 | MeanRev: OUT | Position: 0
+
+
+Day 4 | Date: 2024-01-19 | Close: 190.417 | Avg: 183.876 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 4 | Date: 2024-01-19 | Close: 190.417 | Avg: 183.876 | MeanRev: OUT | Position: 0
+
+
+Day 5 | Date: 2024-01-22 | Close: 192.733 | Avg: 185.511 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 5 | Date: 2024-01-22 | Close: 192.733 | Avg: 185.511 | MeanRev: OUT | Position: 0
+
+
+Day 6 | Date: 2024-01-23 | Close: 194.015 | Avg: 186.955 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 6 | Date: 2024-01-23 | Close: 194.015 | Avg: 186.955 | MeanRev: OUT | Position: 0
+
+
+Day 7 | Date: 2024-01-24 | Close: 193.339 | Avg: 188.132 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 7 | Date: 2024-01-24 | Close: 193.339 | Avg: 188.132 | MeanRev: OUT | Position: 0
+
+
+Day 8 | Date: 2024-01-25 | Close: 193.011 | Avg: 188.876 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 8 | Date: 2024-01-25 | Close: 193.011 | Avg: 188.876 | MeanRev: OUT | Position: 0
+
+
+Day 9 | Date: 2024-01-26 | Close: 191.272 | Avg: 189.393 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 9 | Date: 2024-01-26 | Close: 191.272 | Avg: 189.393 | MeanRev: OUT | Position: 0
+
+
+Day 10 | Date: 2024-01-29 | Close: 190.586 | Avg: 189.602 | Trend: HOLD | Position: 1 | Entry: 187.504
+Day 10 | Date: 2024-01-29 | Close: 190.586 | Avg: 189.602 | MeanRev: OUT | Position: 0
+
+
+Day 11 | Date: 2024-01-30 | Close: 186.917 | Avg: 189.700 | Trend: SELL | Position: 1 | Exit: 186.917 | P&L: -0.587
+Day 11 | Date: 2024-01-30 | Close: 186.917 | Avg: 189.700 | MeanRev: BUY | Position: 0 | Entry: 186.917
+
+
+Day 12 | Date: 2024-01-31 | Close: 183.299 | Avg: 189.447 | Trend: OUT | Position: 0
+Day 12 | Date: 2024-01-31 | Close: 183.299 | Avg: 189.447 | MeanRev: HOLD | Position: 1 | Entry: 186.917
+
+
+Day 13 | Date: 2024-02-01 | Close: 185.745 | Avg: 188.935 | Trend: OUT | Position: 0
+Day 13 | Date: 2024-02-01 | Close: 185.745 | Avg: 188.935 | MeanRev: HOLD | Position: 1 | Entry: 186.917
+
+
+Day 14 | Date: 2024-02-02 | Close: 184.742 | Avg: 188.689 | Trend: OUT | Position: 0
+Day 14 | Date: 2024-02-02 | Close: 184.742 | Avg: 188.689 | MeanRev: HOLD | Position: 1 | Entry: 186.917
+
+
+Day 15 | Date: 2024-02-05 | Close: 186.561 | Avg: 188.407 | Trend: OUT | Position: 0
+Day 15 | Date: 2024-02-05 | Close: 186.561 | Avg: 188.407 | MeanRev: HOLD | Position: 1 | Entry: 186.917
+
+
+Day 16 | Date: 2024-02-06 | Close: 188.171 | Avg: 188.284 | Trend: OUT | Position: 0
+Day 16 | Date: 2024-02-06 | Close: 188.171 | Avg: 188.284 | MeanRev: HOLD | Position: 1 | Entry: 186.917
+
+
+Day 17 | Date: 2024-02-07 | Close: 188.281 | Avg: 188.277 | Trend: BUY | Position: 0 | Entry: 188.281
+Day 17 | Date: 2024-02-07 | Close: 188.281 | Avg: 188.277 | MeanRev: SELL | Position: 1 | Exit: 188.281 | P&L: 1.364
+
+
+Day 18 | Date: 2024-02-08 | Close: 187.196 | Avg: 188.277 | Trend: SELL | Position: 1 | Exit: 187.196 | P&L: -1.085
+Day 18 | Date: 2024-02-08 | Close: 187.196 | Avg: 188.277 | MeanRev: BUY | Position: 0 | Entry: 187.196
+
+
+Day 19 | Date: 2024-02-09 | Close: 187.962 | Avg: 188.217 | Trend: OUT | Position: 0
+Day 19 | Date: 2024-02-09 | Close: 187.962 | Avg: 188.217 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 20 | Date: 2024-02-12 | Close: 186.271 | Avg: 188.204 | Trend: OUT | Position: 0
+Day 20 | Date: 2024-02-12 | Close: 186.271 | Avg: 188.204 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 21 | Date: 2024-02-13 | Close: 184.17 | Avg: 188.107 | Trend: OUT | Position: 0
+Day 21 | Date: 2024-02-13 | Close: 184.17 | Avg: 188.107 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 22 | Date: 2024-02-14 | Close: 183.284 | Avg: 187.920 | Trend: OUT | Position: 0
+Day 22 | Date: 2024-02-14 | Close: 183.284 | Avg: 187.920 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 23 | Date: 2024-02-15 | Close: 182.996 | Avg: 187.709 | Trend: OUT | Position: 0
+Day 23 | Date: 2024-02-15 | Close: 182.996 | Avg: 187.709 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 24 | Date: 2024-02-16 | Close: 181.453 | Avg: 187.504 | Trend: OUT | Position: 0
+Day 24 | Date: 2024-02-16 | Close: 181.453 | Avg: 187.504 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 25 | Date: 2024-02-20 | Close: 180.706 | Avg: 187.252 | Trend: OUT | Position: 0
+Day 25 | Date: 2024-02-20 | Close: 180.706 | Avg: 187.252 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 26 | Date: 2024-02-21 | Close: 181.463 | Avg: 186.990 | Trend: OUT | Position: 0
+Day 26 | Date: 2024-02-21 | Close: 181.463 | Avg: 186.990 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 27 | Date: 2024-02-22 | Close: 183.503 | Avg: 186.778 | Trend: OUT | Position: 0
+Day 27 | Date: 2024-02-22 | Close: 183.503 | Avg: 186.778 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 28 | Date: 2024-02-23 | Close: 181.662 | Avg: 186.656 | Trend: OUT | Position: 0
+Day 28 | Date: 2024-02-23 | Close: 181.662 | Avg: 186.656 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 29 | Date: 2024-02-26 | Close: 180.309 | Avg: 186.478 | Trend: OUT | Position: 0
+Day 29 | Date: 2024-02-26 | Close: 180.309 | Avg: 186.478 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 30 | Date: 2024-02-27 | Close: 181.772 | Avg: 186.265 | Trend: OUT | Position: 0
+Day 30 | Date: 2024-02-27 | Close: 181.772 | Avg: 186.265 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 31 | Date: 2024-02-28 | Close: 180.567 | Avg: 186.115 | Trend: OUT | Position: 0
+Day 31 | Date: 2024-02-28 | Close: 180.567 | Avg: 186.115 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 32 | Date: 2024-02-29 | Close: 179.9 | Avg: 185.936 | Trend: OUT | Position: 0
+Day 32 | Date: 2024-02-29 | Close: 179.9 | Avg: 185.936 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 33 | Date: 2024-03-01 | Close: 178.816 | Avg: 185.748 | Trend: OUT | Position: 0
+Day 33 | Date: 2024-03-01 | Close: 178.816 | Avg: 185.748 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 34 | Date: 2024-03-04 | Close: 174.277 | Avg: 185.538 | Trend: OUT | Position: 0
+Day 34 | Date: 2024-03-04 | Close: 174.277 | Avg: 185.538 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 35 | Date: 2024-03-05 | Close: 169.322 | Avg: 185.207 | Trend: OUT | Position: 0
+Day 35 | Date: 2024-03-05 | Close: 169.322 | Avg: 185.207 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 36 | Date: 2024-03-06 | Close: 168.326 | Avg: 184.753 | Trend: OUT | Position: 0
+Day 36 | Date: 2024-03-06 | Close: 168.326 | Avg: 184.753 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 37 | Date: 2024-03-07 | Close: 168.206 | Avg: 184.296 | Trend: OUT | Position: 0
+Day 37 | Date: 2024-03-07 | Close: 168.206 | Avg: 184.296 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 38 | Date: 2024-03-08 | Close: 169.928 | Avg: 183.862 | Trend: OUT | Position: 0
+Day 38 | Date: 2024-03-08 | Close: 169.928 | Avg: 183.862 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 39 | Date: 2024-03-11 | Close: 171.939 | Avg: 183.495 | Trend: OUT | Position: 0
+Day 39 | Date: 2024-03-11 | Close: 171.939 | Avg: 183.495 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 40 | Date: 2024-03-12 | Close: 172.415 | Avg: 183.199 | Trend: OUT | Position: 0
+Day 40 | Date: 2024-03-12 | Close: 172.415 | Avg: 183.199 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 41 | Date: 2024-03-13 | Close: 170.325 | Avg: 182.929 | Trend: OUT | Position: 0
+Day 41 | Date: 2024-03-13 | Close: 170.325 | Avg: 182.929 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 42 | Date: 2024-03-14 | Close: 172.187 | Avg: 182.622 | Trend: OUT | Position: 0
+Day 42 | Date: 2024-03-14 | Close: 172.187 | Avg: 182.622 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 43 | Date: 2024-03-15 | Close: 171.809 | Avg: 182.373 | Trend: OUT | Position: 0
+Day 43 | Date: 2024-03-15 | Close: 171.809 | Avg: 182.373 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 44 | Date: 2024-03-18 | Close: 172.904 | Avg: 182.127 | Trend: OUT | Position: 0
+Day 44 | Date: 2024-03-18 | Close: 172.904 | Avg: 182.127 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 45 | Date: 2024-03-19 | Close: 175.252 | Avg: 181.918 | Trend: OUT | Position: 0
+Day 45 | Date: 2024-03-19 | Close: 175.252 | Avg: 181.918 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 46 | Date: 2024-03-20 | Close: 177.83 | Avg: 181.770 | Trend: OUT | Position: 0
+Day 46 | Date: 2024-03-20 | Close: 177.83 | Avg: 181.770 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 47 | Date: 2024-03-21 | Close: 170.564 | Avg: 181.684 | Trend: OUT | Position: 0
+Day 47 | Date: 2024-03-21 | Close: 170.564 | Avg: 181.684 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 48 | Date: 2024-03-22 | Close: 171.47 | Avg: 181.447 | Trend: OUT | Position: 0
+Day 48 | Date: 2024-03-22 | Close: 171.47 | Avg: 181.447 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 49 | Date: 2024-03-25 | Close: 170.048 | Avg: 181.240 | Trend: OUT | Position: 0
+Day 49 | Date: 2024-03-25 | Close: 170.048 | Avg: 181.240 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 50 | Date: 2024-03-26 | Close: 168.912 | Avg: 181.011 | Trend: OUT | Position: 0
+Day 50 | Date: 2024-03-26 | Close: 168.912 | Avg: 181.011 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 51 | Date: 2024-03-27 | Close: 172.495 | Avg: 180.769 | Trend: OUT | Position: 0
+Day 51 | Date: 2024-03-27 | Close: 172.495 | Avg: 180.769 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 52 | Date: 2024-03-28 | Close: 170.674 | Avg: 180.607 | Trend: OUT | Position: 0
+Day 52 | Date: 2024-03-28 | Close: 170.674 | Avg: 180.607 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 53 | Date: 2024-04-01 | Close: 169.232 | Avg: 180.416 | Trend: OUT | Position: 0
+Day 53 | Date: 2024-04-01 | Close: 169.232 | Avg: 180.416 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 54 | Date: 2024-04-02 | Close: 168.046 | Avg: 180.205 | Trend: OUT | Position: 0
+Day 54 | Date: 2024-04-02 | Close: 168.046 | Avg: 180.205 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 55 | Date: 2024-04-03 | Close: 168.852 | Avg: 179.980 | Trend: OUT | Position: 0
+Day 55 | Date: 2024-04-03 | Close: 168.852 | Avg: 179.980 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 56 | Date: 2024-04-04 | Close: 168.026 | Avg: 179.777 | Trend: OUT | Position: 0
+Day 56 | Date: 2024-04-04 | Close: 168.026 | Avg: 179.777 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 57 | Date: 2024-04-05 | Close: 168.782 | Avg: 179.568 | Trend: OUT | Position: 0
+Day 57 | Date: 2024-04-05 | Close: 168.782 | Avg: 179.568 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 58 | Date: 2024-04-08 | Close: 167.659 | Avg: 179.378 | Trend: OUT | Position: 0
+Day 58 | Date: 2024-04-08 | Close: 167.659 | Avg: 179.378 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 59 | Date: 2024-04-09 | Close: 168.872 | Avg: 179.176 | Trend: OUT | Position: 0
+Day 59 | Date: 2024-04-09 | Close: 168.872 | Avg: 179.176 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 60 | Date: 2024-04-10 | Close: 166.991 | Avg: 179.002 | Trend: OUT | Position: 0
+Day 60 | Date: 2024-04-10 | Close: 166.991 | Avg: 179.002 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 61 | Date: 2024-04-11 | Close: 174.217 | Avg: 178.801 | Trend: OUT | Position: 0
+Day 61 | Date: 2024-04-11 | Close: 174.217 | Avg: 178.801 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 62 | Date: 2024-04-12 | Close: 175.72 | Avg: 178.726 | Trend: OUT | Position: 0
+Day 62 | Date: 2024-04-12 | Close: 175.72 | Avg: 178.726 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 63 | Date: 2024-04-15 | Close: 171.879 | Avg: 178.678 | Trend: OUT | Position: 0
+Day 63 | Date: 2024-04-15 | Close: 171.879 | Avg: 178.678 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 64 | Date: 2024-04-16 | Close: 168.584 | Avg: 178.570 | Trend: OUT | Position: 0
+Day 64 | Date: 2024-04-16 | Close: 168.584 | Avg: 178.570 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 65 | Date: 2024-04-17 | Close: 167.21 | Avg: 178.414 | Trend: OUT | Position: 0
+Day 65 | Date: 2024-04-17 | Close: 167.21 | Avg: 178.414 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 66 | Date: 2024-04-18 | Close: 166.255 | Avg: 178.242 | Trend: OUT | Position: 0
+Day 66 | Date: 2024-04-18 | Close: 166.255 | Avg: 178.242 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 67 | Date: 2024-04-19 | Close: 164.156 | Avg: 178.060 | Trend: OUT | Position: 0
+Day 67 | Date: 2024-04-19 | Close: 164.156 | Avg: 178.060 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 68 | Date: 2024-04-22 | Close: 165.061 | Avg: 177.852 | Trend: OUT | Position: 0
+Day 68 | Date: 2024-04-22 | Close: 165.061 | Avg: 177.852 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 69 | Date: 2024-04-23 | Close: 166.115 | Avg: 177.664 | Trend: OUT | Position: 0
+Day 69 | Date: 2024-04-23 | Close: 166.115 | Avg: 177.664 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 70 | Date: 2024-04-24 | Close: 168.226 | Avg: 177.497 | Trend: OUT | Position: 0
+Day 70 | Date: 2024-04-24 | Close: 168.226 | Avg: 177.497 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 71 | Date: 2024-04-25 | Close: 169.092 | Avg: 177.364 | Trend: OUT | Position: 0
+Day 71 | Date: 2024-04-25 | Close: 169.092 | Avg: 177.364 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 72 | Date: 2024-04-26 | Close: 168.505 | Avg: 177.248 | Trend: OUT | Position: 0
+Day 72 | Date: 2024-04-26 | Close: 168.505 | Avg: 177.248 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 73 | Date: 2024-04-29 | Close: 172.685 | Avg: 177.127 | Trend: OUT | Position: 0
+Day 73 | Date: 2024-04-29 | Close: 172.685 | Avg: 177.127 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 74 | Date: 2024-04-30 | Close: 169.529 | Avg: 177.066 | Trend: OUT | Position: 0
+Day 74 | Date: 2024-04-30 | Close: 169.529 | Avg: 177.066 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 75 | Date: 2024-05-01 | Close: 168.505 | Avg: 176.964 | Trend: OUT | Position: 0
+Day 75 | Date: 2024-05-01 | Close: 168.505 | Avg: 176.964 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 76 | Date: 2024-05-02 | Close: 172.217 | Avg: 176.851 | Trend: OUT | Position: 0
+Day 76 | Date: 2024-05-02 | Close: 172.217 | Avg: 176.851 | MeanRev: HOLD | Position: 1 | Entry: 187.196
+
+
+Day 77 | Date: 2024-05-03 | Close: 182.518 | Avg: 176.790 | Trend: BUY | Position: 0 | Entry: 182.518
+Day 77 | Date: 2024-05-03 | Close: 182.518 | Avg: 176.790 | MeanRev: SELL | Position: 1 | Exit: 182.518 | P&L: -4.678
+
+
+Day 78 | Date: 2024-05-06 | Close: 180.856 | Avg: 176.864 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 78 | Date: 2024-05-06 | Close: 180.856 | Avg: 176.864 | MeanRev: OUT | Position: 0
+
+
+Day 79 | Date: 2024-05-07 | Close: 181.542 | Avg: 176.916 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 79 | Date: 2024-05-07 | Close: 181.542 | Avg: 176.916 | MeanRev: OUT | Position: 0
+
+
+Day 80 | Date: 2024-05-08 | Close: 181.881 | Avg: 176.974 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 80 | Date: 2024-05-08 | Close: 181.881 | Avg: 176.974 | MeanRev: OUT | Position: 0
+
+
+Day 81 | Date: 2024-05-09 | Close: 183.703 | Avg: 177.036 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 81 | Date: 2024-05-09 | Close: 183.703 | Avg: 177.036 | MeanRev: OUT | Position: 0
+
+
+Day 82 | Date: 2024-05-10 | Close: 182.436 | Avg: 177.118 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 82 | Date: 2024-05-10 | Close: 182.436 | Avg: 177.118 | MeanRev: OUT | Position: 0
+
+
+Day 83 | Date: 2024-05-13 | Close: 185.657 | Avg: 177.183 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 83 | Date: 2024-05-13 | Close: 185.657 | Avg: 177.183 | MeanRev: OUT | Position: 0
+
+
+Day 84 | Date: 2024-05-14 | Close: 186.802 | Avg: 177.285 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 84 | Date: 2024-05-14 | Close: 186.802 | Avg: 177.285 | MeanRev: OUT | Position: 0
+
+
+Day 85 | Date: 2024-05-15 | Close: 189.085 | Avg: 177.398 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 85 | Date: 2024-05-15 | Close: 189.085 | Avg: 177.398 | MeanRev: OUT | Position: 0
+
+
+Day 86 | Date: 2024-05-16 | Close: 189.205 | Avg: 177.536 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 86 | Date: 2024-05-16 | Close: 189.205 | Avg: 177.536 | MeanRev: OUT | Position: 0
+
+
+Day 87 | Date: 2024-05-17 | Close: 189.234 | Avg: 177.671 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 87 | Date: 2024-05-17 | Close: 189.234 | Avg: 177.671 | MeanRev: OUT | Position: 0
+
+
+Day 88 | Date: 2024-05-20 | Close: 190.4 | Avg: 177.804 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 88 | Date: 2024-05-20 | Close: 190.4 | Avg: 177.804 | MeanRev: OUT | Position: 0
+
+
+Day 89 | Date: 2024-05-21 | Close: 191.706 | Avg: 177.947 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 89 | Date: 2024-05-21 | Close: 191.706 | Avg: 177.947 | MeanRev: OUT | Position: 0
+
+
+Day 90 | Date: 2024-05-22 | Close: 190.26 | Avg: 178.102 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 90 | Date: 2024-05-22 | Close: 190.26 | Avg: 178.102 | MeanRev: OUT | Position: 0
+
+
+Day 91 | Date: 2024-05-23 | Close: 186.254 | Avg: 178.237 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 91 | Date: 2024-05-23 | Close: 186.254 | Avg: 178.237 | MeanRev: OUT | Position: 0
+
+
+Day 92 | Date: 2024-05-24 | Close: 189.343 | Avg: 178.325 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 92 | Date: 2024-05-24 | Close: 189.343 | Avg: 178.325 | MeanRev: OUT | Position: 0
+
+
+Day 93 | Date: 2024-05-28 | Close: 189.353 | Avg: 178.445 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 93 | Date: 2024-05-28 | Close: 189.353 | Avg: 178.445 | MeanRev: OUT | Position: 0
+
+
+Day 94 | Date: 2024-05-29 | Close: 189.652 | Avg: 178.562 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 94 | Date: 2024-05-29 | Close: 189.652 | Avg: 178.562 | MeanRev: OUT | Position: 0
+
+
+Day 95 | Date: 2024-05-30 | Close: 190.649 | Avg: 178.680 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 95 | Date: 2024-05-30 | Close: 190.649 | Avg: 178.680 | MeanRev: OUT | Position: 0
+
+
+Day 96 | Date: 2024-05-31 | Close: 191.606 | Avg: 178.806 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 96 | Date: 2024-05-31 | Close: 191.606 | Avg: 178.806 | MeanRev: OUT | Position: 0
+
+
+Day 97 | Date: 2024-06-03 | Close: 193.38 | Avg: 178.939 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 97 | Date: 2024-06-03 | Close: 193.38 | Avg: 178.939 | MeanRev: OUT | Position: 0
+
+
+Day 98 | Date: 2024-06-04 | Close: 193.699 | Avg: 179.088 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 98 | Date: 2024-06-04 | Close: 193.699 | Avg: 179.088 | MeanRev: OUT | Position: 0
+
+
+Day 99 | Date: 2024-06-05 | Close: 195.214 | Avg: 179.237 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 99 | Date: 2024-06-05 | Close: 195.214 | Avg: 179.237 | MeanRev: OUT | Position: 0
+
+
+Day 100 | Date: 2024-06-06 | Close: 193.829 | Avg: 179.399 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 100 | Date: 2024-06-06 | Close: 193.829 | Avg: 179.399 | MeanRev: OUT | Position: 0
+
+
+Day 101 | Date: 2024-06-07 | Close: 196.23 | Avg: 179.543 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 101 | Date: 2024-06-07 | Close: 196.23 | Avg: 179.543 | MeanRev: OUT | Position: 0
+
+
+Day 102 | Date: 2024-06-10 | Close: 192.473 | Avg: 179.708 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 102 | Date: 2024-06-10 | Close: 192.473 | Avg: 179.708 | MeanRev: OUT | Position: 0
+
+
+Day 103 | Date: 2024-06-11 | Close: 206.457 | Avg: 179.833 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 103 | Date: 2024-06-11 | Close: 206.457 | Avg: 179.833 | MeanRev: OUT | Position: 0
+
+
+Day 104 | Date: 2024-06-12 | Close: 212.357 | Avg: 180.092 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 104 | Date: 2024-06-12 | Close: 212.357 | Avg: 180.092 | MeanRev: OUT | Position: 0
+
+
+Day 105 | Date: 2024-06-13 | Close: 213.522 | Avg: 180.402 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 105 | Date: 2024-06-13 | Close: 213.522 | Avg: 180.402 | MeanRev: OUT | Position: 0
+
+
+Day 106 | Date: 2024-06-14 | Close: 211.778 | Avg: 180.718 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 106 | Date: 2024-06-14 | Close: 211.778 | Avg: 180.718 | MeanRev: OUT | Position: 0
+
+
+Day 107 | Date: 2024-06-17 | Close: 215.945 | Avg: 181.011 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 107 | Date: 2024-06-17 | Close: 215.945 | Avg: 181.011 | MeanRev: OUT | Position: 0
+
+
+Day 108 | Date: 2024-06-18 | Close: 213.572 | Avg: 181.337 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 108 | Date: 2024-06-18 | Close: 213.572 | Avg: 181.337 | MeanRev: OUT | Position: 0
+
+
+Day 109 | Date: 2024-06-20 | Close: 208.978 | Avg: 181.636 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 109 | Date: 2024-06-20 | Close: 208.978 | Avg: 181.636 | MeanRev: OUT | Position: 0
+
+
+Day 110 | Date: 2024-06-21 | Close: 206.795 | Avg: 181.886 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 110 | Date: 2024-06-21 | Close: 206.795 | Avg: 181.886 | MeanRev: OUT | Position: 0
+
+
+Day 111 | Date: 2024-06-24 | Close: 207.443 | Avg: 182.113 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 111 | Date: 2024-06-24 | Close: 207.443 | Avg: 182.113 | MeanRev: OUT | Position: 0
+
+
+Day 112 | Date: 2024-06-25 | Close: 208.369 | Avg: 182.341 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 112 | Date: 2024-06-25 | Close: 208.369 | Avg: 182.341 | MeanRev: OUT | Position: 0
+
+
+Day 113 | Date: 2024-06-26 | Close: 212.535 | Avg: 182.573 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 113 | Date: 2024-06-26 | Close: 212.535 | Avg: 182.573 | MeanRev: OUT | Position: 0
+
+
+Day 114 | Date: 2024-06-27 | Close: 213.382 | Avg: 182.839 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 114 | Date: 2024-06-27 | Close: 213.382 | Avg: 182.839 | MeanRev: OUT | Position: 0
+
+
+Day 115 | Date: 2024-06-28 | Close: 209.914 | Avg: 183.107 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 115 | Date: 2024-06-28 | Close: 209.914 | Avg: 183.107 | MeanRev: OUT | Position: 0
+
+
+Day 116 | Date: 2024-07-01 | Close: 216.023 | Avg: 183.340 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 116 | Date: 2024-07-01 | Close: 216.023 | Avg: 183.340 | MeanRev: OUT | Position: 0
+
+
+Day 117 | Date: 2024-07-02 | Close: 219.532 | Avg: 183.621 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 117 | Date: 2024-07-02 | Close: 219.532 | Avg: 183.621 | MeanRev: OUT | Position: 0
+
+
+Day 118 | Date: 2024-07-03 | Close: 220.808 | Avg: 183.928 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 118 | Date: 2024-07-03 | Close: 220.808 | Avg: 183.928 | MeanRev: OUT | Position: 0
+
+
+Day 119 | Date: 2024-07-05 | Close: 225.582 | Avg: 184.241 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 119 | Date: 2024-07-05 | Close: 225.582 | Avg: 184.241 | MeanRev: OUT | Position: 0
+
+
+Day 120 | Date: 2024-07-08 | Close: 227.057 | Avg: 184.588 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 120 | Date: 2024-07-08 | Close: 227.057 | Avg: 184.588 | MeanRev: OUT | Position: 0
+
+
+Day 121 | Date: 2024-07-09 | Close: 227.914 | Avg: 184.942 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 121 | Date: 2024-07-09 | Close: 227.914 | Avg: 184.942 | MeanRev: OUT | Position: 0
+
+
+Day 122 | Date: 2024-07-10 | Close: 232.2 | Avg: 185.297 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 122 | Date: 2024-07-10 | Close: 232.2 | Avg: 185.297 | MeanRev: OUT | Position: 0
+
+
+Day 123 | Date: 2024-07-11 | Close: 226.808 | Avg: 185.682 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 123 | Date: 2024-07-11 | Close: 226.808 | Avg: 185.682 | MeanRev: OUT | Position: 0
+
+
+Day 124 | Date: 2024-07-12 | Close: 229.767 | Avg: 186.016 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 124 | Date: 2024-07-12 | Close: 229.767 | Avg: 186.016 | MeanRev: OUT | Position: 0
+
+
+Day 125 | Date: 2024-07-15 | Close: 233.615 | Avg: 186.369 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 125 | Date: 2024-07-15 | Close: 233.615 | Avg: 186.369 | MeanRev: OUT | Position: 0
+
+
+Day 126 | Date: 2024-07-16 | Close: 234.034 | Avg: 186.747 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 126 | Date: 2024-07-16 | Close: 234.034 | Avg: 186.747 | MeanRev: OUT | Position: 0
+
+
+Day 127 | Date: 2024-07-17 | Close: 228.113 | Avg: 187.122 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 127 | Date: 2024-07-17 | Close: 228.113 | Avg: 187.122 | MeanRev: OUT | Position: 0
+
+
+Day 128 | Date: 2024-07-18 | Close: 223.429 | Avg: 187.445 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 128 | Date: 2024-07-18 | Close: 223.429 | Avg: 187.445 | MeanRev: OUT | Position: 0
+
+
+Day 129 | Date: 2024-07-19 | Close: 223.559 | Avg: 187.726 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 129 | Date: 2024-07-19 | Close: 223.559 | Avg: 187.726 | MeanRev: OUT | Position: 0
+
+
+Day 130 | Date: 2024-07-22 | Close: 223.21 | Avg: 188.004 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 130 | Date: 2024-07-22 | Close: 223.21 | Avg: 188.004 | MeanRev: OUT | Position: 0
+
+
+Day 131 | Date: 2024-07-23 | Close: 224.256 | Avg: 188.275 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 131 | Date: 2024-07-23 | Close: 224.256 | Avg: 188.275 | MeanRev: OUT | Position: 0
+
+
+Day 132 | Date: 2024-07-24 | Close: 217.808 | Avg: 188.549 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 132 | Date: 2024-07-24 | Close: 217.808 | Avg: 188.549 | MeanRev: OUT | Position: 0
+
+
+Day 133 | Date: 2024-07-25 | Close: 216.762 | Avg: 188.771 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 133 | Date: 2024-07-25 | Close: 216.762 | Avg: 188.771 | MeanRev: OUT | Position: 0
+
+
+Day 134 | Date: 2024-07-26 | Close: 217.23 | Avg: 188.981 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 134 | Date: 2024-07-26 | Close: 217.23 | Avg: 188.981 | MeanRev: OUT | Position: 0
+
+
+Day 135 | Date: 2024-07-29 | Close: 217.509 | Avg: 189.192 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 135 | Date: 2024-07-29 | Close: 217.509 | Avg: 189.192 | MeanRev: OUT | Position: 0
+
+
+Day 136 | Date: 2024-07-30 | Close: 218.067 | Avg: 189.402 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 136 | Date: 2024-07-30 | Close: 218.067 | Avg: 189.402 | MeanRev: OUT | Position: 0
+
+
+Day 137 | Date: 2024-07-31 | Close: 221.336 | Avg: 189.613 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 137 | Date: 2024-07-31 | Close: 221.336 | Avg: 189.613 | MeanRev: OUT | Position: 0
+
+
+Day 138 | Date: 2024-08-01 | Close: 217.629 | Avg: 189.844 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 138 | Date: 2024-08-01 | Close: 217.629 | Avg: 189.844 | MeanRev: OUT | Position: 0
+
+
+Day 139 | Date: 2024-08-02 | Close: 219.124 | Avg: 190.046 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 139 | Date: 2024-08-02 | Close: 219.124 | Avg: 190.046 | MeanRev: OUT | Position: 0
+
+
+Day 140 | Date: 2024-08-05 | Close: 208.569 | Avg: 190.255 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 140 | Date: 2024-08-05 | Close: 208.569 | Avg: 190.255 | MeanRev: OUT | Position: 0
+
+
+Day 141 | Date: 2024-08-06 | Close: 206.536 | Avg: 190.386 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 141 | Date: 2024-08-06 | Close: 206.536 | Avg: 190.386 | MeanRev: OUT | Position: 0
+
+
+Day 142 | Date: 2024-08-07 | Close: 209.117 | Avg: 190.500 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 142 | Date: 2024-08-07 | Close: 209.117 | Avg: 190.500 | MeanRev: OUT | Position: 0
+
+
+Day 143 | Date: 2024-08-08 | Close: 212.595 | Avg: 190.631 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 143 | Date: 2024-08-08 | Close: 212.595 | Avg: 190.631 | MeanRev: OUT | Position: 0
+
+
+Day 144 | Date: 2024-08-09 | Close: 215.516 | Avg: 190.785 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 144 | Date: 2024-08-09 | Close: 215.516 | Avg: 190.785 | MeanRev: OUT | Position: 0
+
+
+Day 145 | Date: 2024-08-12 | Close: 217.052 | Avg: 190.957 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 145 | Date: 2024-08-12 | Close: 217.052 | Avg: 190.957 | MeanRev: OUT | Position: 0
+
+
+Day 146 | Date: 2024-08-13 | Close: 220.784 | Avg: 191.137 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 146 | Date: 2024-08-13 | Close: 220.784 | Avg: 191.137 | MeanRev: OUT | Position: 0
+
+
+Day 147 | Date: 2024-08-14 | Close: 221.233 | Avg: 191.340 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 147 | Date: 2024-08-14 | Close: 221.233 | Avg: 191.340 | MeanRev: OUT | Position: 0
+
+
+Day 148 | Date: 2024-08-15 | Close: 224.226 | Avg: 191.543 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 148 | Date: 2024-08-15 | Close: 224.226 | Avg: 191.543 | MeanRev: OUT | Position: 0
+
+
+Day 149 | Date: 2024-08-16 | Close: 225.554 | Avg: 191.764 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 149 | Date: 2024-08-16 | Close: 225.554 | Avg: 191.764 | MeanRev: OUT | Position: 0
+
+
+Day 150 | Date: 2024-08-19 | Close: 225.394 | Avg: 191.991 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 150 | Date: 2024-08-19 | Close: 225.394 | Avg: 191.991 | MeanRev: OUT | Position: 0
+
+
+Day 151 | Date: 2024-08-20 | Close: 226.013 | Avg: 192.213 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 151 | Date: 2024-08-20 | Close: 226.013 | Avg: 192.213 | MeanRev: OUT | Position: 0
+
+
+Day 152 | Date: 2024-08-21 | Close: 225.903 | Avg: 192.437 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 152 | Date: 2024-08-21 | Close: 225.903 | Avg: 192.437 | MeanRev: OUT | Position: 0
+
+
+Day 153 | Date: 2024-08-22 | Close: 224.037 | Avg: 192.657 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 153 | Date: 2024-08-22 | Close: 224.037 | Avg: 192.657 | MeanRev: OUT | Position: 0
+
+
+Day 154 | Date: 2024-08-23 | Close: 226.342 | Avg: 192.862 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 154 | Date: 2024-08-23 | Close: 226.342 | Avg: 192.862 | MeanRev: OUT | Position: 0
+
+
+Day 155 | Date: 2024-08-26 | Close: 226.681 | Avg: 193.080 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 155 | Date: 2024-08-26 | Close: 226.681 | Avg: 193.080 | MeanRev: OUT | Position: 0
+
+
+Day 156 | Date: 2024-08-27 | Close: 227.529 | Avg: 193.297 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 156 | Date: 2024-08-27 | Close: 227.529 | Avg: 193.297 | MeanRev: OUT | Position: 0
+
+
+Day 157 | Date: 2024-08-28 | Close: 225.993 | Avg: 193.516 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 157 | Date: 2024-08-28 | Close: 225.993 | Avg: 193.516 | MeanRev: OUT | Position: 0
+
+
+Day 158 | Date: 2024-08-29 | Close: 229.285 | Avg: 193.723 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 158 | Date: 2024-08-29 | Close: 229.285 | Avg: 193.723 | MeanRev: OUT | Position: 0
+
+
+Day 159 | Date: 2024-08-30 | Close: 228.497 | Avg: 193.948 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 159 | Date: 2024-08-30 | Close: 228.497 | Avg: 193.948 | MeanRev: OUT | Position: 0
+
+
+Day 160 | Date: 2024-09-03 | Close: 222.281 | Avg: 194.165 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 160 | Date: 2024-09-03 | Close: 222.281 | Avg: 194.165 | MeanRev: OUT | Position: 0
+
+
+Day 161 | Date: 2024-09-04 | Close: 220.365 | Avg: 194.341 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 161 | Date: 2024-09-04 | Close: 220.365 | Avg: 194.341 | MeanRev: OUT | Position: 0
+
+
+Day 162 | Date: 2024-09-05 | Close: 221.892 | Avg: 194.503 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 162 | Date: 2024-09-05 | Close: 221.892 | Avg: 194.503 | MeanRev: OUT | Position: 0
+
+
+Day 163 | Date: 2024-09-06 | Close: 220.335 | Avg: 194.672 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 163 | Date: 2024-09-06 | Close: 220.335 | Avg: 194.672 | MeanRev: OUT | Position: 0
+
+
+Day 164 | Date: 2024-09-09 | Close: 220.425 | Avg: 194.829 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 164 | Date: 2024-09-09 | Close: 220.425 | Avg: 194.829 | MeanRev: OUT | Position: 0
+
+
+Day 165 | Date: 2024-09-10 | Close: 219.627 | Avg: 194.985 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 165 | Date: 2024-09-10 | Close: 219.627 | Avg: 194.985 | MeanRev: OUT | Position: 0
+
+
+Day 166 | Date: 2024-09-11 | Close: 222.171 | Avg: 195.135 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 166 | Date: 2024-09-11 | Close: 222.171 | Avg: 195.135 | MeanRev: OUT | Position: 0
+
+
+Day 167 | Date: 2024-09-12 | Close: 222.281 | Avg: 195.297 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 167 | Date: 2024-09-12 | Close: 222.281 | Avg: 195.297 | MeanRev: OUT | Position: 0
+
+
+Day 168 | Date: 2024-09-13 | Close: 222.011 | Avg: 195.459 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 168 | Date: 2024-09-13 | Close: 222.011 | Avg: 195.459 | MeanRev: OUT | Position: 0
+
+
+Day 169 | Date: 2024-09-16 | Close: 215.845 | Avg: 195.617 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 169 | Date: 2024-09-16 | Close: 215.845 | Avg: 195.617 | MeanRev: OUT | Position: 0
+
+
+Day 170 | Date: 2024-09-17 | Close: 216.314 | Avg: 195.737 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 170 | Date: 2024-09-17 | Close: 216.314 | Avg: 195.737 | MeanRev: OUT | Position: 0
+
+
+Day 171 | Date: 2024-09-18 | Close: 220.205 | Avg: 195.858 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 171 | Date: 2024-09-18 | Close: 220.205 | Avg: 195.858 | MeanRev: OUT | Position: 0
+
+
+Day 172 | Date: 2024-09-19 | Close: 228.367 | Avg: 196.000 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 172 | Date: 2024-09-19 | Close: 228.367 | Avg: 196.000 | MeanRev: OUT | Position: 0
+
+
+Day 173 | Date: 2024-09-20 | Close: 227.699 | Avg: 196.188 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 173 | Date: 2024-09-20 | Close: 227.699 | Avg: 196.188 | MeanRev: OUT | Position: 0
+
+
+Day 174 | Date: 2024-09-23 | Close: 225.973 | Avg: 196.371 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 174 | Date: 2024-09-23 | Close: 225.973 | Avg: 196.371 | MeanRev: OUT | Position: 0
+
+
+Day 175 | Date: 2024-09-24 | Close: 226.871 | Avg: 196.541 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 175 | Date: 2024-09-24 | Close: 226.871 | Avg: 196.541 | MeanRev: OUT | Position: 0
+
+
+Day 176 | Date: 2024-09-25 | Close: 225.873 | Avg: 196.714 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 176 | Date: 2024-09-25 | Close: 225.873 | Avg: 196.714 | MeanRev: OUT | Position: 0
+
+
+Day 177 | Date: 2024-09-26 | Close: 227.02 | Avg: 196.880 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 177 | Date: 2024-09-26 | Close: 227.02 | Avg: 196.880 | MeanRev: OUT | Position: 0
+
+
+Day 178 | Date: 2024-09-27 | Close: 227.29 | Avg: 197.050 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 178 | Date: 2024-09-27 | Close: 227.29 | Avg: 197.050 | MeanRev: OUT | Position: 0
+
+
+Day 179 | Date: 2024-09-30 | Close: 232.488 | Avg: 197.220 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 179 | Date: 2024-09-30 | Close: 232.488 | Avg: 197.220 | MeanRev: OUT | Position: 0
+
+
+Day 180 | Date: 2024-10-01 | Close: 225.713 | Avg: 197.417 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 180 | Date: 2024-10-01 | Close: 225.713 | Avg: 197.417 | MeanRev: OUT | Position: 0
+
+
+Day 181 | Date: 2024-10-02 | Close: 226.282 | Avg: 197.574 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 181 | Date: 2024-10-02 | Close: 226.282 | Avg: 197.574 | MeanRev: OUT | Position: 0
+
+
+Day 182 | Date: 2024-10-03 | Close: 225.174 | Avg: 197.733 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 182 | Date: 2024-10-03 | Close: 225.174 | Avg: 197.733 | MeanRev: OUT | Position: 0
+
+
+Day 183 | Date: 2024-10-04 | Close: 226.302 | Avg: 197.883 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 183 | Date: 2024-10-04 | Close: 226.302 | Avg: 197.883 | MeanRev: OUT | Position: 0
+
+
+Day 184 | Date: 2024-10-07 | Close: 221.203 | Avg: 198.039 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 184 | Date: 2024-10-07 | Close: 221.203 | Avg: 198.039 | MeanRev: OUT | Position: 0
+
+
+Day 185 | Date: 2024-10-08 | Close: 225.274 | Avg: 198.165 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 185 | Date: 2024-10-08 | Close: 225.274 | Avg: 198.165 | MeanRev: OUT | Position: 0
+
+
+Day 186 | Date: 2024-10-09 | Close: 229.036 | Avg: 198.311 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 186 | Date: 2024-10-09 | Close: 229.036 | Avg: 198.311 | MeanRev: OUT | Position: 0
+
+
+Day 187 | Date: 2024-10-10 | Close: 228.537 | Avg: 198.476 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 187 | Date: 2024-10-10 | Close: 228.537 | Avg: 198.476 | MeanRev: OUT | Position: 0
+
+
+Day 188 | Date: 2024-10-11 | Close: 227.05 | Avg: 198.637 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 188 | Date: 2024-10-11 | Close: 227.05 | Avg: 198.637 | MeanRev: OUT | Position: 0
+
+
+Day 189 | Date: 2024-10-14 | Close: 230.792 | Avg: 198.788 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 189 | Date: 2024-10-14 | Close: 230.792 | Avg: 198.788 | MeanRev: OUT | Position: 0
+
+
+Day 190 | Date: 2024-10-15 | Close: 233.336 | Avg: 198.958 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 190 | Date: 2024-10-15 | Close: 233.336 | Avg: 198.958 | MeanRev: OUT | Position: 0
+
+
+Day 191 | Date: 2024-10-16 | Close: 231.271 | Avg: 199.139 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 191 | Date: 2024-10-16 | Close: 231.271 | Avg: 199.139 | MeanRev: OUT | Position: 0
+
+
+Day 192 | Date: 2024-10-17 | Close: 231.64 | Avg: 199.307 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 192 | Date: 2024-10-17 | Close: 231.64 | Avg: 199.307 | MeanRev: OUT | Position: 0
+
+
+Day 193 | Date: 2024-10-18 | Close: 234.484 | Avg: 199.475 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 193 | Date: 2024-10-18 | Close: 234.484 | Avg: 199.475 | MeanRev: OUT | Position: 0
+
+
+Day 194 | Date: 2024-10-21 | Close: 235.961 | Avg: 199.657 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 194 | Date: 2024-10-21 | Close: 235.961 | Avg: 199.657 | MeanRev: OUT | Position: 0
+
+
+Day 195 | Date: 2024-10-22 | Close: 235.342 | Avg: 199.844 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 195 | Date: 2024-10-22 | Close: 235.342 | Avg: 199.844 | MeanRev: OUT | Position: 0
+
+
+Day 196 | Date: 2024-10-23 | Close: 230.253 | Avg: 200.026 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 196 | Date: 2024-10-23 | Close: 230.253 | Avg: 200.026 | MeanRev: OUT | Position: 0
+
+
+Day 197 | Date: 2024-10-24 | Close: 230.064 | Avg: 200.180 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 197 | Date: 2024-10-24 | Close: 230.064 | Avg: 200.180 | MeanRev: OUT | Position: 0
+
+
+Day 198 | Date: 2024-10-25 | Close: 230.902 | Avg: 200.332 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 198 | Date: 2024-10-25 | Close: 230.902 | Avg: 200.332 | MeanRev: OUT | Position: 0
+
+
+Day 199 | Date: 2024-10-28 | Close: 232.887 | Avg: 200.486 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 199 | Date: 2024-10-28 | Close: 232.887 | Avg: 200.486 | MeanRev: OUT | Position: 0
+
+
+Day 200 | Date: 2024-10-29 | Close: 233.157 | Avg: 200.649 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 200 | Date: 2024-10-29 | Close: 233.157 | Avg: 200.649 | MeanRev: OUT | Position: 0
+
+
+Day 201 | Date: 2024-10-30 | Close: 229.595 | Avg: 200.811 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 201 | Date: 2024-10-30 | Close: 229.595 | Avg: 200.811 | MeanRev: OUT | Position: 0
+
+
+Day 202 | Date: 2024-10-31 | Close: 225.414 | Avg: 200.955 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 202 | Date: 2024-10-31 | Close: 225.414 | Avg: 200.955 | MeanRev: OUT | Position: 0
+
+
+Day 203 | Date: 2024-11-01 | Close: 222.42 | Avg: 201.076 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 203 | Date: 2024-11-01 | Close: 222.42 | Avg: 201.076 | MeanRev: OUT | Position: 0
+
+
+Day 204 | Date: 2024-11-04 | Close: 221.522 | Avg: 201.181 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 204 | Date: 2024-11-04 | Close: 221.522 | Avg: 201.181 | MeanRev: OUT | Position: 0
+
+
+Day 205 | Date: 2024-11-05 | Close: 222.959 | Avg: 201.281 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 205 | Date: 2024-11-05 | Close: 222.959 | Avg: 201.281 | MeanRev: OUT | Position: 0
+
+
+Day 206 | Date: 2024-11-06 | Close: 222.231 | Avg: 201.386 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 206 | Date: 2024-11-06 | Close: 222.231 | Avg: 201.386 | MeanRev: OUT | Position: 0
+
+
+Day 207 | Date: 2024-11-07 | Close: 226.98 | Avg: 201.487 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 207 | Date: 2024-11-07 | Close: 226.98 | Avg: 201.487 | MeanRev: OUT | Position: 0
+
+
+Day 208 | Date: 2024-11-08 | Close: 226.711 | Avg: 201.611 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 208 | Date: 2024-11-08 | Close: 226.711 | Avg: 201.611 | MeanRev: OUT | Position: 0
+
+
+Day 209 | Date: 2024-11-11 | Close: 223.984 | Avg: 201.731 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 209 | Date: 2024-11-11 | Close: 223.984 | Avg: 201.731 | MeanRev: OUT | Position: 0
+
+
+Day 210 | Date: 2024-11-12 | Close: 223.984 | Avg: 201.838 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 210 | Date: 2024-11-12 | Close: 223.984 | Avg: 201.838 | MeanRev: OUT | Position: 0
+
+
+Day 211 | Date: 2024-11-13 | Close: 224.873 | Avg: 201.943 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 211 | Date: 2024-11-13 | Close: 224.873 | Avg: 201.943 | MeanRev: OUT | Position: 0
+
+
+Day 212 | Date: 2024-11-14 | Close: 227.969 | Avg: 202.052 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 212 | Date: 2024-11-14 | Close: 227.969 | Avg: 202.052 | MeanRev: OUT | Position: 0
+
+
+Day 213 | Date: 2024-11-15 | Close: 224.753 | Avg: 202.174 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 213 | Date: 2024-11-15 | Close: 224.753 | Avg: 202.174 | MeanRev: OUT | Position: 0
+
+
+Day 214 | Date: 2024-11-18 | Close: 227.77 | Avg: 202.280 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 214 | Date: 2024-11-18 | Close: 227.77 | Avg: 202.280 | MeanRev: OUT | Position: 0
+
+
+Day 215 | Date: 2024-11-19 | Close: 228.029 | Avg: 202.399 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 215 | Date: 2024-11-19 | Close: 228.029 | Avg: 202.399 | MeanRev: OUT | Position: 0
+
+
+Day 216 | Date: 2024-11-20 | Close: 228.748 | Avg: 202.518 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 216 | Date: 2024-11-20 | Close: 228.748 | Avg: 202.518 | MeanRev: OUT | Position: 0
+
+
+Day 217 | Date: 2024-11-21 | Close: 228.269 | Avg: 202.640 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 217 | Date: 2024-11-21 | Close: 228.269 | Avg: 202.640 | MeanRev: OUT | Position: 0
+
+
+Day 218 | Date: 2024-11-22 | Close: 229.618 | Avg: 202.758 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 218 | Date: 2024-11-22 | Close: 229.618 | Avg: 202.758 | MeanRev: OUT | Position: 0
+
+
+Day 219 | Date: 2024-11-25 | Close: 232.614 | Avg: 202.881 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 219 | Date: 2024-11-25 | Close: 232.614 | Avg: 202.881 | MeanRev: OUT | Position: 0
+
+
+Day 220 | Date: 2024-11-26 | Close: 234.802 | Avg: 203.017 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 220 | Date: 2024-11-26 | Close: 234.802 | Avg: 203.017 | MeanRev: OUT | Position: 0
+
+
+Day 221 | Date: 2024-11-27 | Close: 234.672 | Avg: 203.161 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 221 | Date: 2024-11-27 | Close: 234.672 | Avg: 203.161 | MeanRev: OUT | Position: 0
+
+
+Day 222 | Date: 2024-11-29 | Close: 237.069 | Avg: 203.304 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 222 | Date: 2024-11-29 | Close: 237.069 | Avg: 203.304 | MeanRev: OUT | Position: 0
+
+
+Day 223 | Date: 2024-12-02 | Close: 239.327 | Avg: 203.456 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 223 | Date: 2024-12-02 | Close: 239.327 | Avg: 203.456 | MeanRev: OUT | Position: 0
+
+
+Day 224 | Date: 2024-12-03 | Close: 242.384 | Avg: 203.617 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 224 | Date: 2024-12-03 | Close: 242.384 | Avg: 203.617 | MeanRev: OUT | Position: 0
+
+
+Day 225 | Date: 2024-12-04 | Close: 242.743 | Avg: 203.790 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 225 | Date: 2024-12-04 | Close: 242.743 | Avg: 203.790 | MeanRev: OUT | Position: 0
+
+
+Day 226 | Date: 2024-12-05 | Close: 242.773 | Avg: 203.963 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 226 | Date: 2024-12-05 | Close: 242.773 | Avg: 203.963 | MeanRev: OUT | Position: 0
+
+
+Day 227 | Date: 2024-12-06 | Close: 242.573 | Avg: 204.135 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 227 | Date: 2024-12-06 | Close: 242.573 | Avg: 204.135 | MeanRev: OUT | Position: 0
+
+
+Day 228 | Date: 2024-12-09 | Close: 246.479 | Avg: 204.304 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 228 | Date: 2024-12-09 | Close: 246.479 | Avg: 204.304 | MeanRev: OUT | Position: 0
+
+
+Day 229 | Date: 2024-12-10 | Close: 247.498 | Avg: 204.489 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 229 | Date: 2024-12-10 | Close: 247.498 | Avg: 204.489 | MeanRev: OUT | Position: 0
+
+
+Day 230 | Date: 2024-12-11 | Close: 246.219 | Avg: 204.677 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 230 | Date: 2024-12-11 | Close: 246.219 | Avg: 204.677 | MeanRev: OUT | Position: 0
+
+
+Day 231 | Date: 2024-12-12 | Close: 247.688 | Avg: 204.858 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 231 | Date: 2024-12-12 | Close: 247.688 | Avg: 204.858 | MeanRev: OUT | Position: 0
+
+
+Day 232 | Date: 2024-12-13 | Close: 247.857 | Avg: 205.043 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 232 | Date: 2024-12-13 | Close: 247.857 | Avg: 205.043 | MeanRev: OUT | Position: 0
+
+
+Day 233 | Date: 2024-12-16 | Close: 250.764 | Avg: 205.228 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 233 | Date: 2024-12-16 | Close: 250.764 | Avg: 205.228 | MeanRev: OUT | Position: 0
+
+
+Day 234 | Date: 2024-12-17 | Close: 253.202 | Avg: 205.423 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 234 | Date: 2024-12-17 | Close: 253.202 | Avg: 205.423 | MeanRev: OUT | Position: 0
+
+
+Day 235 | Date: 2024-12-18 | Close: 247.778 | Avg: 205.627 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 235 | Date: 2024-12-18 | Close: 247.778 | Avg: 205.627 | MeanRev: OUT | Position: 0
+
+
+Day 236 | Date: 2024-12-19 | Close: 249.516 | Avg: 205.807 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 236 | Date: 2024-12-19 | Close: 249.516 | Avg: 205.807 | MeanRev: OUT | Position: 0
+
+
+Day 237 | Date: 2024-12-20 | Close: 254.211 | Avg: 205.992 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 237 | Date: 2024-12-20 | Close: 254.211 | Avg: 205.992 | MeanRev: OUT | Position: 0
+
+
+Day 238 | Date: 2024-12-23 | Close: 254.99 | Avg: 206.195 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 238 | Date: 2024-12-23 | Close: 254.99 | Avg: 206.195 | MeanRev: OUT | Position: 0
+
+
+Day 239 | Date: 2024-12-24 | Close: 257.916 | Avg: 206.400 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 239 | Date: 2024-12-24 | Close: 257.916 | Avg: 206.400 | MeanRev: OUT | Position: 0
+
+
+Day 240 | Date: 2024-12-26 | Close: 258.736 | Avg: 206.616 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 240 | Date: 2024-12-26 | Close: 258.736 | Avg: 206.616 | MeanRev: OUT | Position: 0
+
+
+Day 241 | Date: 2024-12-27 | Close: 255.309 | Avg: 206.833 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 241 | Date: 2024-12-27 | Close: 255.309 | Avg: 206.833 | MeanRev: OUT | Position: 0
+
+
+Day 242 | Date: 2024-12-30 | Close: 251.923 | Avg: 207.034 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 242 | Date: 2024-12-30 | Close: 251.923 | Avg: 207.034 | MeanRev: OUT | Position: 0
+
+
+Day 243 | Date: 2024-12-31 | Close: 250.145 | Avg: 207.220 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 243 | Date: 2024-12-31 | Close: 250.145 | Avg: 207.220 | MeanRev: OUT | Position: 0
+
+
+Day 244 | Date: 2025-01-02 | Close: 243.582 | Avg: 207.396 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 244 | Date: 2025-01-02 | Close: 243.582 | Avg: 207.396 | MeanRev: OUT | Position: 0
+
+
+Day 245 | Date: 2025-01-03 | Close: 243.093 | Avg: 207.545 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 245 | Date: 2025-01-03 | Close: 243.093 | Avg: 207.545 | MeanRev: OUT | Position: 0
+
+
+Day 246 | Date: 2025-01-06 | Close: 244.731 | Avg: 207.690 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 246 | Date: 2025-01-06 | Close: 244.731 | Avg: 207.690 | MeanRev: OUT | Position: 0
+
+
+Day 247 | Date: 2025-01-07 | Close: 241.944 | Avg: 207.840 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 247 | Date: 2025-01-07 | Close: 241.944 | Avg: 207.840 | MeanRev: OUT | Position: 0
+
+
+Day 248 | Date: 2025-01-08 | Close: 242.433 | Avg: 207.978 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 248 | Date: 2025-01-08 | Close: 242.433 | Avg: 207.978 | MeanRev: OUT | Position: 0
+
+
+Day 249 | Date: 2025-01-10 | Close: 236.59 | Avg: 208.117 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 249 | Date: 2025-01-10 | Close: 236.59 | Avg: 208.117 | MeanRev: OUT | Position: 0
+
+
+Day 250 | Date: 2025-01-13 | Close: 234.143 | Avg: 208.232 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 250 | Date: 2025-01-13 | Close: 234.143 | Avg: 208.232 | MeanRev: OUT | Position: 0
+
+
+Day 251 | Date: 2025-01-14 | Close: 233.024 | Avg: 208.335 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 251 | Date: 2025-01-14 | Close: 233.024 | Avg: 208.335 | MeanRev: OUT | Position: 0
+
+
+Day 252 | Date: 2025-01-15 | Close: 237.609 | Avg: 208.434 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 252 | Date: 2025-01-15 | Close: 237.609 | Avg: 208.434 | MeanRev: OUT | Position: 0
+
+
+Day 253 | Date: 2025-01-16 | Close: 228.009 | Avg: 208.549 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 253 | Date: 2025-01-16 | Close: 228.009 | Avg: 208.549 | MeanRev: OUT | Position: 0
+
+
+Day 254 | Date: 2025-01-17 | Close: 229.727 | Avg: 208.626 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 254 | Date: 2025-01-17 | Close: 229.727 | Avg: 208.626 | MeanRev: OUT | Position: 0
+
+
+Day 255 | Date: 2025-01-21 | Close: 222.395 | Avg: 208.709 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 255 | Date: 2025-01-21 | Close: 222.395 | Avg: 208.709 | MeanRev: OUT | Position: 0
+
+
+Day 256 | Date: 2025-01-22 | Close: 223.584 | Avg: 208.763 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 256 | Date: 2025-01-22 | Close: 223.584 | Avg: 208.763 | MeanRev: OUT | Position: 0
+
+
+Day 257 | Date: 2025-01-23 | Close: 223.414 | Avg: 208.821 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 257 | Date: 2025-01-23 | Close: 223.414 | Avg: 208.821 | MeanRev: OUT | Position: 0
+
+
+Day 258 | Date: 2025-01-24 | Close: 222.535 | Avg: 208.878 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 258 | Date: 2025-01-24 | Close: 222.535 | Avg: 208.878 | MeanRev: OUT | Position: 0
+
+
+Day 259 | Date: 2025-01-27 | Close: 229.608 | Avg: 208.931 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 259 | Date: 2025-01-27 | Close: 229.608 | Avg: 208.931 | MeanRev: OUT | Position: 0
+
+
+Day 260 | Date: 2025-01-28 | Close: 237.998 | Avg: 209.010 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 260 | Date: 2025-01-28 | Close: 237.998 | Avg: 209.010 | MeanRev: OUT | Position: 0
+
+
+Day 261 | Date: 2025-01-29 | Close: 239.097 | Avg: 209.122 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 261 | Date: 2025-01-29 | Close: 239.097 | Avg: 209.122 | MeanRev: OUT | Position: 0
+
+
+Day 262 | Date: 2025-01-30 | Close: 237.329 | Avg: 209.237 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 262 | Date: 2025-01-30 | Close: 237.329 | Avg: 209.237 | MeanRev: OUT | Position: 0
+
+
+Day 263 | Date: 2025-01-31 | Close: 235.741 | Avg: 209.344 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 263 | Date: 2025-01-31 | Close: 235.741 | Avg: 209.344 | MeanRev: OUT | Position: 0
+
+
+Day 264 | Date: 2025-02-03 | Close: 227.76 | Avg: 209.444 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 264 | Date: 2025-02-03 | Close: 227.76 | Avg: 209.444 | MeanRev: OUT | Position: 0
+
+
+Day 265 | Date: 2025-02-04 | Close: 232.544 | Avg: 209.514 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 265 | Date: 2025-02-04 | Close: 232.544 | Avg: 209.514 | MeanRev: OUT | Position: 0
+
+
+Day 266 | Date: 2025-02-05 | Close: 232.215 | Avg: 209.601 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 266 | Date: 2025-02-05 | Close: 232.215 | Avg: 209.601 | MeanRev: OUT | Position: 0
+
+
+Day 267 | Date: 2025-02-06 | Close: 232.964 | Avg: 209.686 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 267 | Date: 2025-02-06 | Close: 232.964 | Avg: 209.686 | MeanRev: OUT | Position: 0
+
+
+Day 268 | Date: 2025-02-07 | Close: 227.38 | Avg: 209.773 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 268 | Date: 2025-02-07 | Close: 227.38 | Avg: 209.773 | MeanRev: OUT | Position: 0
+
+
+Day 269 | Date: 2025-02-10 | Close: 227.65 | Avg: 209.839 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 269 | Date: 2025-02-10 | Close: 227.65 | Avg: 209.839 | MeanRev: OUT | Position: 0
+
+
+Day 270 | Date: 2025-02-11 | Close: 232.62 | Avg: 209.905 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 270 | Date: 2025-02-11 | Close: 232.62 | Avg: 209.905 | MeanRev: OUT | Position: 0
+
+
+Day 271 | Date: 2025-02-12 | Close: 236.87 | Avg: 209.989 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 271 | Date: 2025-02-12 | Close: 236.87 | Avg: 209.989 | MeanRev: OUT | Position: 0
+
+
+Day 272 | Date: 2025-02-13 | Close: 241.53 | Avg: 210.088 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 272 | Date: 2025-02-13 | Close: 241.53 | Avg: 210.088 | MeanRev: OUT | Position: 0
+
+
+Day 273 | Date: 2025-02-14 | Close: 244.6 | Avg: 210.204 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 273 | Date: 2025-02-14 | Close: 244.6 | Avg: 210.204 | MeanRev: OUT | Position: 0
+
+
+Day 274 | Date: 2025-02-18 | Close: 244.47 | Avg: 210.330 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 274 | Date: 2025-02-18 | Close: 244.47 | Avg: 210.330 | MeanRev: OUT | Position: 0
+
+
+Day 275 | Date: 2025-02-19 | Close: 244.87 | Avg: 210.454 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 275 | Date: 2025-02-19 | Close: 244.87 | Avg: 210.454 | MeanRev: OUT | Position: 0
+
+
+Day 276 | Date: 2025-02-20 | Close: 245.83 | Avg: 210.579 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 276 | Date: 2025-02-20 | Close: 245.83 | Avg: 210.579 | MeanRev: OUT | Position: 0
+
+
+Day 277 | Date: 2025-02-21 | Close: 245.55 | Avg: 210.707 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 277 | Date: 2025-02-21 | Close: 245.55 | Avg: 210.707 | MeanRev: OUT | Position: 0
+
+
+Day 278 | Date: 2025-02-24 | Close: 247.172 | Avg: 210.833 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 278 | Date: 2025-02-24 | Close: 247.172 | Avg: 210.833 | MeanRev: OUT | Position: 0
+
+
+Day 279 | Date: 2025-02-25 | Close: 247.04 | Avg: 210.964 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 279 | Date: 2025-02-25 | Close: 247.04 | Avg: 210.964 | MeanRev: OUT | Position: 0
+
+
+Day 280 | Date: 2025-02-26 | Close: 240.36 | Avg: 211.093 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 280 | Date: 2025-02-26 | Close: 240.36 | Avg: 211.093 | MeanRev: OUT | Position: 0
+
+
+Day 281 | Date: 2025-02-27 | Close: 237.3 | Avg: 211.198 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 281 | Date: 2025-02-27 | Close: 237.3 | Avg: 211.198 | MeanRev: OUT | Position: 0
+
+
+Day 282 | Date: 2025-02-28 | Close: 241.84 | Avg: 211.290 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 282 | Date: 2025-02-28 | Close: 241.84 | Avg: 211.290 | MeanRev: OUT | Position: 0
+
+
+Day 283 | Date: 2025-03-03 | Close: 238.03 | Avg: 211.399 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 283 | Date: 2025-03-03 | Close: 238.03 | Avg: 211.399 | MeanRev: OUT | Position: 0
+
+
+Day 284 | Date: 2025-03-04 | Close: 235.93 | Avg: 211.493 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 284 | Date: 2025-03-04 | Close: 235.93 | Avg: 211.493 | MeanRev: OUT | Position: 0
+
+
+Day 285 | Date: 2025-03-05 | Close: 235.74 | Avg: 211.579 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 285 | Date: 2025-03-05 | Close: 235.74 | Avg: 211.579 | MeanRev: OUT | Position: 0
+
+
+Day 286 | Date: 2025-03-06 | Close: 235.33 | Avg: 211.664 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 286 | Date: 2025-03-06 | Close: 235.33 | Avg: 211.664 | MeanRev: OUT | Position: 0
+
+
+Day 287 | Date: 2025-03-07 | Close: 239.07 | Avg: 211.746 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 287 | Date: 2025-03-07 | Close: 239.07 | Avg: 211.746 | MeanRev: OUT | Position: 0
+
+
+Day 288 | Date: 2025-03-10 | Close: 227.48 | Avg: 211.842 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 288 | Date: 2025-03-10 | Close: 227.48 | Avg: 211.842 | MeanRev: OUT | Position: 0
+
+
+Day 289 | Date: 2025-03-11 | Close: 220.84 | Avg: 211.896 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 289 | Date: 2025-03-11 | Close: 220.84 | Avg: 211.896 | MeanRev: OUT | Position: 0
+
+
+Day 290 | Date: 2025-03-12 | Close: 216.98 | Avg: 211.927 | Trend: HOLD | Position: 1 | Entry: 182.518
+Day 290 | Date: 2025-03-12 | Close: 216.98 | Avg: 211.927 | MeanRev: OUT | Position: 0
+
+
+Day 291 | Date: 2025-03-13 | Close: 209.68 | Avg: 211.944 | Trend: SELL | Position: 1 | Exit: 209.680 | P&L: 27.162
+Day 291 | Date: 2025-03-13 | Close: 209.68 | Avg: 211.944 | MeanRev: BUY | Position: 0 | Entry: 209.680
+
+
+Day 292 | Date: 2025-03-14 | Close: 213.49 | Avg: 211.937 | Trend: BUY | Position: 0 | Entry: 213.490
+Day 292 | Date: 2025-03-14 | Close: 213.49 | Avg: 211.937 | MeanRev: SELL | Position: 1 | Exit: 213.490 | P&L: 3.810
+
+
+Day 293 | Date: 2025-03-17 | Close: 214.0 | Avg: 211.942 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 293 | Date: 2025-03-17 | Close: 214.0 | Avg: 211.942 | MeanRev: OUT | Position: 0
+
+
+Day 294 | Date: 2025-03-18 | Close: 212.69 | Avg: 211.949 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 294 | Date: 2025-03-18 | Close: 212.69 | Avg: 211.949 | MeanRev: OUT | Position: 0
+
+
+Day 295 | Date: 2025-03-19 | Close: 215.24 | Avg: 211.951 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 295 | Date: 2025-03-19 | Close: 215.24 | Avg: 211.951 | MeanRev: OUT | Position: 0
+
+
+Day 296 | Date: 2025-03-20 | Close: 214.1 | Avg: 211.963 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 296 | Date: 2025-03-20 | Close: 214.1 | Avg: 211.963 | MeanRev: OUT | Position: 0
+
+
+Day 297 | Date: 2025-03-21 | Close: 218.27 | Avg: 211.970 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 297 | Date: 2025-03-21 | Close: 218.27 | Avg: 211.970 | MeanRev: OUT | Position: 0
+
+
+Day 298 | Date: 2025-03-24 | Close: 220.73 | Avg: 211.991 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 298 | Date: 2025-03-24 | Close: 220.73 | Avg: 211.991 | MeanRev: OUT | Position: 0
+
+
+Day 299 | Date: 2025-03-25 | Close: 223.75 | Avg: 212.020 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 299 | Date: 2025-03-25 | Close: 223.75 | Avg: 212.020 | MeanRev: OUT | Position: 0
+
+
+Day 300 | Date: 2025-03-26 | Close: 221.53 | Avg: 212.060 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 300 | Date: 2025-03-26 | Close: 221.53 | Avg: 212.060 | MeanRev: OUT | Position: 0
+
+
+Day 301 | Date: 2025-03-27 | Close: 223.85 | Avg: 212.091 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 301 | Date: 2025-03-27 | Close: 223.85 | Avg: 212.091 | MeanRev: OUT | Position: 0
+
+
+Day 302 | Date: 2025-03-28 | Close: 217.9 | Avg: 212.130 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 302 | Date: 2025-03-28 | Close: 217.9 | Avg: 212.130 | MeanRev: OUT | Position: 0
+
+
+Day 303 | Date: 2025-03-31 | Close: 222.13 | Avg: 212.149 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 303 | Date: 2025-03-31 | Close: 222.13 | Avg: 212.149 | MeanRev: OUT | Position: 0
+
+
+Day 304 | Date: 2025-04-01 | Close: 223.19 | Avg: 212.182 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 304 | Date: 2025-04-01 | Close: 223.19 | Avg: 212.182 | MeanRev: OUT | Position: 0
+
+
+Day 305 | Date: 2025-04-02 | Close: 223.89 | Avg: 212.218 | Trend: HOLD | Position: 1 | Entry: 213.490
+Day 305 | Date: 2025-04-02 | Close: 223.89 | Avg: 212.218 | MeanRev: OUT | Position: 0
+
+
+Day 306 | Date: 2025-04-03 | Close: 203.19 | Avg: 212.257 | Trend: SELL | Position: 1 | Exit: 203.190 | P&L: -10.300
+Day 306 | Date: 2025-04-03 | Close: 203.19 | Avg: 212.257 | MeanRev: BUY | Position: 0 | Entry: 203.190
+
+
+Day 307 | Date: 2025-04-04 | Close: 188.38 | Avg: 212.227 | Trend: OUT | Position: 0
+Day 307 | Date: 2025-04-04 | Close: 188.38 | Avg: 212.227 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 308 | Date: 2025-04-07 | Close: 181.46 | Avg: 212.149 | Trend: OUT | Position: 0
+Day 308 | Date: 2025-04-07 | Close: 181.46 | Avg: 212.149 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 309 | Date: 2025-04-08 | Close: 172.42 | Avg: 212.050 | Trend: OUT | Position: 0
+Day 309 | Date: 2025-04-08 | Close: 172.42 | Avg: 212.050 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 310 | Date: 2025-04-09 | Close: 198.85 | Avg: 211.921 | Trend: OUT | Position: 0
+Day 310 | Date: 2025-04-09 | Close: 198.85 | Avg: 211.921 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 311 | Date: 2025-04-10 | Close: 190.42 | Avg: 211.879 | Trend: OUT | Position: 0
+Day 311 | Date: 2025-04-10 | Close: 190.42 | Avg: 211.879 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 312 | Date: 2025-04-11 | Close: 198.15 | Avg: 211.810 | Trend: OUT | Position: 0
+Day 312 | Date: 2025-04-11 | Close: 198.15 | Avg: 211.810 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 313 | Date: 2025-04-14 | Close: 202.52 | Avg: 211.767 | Trend: OUT | Position: 0
+Day 313 | Date: 2025-04-14 | Close: 202.52 | Avg: 211.767 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 314 | Date: 2025-04-15 | Close: 202.14 | Avg: 211.737 | Trend: OUT | Position: 0
+Day 314 | Date: 2025-04-15 | Close: 202.14 | Avg: 211.737 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 315 | Date: 2025-04-16 | Close: 194.27 | Avg: 211.706 | Trend: OUT | Position: 0
+Day 315 | Date: 2025-04-16 | Close: 194.27 | Avg: 211.706 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 316 | Date: 2025-04-17 | Close: 196.98 | Avg: 211.651 | Trend: OUT | Position: 0
+Day 316 | Date: 2025-04-17 | Close: 196.98 | Avg: 211.651 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 317 | Date: 2025-04-21 | Close: 193.16 | Avg: 211.605 | Trend: OUT | Position: 0
+Day 317 | Date: 2025-04-21 | Close: 193.16 | Avg: 211.605 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 318 | Date: 2025-04-22 | Close: 199.74 | Avg: 211.546 | Trend: OUT | Position: 0
+Day 318 | Date: 2025-04-22 | Close: 199.74 | Avg: 211.546 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 319 | Date: 2025-04-23 | Close: 204.6 | Avg: 211.509 | Trend: OUT | Position: 0
+Day 319 | Date: 2025-04-23 | Close: 204.6 | Avg: 211.509 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 320 | Date: 2025-04-24 | Close: 208.37 | Avg: 211.488 | Trend: OUT | Position: 0
+Day 320 | Date: 2025-04-24 | Close: 208.37 | Avg: 211.488 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 321 | Date: 2025-04-25 | Close: 209.28 | Avg: 211.478 | Trend: OUT | Position: 0
+Day 321 | Date: 2025-04-25 | Close: 209.28 | Avg: 211.478 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 322 | Date: 2025-04-28 | Close: 210.14 | Avg: 211.471 | Trend: OUT | Position: 0
+Day 322 | Date: 2025-04-28 | Close: 210.14 | Avg: 211.471 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 323 | Date: 2025-04-29 | Close: 211.21 | Avg: 211.467 | Trend: OUT | Position: 0
+Day 323 | Date: 2025-04-29 | Close: 211.21 | Avg: 211.467 | MeanRev: HOLD | Position: 1 | Entry: 203.190
+
+
+Day 324 | Date: 2025-04-30 | Close: 212.5 | Avg: 211.466 | Trend: BUY | Position: 0 | Entry: 212.500
+Day 324 | Date: 2025-04-30 | Close: 212.5 | Avg: 211.466 | MeanRev: SELL | Position: 1 | Exit: 212.500 | P&L: 9.310
+
+
+Day 325 | Date: 2025-05-01 | Close: 213.32 | Avg: 211.469 | Trend: HOLD | Position: 1 | Entry: 212.500
+Day 325 | Date: 2025-05-01 | Close: 213.32 | Avg: 211.469 | MeanRev: OUT | Position: 0
+
+
+Day 326 | Date: 2025-05-02 | Close: 205.35 | Avg: 211.475 | Trend: SELL | Position: 1 | Exit: 205.350 | P&L: -7.150
+Day 326 | Date: 2025-05-02 | Close: 205.35 | Avg: 211.475 | MeanRev: BUY | Position: 0 | Entry: 205.350
+
+
+Day 327 | Date: 2025-05-05 | Close: 198.89 | Avg: 211.456 | Trend: OUT | Position: 0
+Day 327 | Date: 2025-05-05 | Close: 198.89 | Avg: 211.456 | MeanRev: HOLD | Position: 1 | Entry: 205.350
+
+
+Day 328 | Date: 2025-05-06 | Close: 198.51 | Avg: 211.418 | Trend: OUT | Position: 0
+Day 328 | Date: 2025-05-06 | Close: 198.51 | Avg: 211.418 | MeanRev: HOLD | Position: 1 | Entry: 205.350
+
+
+Day 329 | Date: 2025-05-07 | Close: 196.25 | Avg: 211.378 | Trend: OUT | Position: 0
+Day 329 | Date: 2025-05-07 | Close: 196.25 | Avg: 211.378 | MeanRev: HOLD | Position: 1 | Entry: 205.350
+
+
+Day 330 | Date: 2025-05-08 | Close: 197.49 | Avg: 211.332 | Trend: OUT | Position: 0
+Day 330 | Date: 2025-05-08 | Close: 197.49 | Avg: 211.332 | MeanRev: HOLD | Position: 1 | Entry: 205.350
+
+
+Day 331 | Date: 2025-05-09 | Close: 198.53 | Avg: 211.291 | Trend: OUT | Position: 0
+Day 331 | Date: 2025-05-09 | Close: 198.53 | Avg: 211.291 | MeanRev: HOLD | Position: 1 | Entry: 205.350
+
+
+Day 332 | Date: 2025-05-12 | Close: 210.79 | Avg: 211.252 | Trend: OUT | Position: 0
+Day 332 | Date: 2025-05-12 | Close: 210.79 | Avg: 211.252 | MeanRev: HOLD | Position: 1 | Entry: 205.350
+
+
+Day 333 | Date: 2025-05-13 | Close: 212.93 | Avg: 211.251 | Trend: BUY | Position: 0 | Entry: 212.930
+Day 333 | Date: 2025-05-13 | Close: 212.93 | Avg: 211.251 | MeanRev: SELL | Position: 1 | Exit: 212.930 | P&L: 7.580
+
+
+Day 334 | Date: 2025-05-14 | Close: 212.33 | Avg: 211.256 | Trend: HOLD | Position: 1 | Entry: 212.930
+Day 334 | Date: 2025-05-14 | Close: 212.33 | Avg: 211.256 | MeanRev: OUT | Position: 0
+
+
+Day 335 | Date: 2025-05-15 | Close: 211.45 | Avg: 211.259 | Trend: HOLD | Position: 1 | Entry: 212.930
+Day 335 | Date: 2025-05-15 | Close: 211.45 | Avg: 211.259 | MeanRev: OUT | Position: 0
+
+
+Day 336 | Date: 2025-05-16 | Close: 211.26 | Avg: 211.259 | Trend: HOLD | Position: 1 | Entry: 212.930
+Day 336 | Date: 2025-05-16 | Close: 211.26 | Avg: 211.259 | MeanRev: OUT | Position: 0
+
+
+Day 337 | Date: 2025-05-19 | Close: 208.78 | Avg: 211.259 | Trend: SELL | Position: 1 | Exit: 208.780 | P&L: -4.150
+Day 337 | Date: 2025-05-19 | Close: 208.78 | Avg: 211.259 | MeanRev: BUY | Position: 0 | Entry: 208.780
+
+
+Day 338 | Date: 2025-05-20 | Close: 206.86 | Avg: 211.252 | Trend: OUT | Position: 0
+Day 338 | Date: 2025-05-20 | Close: 206.86 | Avg: 211.252 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 339 | Date: 2025-05-21 | Close: 202.09 | Avg: 211.239 | Trend: OUT | Position: 0
+Day 339 | Date: 2025-05-21 | Close: 202.09 | Avg: 211.239 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 340 | Date: 2025-05-22 | Close: 201.36 | Avg: 211.212 | Trend: OUT | Position: 0
+Day 340 | Date: 2025-05-22 | Close: 201.36 | Avg: 211.212 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 341 | Date: 2025-05-23 | Close: 195.27 | Avg: 211.183 | Trend: OUT | Position: 0
+Day 341 | Date: 2025-05-23 | Close: 195.27 | Avg: 211.183 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 342 | Date: 2025-05-27 | Close: 200.21 | Avg: 211.136 | Trend: OUT | Position: 0
+Day 342 | Date: 2025-05-27 | Close: 200.21 | Avg: 211.136 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 343 | Date: 2025-05-28 | Close: 200.42 | Avg: 211.104 | Trend: OUT | Position: 0
+Day 343 | Date: 2025-05-28 | Close: 200.42 | Avg: 211.104 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 344 | Date: 2025-05-29 | Close: 199.95 | Avg: 211.073 | Trend: OUT | Position: 0
+Day 344 | Date: 2025-05-29 | Close: 199.95 | Avg: 211.073 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 345 | Date: 2025-05-30 | Close: 200.85 | Avg: 211.041 | Trend: OUT | Position: 0
+Day 345 | Date: 2025-05-30 | Close: 200.85 | Avg: 211.041 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 346 | Date: 2025-06-02 | Close: 201.7 | Avg: 211.011 | Trend: OUT | Position: 0
+Day 346 | Date: 2025-06-02 | Close: 201.7 | Avg: 211.011 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 347 | Date: 2025-06-03 | Close: 203.27 | Avg: 210.985 | Trend: OUT | Position: 0
+Day 347 | Date: 2025-06-03 | Close: 203.27 | Avg: 210.985 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 348 | Date: 2025-06-04 | Close: 202.82 | Avg: 210.962 | Trend: OUT | Position: 0
+Day 348 | Date: 2025-06-04 | Close: 202.82 | Avg: 210.962 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 349 | Date: 2025-06-05 | Close: 200.63 | Avg: 210.939 | Trend: OUT | Position: 0
+Day 349 | Date: 2025-06-05 | Close: 200.63 | Avg: 210.939 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 350 | Date: 2025-06-06 | Close: 203.92 | Avg: 210.909 | Trend: OUT | Position: 0
+Day 350 | Date: 2025-06-06 | Close: 203.92 | Avg: 210.909 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 351 | Date: 2025-06-09 | Close: 201.45 | Avg: 210.889 | Trend: OUT | Position: 0
+Day 351 | Date: 2025-06-09 | Close: 201.45 | Avg: 210.889 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 352 | Date: 2025-06-10 | Close: 202.67 | Avg: 210.863 | Trend: OUT | Position: 0
+Day 352 | Date: 2025-06-10 | Close: 202.67 | Avg: 210.863 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 353 | Date: 2025-06-11 | Close: 198.78 | Avg: 210.839 | Trend: OUT | Position: 0
+Day 353 | Date: 2025-06-11 | Close: 198.78 | Avg: 210.839 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 354 | Date: 2025-06-12 | Close: 199.2 | Avg: 210.805 | Trend: OUT | Position: 0
+Day 354 | Date: 2025-06-12 | Close: 199.2 | Avg: 210.805 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 355 | Date: 2025-06-13 | Close: 196.45 | Avg: 210.772 | Trend: OUT | Position: 0
+Day 355 | Date: 2025-06-13 | Close: 196.45 | Avg: 210.772 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 356 | Date: 2025-06-16 | Close: 198.42 | Avg: 210.732 | Trend: OUT | Position: 0
+Day 356 | Date: 2025-06-16 | Close: 198.42 | Avg: 210.732 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 357 | Date: 2025-06-17 | Close: 195.64 | Avg: 210.697 | Trend: OUT | Position: 0
+Day 357 | Date: 2025-06-17 | Close: 195.64 | Avg: 210.697 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 358 | Date: 2025-06-18 | Close: 196.58 | Avg: 210.655 | Trend: OUT | Position: 0
+Day 358 | Date: 2025-06-18 | Close: 196.58 | Avg: 210.655 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 359 | Date: 2025-06-20 | Close: 201.0 | Avg: 210.616 | Trend: OUT | Position: 0
+Day 359 | Date: 2025-06-20 | Close: 201.0 | Avg: 210.616 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 360 | Date: 2025-06-23 | Close: 201.5 | Avg: 210.589 | Trend: OUT | Position: 0
+Day 360 | Date: 2025-06-23 | Close: 201.5 | Avg: 210.589 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 361 | Date: 2025-06-24 | Close: 200.3 | Avg: 210.564 | Trend: OUT | Position: 0
+Day 361 | Date: 2025-06-24 | Close: 200.3 | Avg: 210.564 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 362 | Date: 2025-06-25 | Close: 201.56 | Avg: 210.535 | Trend: OUT | Position: 0
+Day 362 | Date: 2025-06-25 | Close: 201.56 | Avg: 210.535 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 363 | Date: 2025-06-26 | Close: 201.0 | Avg: 210.511 | Trend: OUT | Position: 0
+Day 363 | Date: 2025-06-26 | Close: 201.0 | Avg: 210.511 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 364 | Date: 2025-06-27 | Close: 201.08 | Avg: 210.484 | Trend: OUT | Position: 0
+Day 364 | Date: 2025-06-27 | Close: 201.08 | Avg: 210.484 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 365 | Date: 2025-06-30 | Close: 205.17 | Avg: 210.459 | Trend: OUT | Position: 0
+Day 365 | Date: 2025-06-30 | Close: 205.17 | Avg: 210.459 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 366 | Date: 2025-07-01 | Close: 207.82 | Avg: 210.444 | Trend: OUT | Position: 0
+Day 366 | Date: 2025-07-01 | Close: 207.82 | Avg: 210.444 | MeanRev: HOLD | Position: 1 | Entry: 208.780
+
+
+Day 367 | Date: 2025-07-02 | Close: 212.44 | Avg: 210.437 | Trend: BUY | Position: 0 | Entry: 212.440
+Day 367 | Date: 2025-07-02 | Close: 212.44 | Avg: 210.437 | MeanRev: SELL | Position: 1 | Exit: 212.440 | P&L: 3.660
+
+
+Day 368 | Date: 2025-07-03 | Close: 213.55 | Avg: 210.442 | Trend: HOLD | Position: 1 | Entry: 212.440
+Day 368 | Date: 2025-07-03 | Close: 213.55 | Avg: 210.442 | MeanRev: OUT | Position: 0
+
+
+Day 369 | Date: 2025-07-07 | Close: 209.95 | Avg: 210.451 | Trend: SELL | Position: 1 | Exit: 209.950 | P&L: -2.490
+Day 369 | Date: 2025-07-07 | Close: 209.95 | Avg: 210.451 | MeanRev: BUY | Position: 0 | Entry: 209.950
+
+
+Day 370 | Date: 2025-07-08 | Close: 210.01 | Avg: 210.449 | Trend: OUT | Position: 0
+Day 370 | Date: 2025-07-08 | Close: 210.01 | Avg: 210.449 | MeanRev: HOLD | Position: 1 | Entry: 209.950
+
+
+Day 371 | Date: 2025-07-09 | Close: 211.14 | Avg: 210.448 | Trend: BUY | Position: 0 | Entry: 211.140
+Day 371 | Date: 2025-07-09 | Close: 211.14 | Avg: 210.448 | MeanRev: SELL | Position: 1 | Exit: 211.140 | P&L: 1.190
+
+
+Day 372 | Date: 2025-07-10 | Close: 212.41 | Avg: 210.450 | Trend: HOLD | Position: 1 | Entry: 211.140
+Day 372 | Date: 2025-07-10 | Close: 212.41 | Avg: 210.450 | MeanRev: OUT | Position: 0
+
+
+Day 373 | Date: 2025-07-11 | Close: 211.16 | Avg: 210.455 | Trend: HOLD | Position: 1 | Entry: 211.140
+Day 373 | Date: 2025-07-11 | Close: 211.16 | Avg: 210.455 | MeanRev: OUT | Position: 0
+
+
+Day 374 | Date: 2025-07-14 | Close: 208.62 | Avg: 210.457 | Trend: SELL | Position: 1 | Exit: 208.620 | P&L: -2.520
+Day 374 | Date: 2025-07-14 | Close: 208.62 | Avg: 210.457 | MeanRev: BUY | Position: 0 | Entry: 208.620
+
+
+Day 375 | Date: 2025-07-15 | Close: 209.11 | Avg: 210.452 | Trend: OUT | Position: 0
+Day 375 | Date: 2025-07-15 | Close: 209.11 | Avg: 210.452 | MeanRev: HOLD | Position: 1 | Entry: 208.620
+
+
+Day 376 | Date: 2025-07-16 | Close: 210.16 | Avg: 210.449 | Trend: OUT | Position: 0
+Day 376 | Date: 2025-07-16 | Close: 210.16 | Avg: 210.449 | MeanRev: HOLD | Position: 1 | Entry: 208.620
+
+
+Day 377 | Date: 2025-07-17 | Close: 210.02 | Avg: 210.448 | Trend: OUT | Position: 0
+Day 377 | Date: 2025-07-17 | Close: 210.02 | Avg: 210.448 | MeanRev: HOLD | Position: 1 | Entry: 208.620
+
+
+Day 378 | Date: 2025-07-18 | Close: 211.18 | Avg: 210.447 | Trend: BUY | Position: 0 | Entry: 211.180
+Day 378 | Date: 2025-07-18 | Close: 211.18 | Avg: 210.447 | MeanRev: SELL | Position: 1 | Exit: 211.180 | P&L: 2.560
+
+
+Day 379 | Date: 2025-07-21 | Close: 212.48 | Avg: 210.449 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 379 | Date: 2025-07-21 | Close: 212.48 | Avg: 210.449 | MeanRev: OUT | Position: 0
+
+
+Day 380 | Date: 2025-07-22 | Close: 214.4 | Avg: 210.454 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 380 | Date: 2025-07-22 | Close: 214.4 | Avg: 210.454 | MeanRev: OUT | Position: 0
+
+
+Day 381 | Date: 2025-07-23 | Close: 214.15 | Avg: 210.465 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 381 | Date: 2025-07-23 | Close: 214.15 | Avg: 210.465 | MeanRev: OUT | Position: 0
+
+
+Day 382 | Date: 2025-07-24 | Close: 213.76 | Avg: 210.474 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 382 | Date: 2025-07-24 | Close: 213.76 | Avg: 210.474 | MeanRev: OUT | Position: 0
+
+
+Day 383 | Date: 2025-07-25 | Close: 213.88 | Avg: 210.483 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 383 | Date: 2025-07-25 | Close: 213.88 | Avg: 210.483 | MeanRev: OUT | Position: 0
+
+
+Day 384 | Date: 2025-07-28 | Close: 214.05 | Avg: 210.492 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 384 | Date: 2025-07-28 | Close: 214.05 | Avg: 210.492 | MeanRev: OUT | Position: 0
+
+
+Day 385 | Date: 2025-07-29 | Close: 211.27 | Avg: 210.501 | Trend: HOLD | Position: 1 | Entry: 211.180
+Day 385 | Date: 2025-07-29 | Close: 211.27 | Avg: 210.501 | MeanRev: OUT | Position: 0
+
+
+Day 386 | Date: 2025-07-30 | Close: 209.05 | Avg: 210.503 | Trend: SELL | Position: 1 | Exit: 209.050 | P&L: -2.130
+Day 386 | Date: 2025-07-30 | Close: 209.05 | Avg: 210.503 | MeanRev: BUY | Position: 0 | Entry: 209.050
+
+
+Day 387 | Date: 2025-07-31 | Close: 207.57 | Avg: 210.499 | Trend: OUT | Position: 0
+Day 387 | Date: 2025-07-31 | Close: 207.57 | Avg: 210.499 | MeanRev: HOLD | Position: 1 | Entry: 209.050
+
+
+Day 388 | Date: 2025-08-01 | Close: 202.38 | Avg: 210.492 | Trend: OUT | Position: 0
+Day 388 | Date: 2025-08-01 | Close: 202.38 | Avg: 210.492 | MeanRev: HOLD | Position: 1 | Entry: 209.050
+
+
+Day 389 | Date: 2025-08-04 | Close: 203.35 | Avg: 210.471 | Trend: OUT | Position: 0
+Day 389 | Date: 2025-08-04 | Close: 203.35 | Avg: 210.471 | MeanRev: HOLD | Position: 1 | Entry: 209.050
+
+
+Day 390 | Date: 2025-08-05 | Close: 202.92 | Avg: 210.452 | Trend: OUT | Position: 0
+Day 390 | Date: 2025-08-05 | Close: 202.92 | Avg: 210.452 | MeanRev: HOLD | Position: 1 | Entry: 209.050
+
+
+Day 391 | Date: 2025-08-06 | Close: 213.25 | Avg: 210.433 | Trend: BUY | Position: 0 | Entry: 213.250
+Day 391 | Date: 2025-08-06 | Close: 213.25 | Avg: 210.433 | MeanRev: SELL | Position: 1 | Exit: 213.250 | P&L: 4.200
+
+
+Day 392 | Date: 2025-08-07 | Close: 220.03 | Avg: 210.440 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 392 | Date: 2025-08-07 | Close: 220.03 | Avg: 210.440 | MeanRev: OUT | Position: 0
+
+
+Day 393 | Date: 2025-08-08 | Close: 229.35 | Avg: 210.465 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 393 | Date: 2025-08-08 | Close: 229.35 | Avg: 210.465 | MeanRev: OUT | Position: 0
+
+
+Day 394 | Date: 2025-08-11 | Close: 227.18 | Avg: 210.513 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 394 | Date: 2025-08-11 | Close: 227.18 | Avg: 210.513 | MeanRev: OUT | Position: 0
+
+
+Day 395 | Date: 2025-08-12 | Close: 229.65 | Avg: 210.555 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 395 | Date: 2025-08-12 | Close: 229.65 | Avg: 210.555 | MeanRev: OUT | Position: 0
+
+
+Day 396 | Date: 2025-08-13 | Close: 233.33 | Avg: 210.604 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 396 | Date: 2025-08-13 | Close: 233.33 | Avg: 210.604 | MeanRev: OUT | Position: 0
+
+
+Day 397 | Date: 2025-08-14 | Close: 232.78 | Avg: 210.661 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 397 | Date: 2025-08-14 | Close: 232.78 | Avg: 210.661 | MeanRev: OUT | Position: 0
+
+
+Day 398 | Date: 2025-08-15 | Close: 231.59 | Avg: 210.717 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 398 | Date: 2025-08-15 | Close: 231.59 | Avg: 210.717 | MeanRev: OUT | Position: 0
+
+
+Day 399 | Date: 2025-08-18 | Close: 230.89 | Avg: 210.769 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 399 | Date: 2025-08-18 | Close: 230.89 | Avg: 210.769 | MeanRev: OUT | Position: 0
+
+
+Day 400 | Date: 2025-08-19 | Close: 230.56 | Avg: 210.819 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 400 | Date: 2025-08-19 | Close: 230.56 | Avg: 210.819 | MeanRev: OUT | Position: 0
+
+
+Day 401 | Date: 2025-08-20 | Close: 226.01 | Avg: 210.869 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 401 | Date: 2025-08-20 | Close: 226.01 | Avg: 210.869 | MeanRev: OUT | Position: 0
+
+
+Day 402 | Date: 2025-08-21 | Close: 224.9 | Avg: 210.907 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 402 | Date: 2025-08-21 | Close: 224.9 | Avg: 210.907 | MeanRev: OUT | Position: 0
+
+
+Day 403 | Date: 2025-08-22 | Close: 227.76 | Avg: 210.941 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 403 | Date: 2025-08-22 | Close: 227.76 | Avg: 210.941 | MeanRev: OUT | Position: 0
+
+
+Day 404 | Date: 2025-08-25 | Close: 227.16 | Avg: 210.983 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 404 | Date: 2025-08-25 | Close: 227.16 | Avg: 210.983 | MeanRev: OUT | Position: 0
+
+
+Day 405 | Date: 2025-08-26 | Close: 229.31 | Avg: 211.023 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 405 | Date: 2025-08-26 | Close: 229.31 | Avg: 211.023 | MeanRev: OUT | Position: 0
+
+
+Day 406 | Date: 2025-08-27 | Close: 230.49 | Avg: 211.068 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 406 | Date: 2025-08-27 | Close: 230.49 | Avg: 211.068 | MeanRev: OUT | Position: 0
+
+
+Day 407 | Date: 2025-08-28 | Close: 232.56 | Avg: 211.116 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 407 | Date: 2025-08-28 | Close: 232.56 | Avg: 211.116 | MeanRev: OUT | Position: 0
+
+
+Day 408 | Date: 2025-08-29 | Close: 232.14 | Avg: 211.169 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 408 | Date: 2025-08-29 | Close: 232.14 | Avg: 211.169 | MeanRev: OUT | Position: 0
+
+
+Day 409 | Date: 2025-09-02 | Close: 229.72 | Avg: 211.220 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 409 | Date: 2025-09-02 | Close: 229.72 | Avg: 211.220 | MeanRev: OUT | Position: 0
+
+
+Day 410 | Date: 2025-09-03 | Close: 238.47 | Avg: 211.265 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 410 | Date: 2025-09-03 | Close: 238.47 | Avg: 211.265 | MeanRev: OUT | Position: 0
+
+
+Day 411 | Date: 2025-09-04 | Close: 239.78 | Avg: 211.332 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 411 | Date: 2025-09-04 | Close: 239.78 | Avg: 211.332 | MeanRev: OUT | Position: 0
+
+
+Day 412 | Date: 2025-09-05 | Close: 239.69 | Avg: 211.401 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 412 | Date: 2025-09-05 | Close: 239.69 | Avg: 211.401 | MeanRev: OUT | Position: 0
+
+
+Day 413 | Date: 2025-09-08 | Close: 237.88 | Avg: 211.470 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 413 | Date: 2025-09-08 | Close: 237.88 | Avg: 211.470 | MeanRev: OUT | Position: 0
+
+
+Day 414 | Date: 2025-09-09 | Close: 234.35 | Avg: 211.534 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 414 | Date: 2025-09-09 | Close: 234.35 | Avg: 211.534 | MeanRev: OUT | Position: 0
+
+
+Day 415 | Date: 2025-09-10 | Close: 226.79 | Avg: 211.589 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 415 | Date: 2025-09-10 | Close: 226.79 | Avg: 211.589 | MeanRev: OUT | Position: 0
+
+
+Day 416 | Date: 2025-09-11 | Close: 230.03 | Avg: 211.625 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 416 | Date: 2025-09-11 | Close: 230.03 | Avg: 211.625 | MeanRev: OUT | Position: 0
+
+
+Day 417 | Date: 2025-09-12 | Close: 234.07 | Avg: 211.670 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 417 | Date: 2025-09-12 | Close: 234.07 | Avg: 211.670 | MeanRev: OUT | Position: 0
+
+
+Day 418 | Date: 2025-09-15 | Close: 236.7 | Avg: 211.723 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 418 | Date: 2025-09-15 | Close: 236.7 | Avg: 211.723 | MeanRev: OUT | Position: 0
+
+
+Day 419 | Date: 2025-09-16 | Close: 238.15 | Avg: 211.783 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 419 | Date: 2025-09-16 | Close: 238.15 | Avg: 211.783 | MeanRev: OUT | Position: 0
+
+
+Day 420 | Date: 2025-09-17 | Close: 238.99 | Avg: 211.846 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 420 | Date: 2025-09-17 | Close: 238.99 | Avg: 211.846 | MeanRev: OUT | Position: 0
+
+
+Day 421 | Date: 2025-09-18 | Close: 237.88 | Avg: 211.911 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 421 | Date: 2025-09-18 | Close: 237.88 | Avg: 211.911 | MeanRev: OUT | Position: 0
+
+
+Day 422 | Date: 2025-09-19 | Close: 245.5 | Avg: 211.972 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 422 | Date: 2025-09-19 | Close: 245.5 | Avg: 211.972 | MeanRev: OUT | Position: 0
+
+
+Day 423 | Date: 2025-09-22 | Close: 256.08 | Avg: 212.052 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 423 | Date: 2025-09-22 | Close: 256.08 | Avg: 212.052 | MeanRev: OUT | Position: 0
+
+
+Day 424 | Date: 2025-09-23 | Close: 254.43 | Avg: 212.156 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 424 | Date: 2025-09-23 | Close: 254.43 | Avg: 212.156 | MeanRev: OUT | Position: 0
+
+
+Day 425 | Date: 2025-09-24 | Close: 252.31 | Avg: 212.256 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 425 | Date: 2025-09-24 | Close: 252.31 | Avg: 212.256 | MeanRev: OUT | Position: 0
+
+
+Day 426 | Date: 2025-09-25 | Close: 256.87 | Avg: 212.350 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 426 | Date: 2025-09-25 | Close: 256.87 | Avg: 212.350 | MeanRev: OUT | Position: 0
+
+
+Day 427 | Date: 2025-09-26 | Close: 255.46 | Avg: 212.454 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 427 | Date: 2025-09-26 | Close: 255.46 | Avg: 212.454 | MeanRev: OUT | Position: 0
+
+
+Day 428 | Date: 2025-09-29 | Close: 254.43 | Avg: 212.555 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 428 | Date: 2025-09-29 | Close: 254.43 | Avg: 212.555 | MeanRev: OUT | Position: 0
+
+
+Day 429 | Date: 2025-09-30 | Close: 254.63 | Avg: 212.653 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 429 | Date: 2025-09-30 | Close: 254.63 | Avg: 212.653 | MeanRev: OUT | Position: 0
+
+
+Day 430 | Date: 2025-10-01 | Close: 255.45 | Avg: 212.751 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 430 | Date: 2025-10-01 | Close: 255.45 | Avg: 212.751 | MeanRev: OUT | Position: 0
+
+
+Day 431 | Date: 2025-10-02 | Close: 257.13 | Avg: 212.850 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 431 | Date: 2025-10-02 | Close: 257.13 | Avg: 212.850 | MeanRev: OUT | Position: 0
+
+
+Day 432 | Date: 2025-10-03 | Close: 258.02 | Avg: 212.953 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 432 | Date: 2025-10-03 | Close: 258.02 | Avg: 212.953 | MeanRev: OUT | Position: 0
+
+
+Day 433 | Date: 2025-10-06 | Close: 256.69 | Avg: 213.057 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 433 | Date: 2025-10-06 | Close: 256.69 | Avg: 213.057 | MeanRev: OUT | Position: 0
+
+
+Day 434 | Date: 2025-10-07 | Close: 256.48 | Avg: 213.158 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 434 | Date: 2025-10-07 | Close: 256.48 | Avg: 213.158 | MeanRev: OUT | Position: 0
+
+
+Day 435 | Date: 2025-10-08 | Close: 258.06 | Avg: 213.258 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 435 | Date: 2025-10-08 | Close: 258.06 | Avg: 213.258 | MeanRev: OUT | Position: 0
+
+
+Day 436 | Date: 2025-10-09 | Close: 254.04 | Avg: 213.361 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 436 | Date: 2025-10-09 | Close: 254.04 | Avg: 213.361 | MeanRev: OUT | Position: 0
+
+
+Day 437 | Date: 2025-10-10 | Close: 245.27 | Avg: 213.454 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 437 | Date: 2025-10-10 | Close: 245.27 | Avg: 213.454 | MeanRev: OUT | Position: 0
+
+
+Day 438 | Date: 2025-10-13 | Close: 247.66 | Avg: 213.527 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 438 | Date: 2025-10-13 | Close: 247.66 | Avg: 213.527 | MeanRev: OUT | Position: 0
+
+
+Day 439 | Date: 2025-10-14 | Close: 247.77 | Avg: 213.605 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 439 | Date: 2025-10-14 | Close: 247.77 | Avg: 213.605 | MeanRev: OUT | Position: 0
+
+
+Day 440 | Date: 2025-10-15 | Close: 249.34 | Avg: 213.683 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 440 | Date: 2025-10-15 | Close: 249.34 | Avg: 213.683 | MeanRev: OUT | Position: 0
+
+
+Day 441 | Date: 2025-10-16 | Close: 247.45 | Avg: 213.764 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 441 | Date: 2025-10-16 | Close: 247.45 | Avg: 213.764 | MeanRev: OUT | Position: 0
+
+
+Day 442 | Date: 2025-10-17 | Close: 252.29 | Avg: 213.840 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 442 | Date: 2025-10-17 | Close: 252.29 | Avg: 213.840 | MeanRev: OUT | Position: 0
+
+
+Day 443 | Date: 2025-10-20 | Close: 262.24 | Avg: 213.927 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 443 | Date: 2025-10-20 | Close: 262.24 | Avg: 213.927 | MeanRev: OUT | Position: 0
+
+
+Day 444 | Date: 2025-10-21 | Close: 262.77 | Avg: 214.036 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 444 | Date: 2025-10-21 | Close: 262.77 | Avg: 214.036 | MeanRev: OUT | Position: 0
+
+
+Day 445 | Date: 2025-10-22 | Close: 258.45 | Avg: 214.146 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 445 | Date: 2025-10-22 | Close: 258.45 | Avg: 214.146 | MeanRev: OUT | Position: 0
+
+
+Day 446 | Date: 2025-10-23 | Close: 259.58 | Avg: 214.245 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 446 | Date: 2025-10-23 | Close: 259.58 | Avg: 214.245 | MeanRev: OUT | Position: 0
+
+
+Day 447 | Date: 2025-10-24 | Close: 262.82 | Avg: 214.347 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 447 | Date: 2025-10-24 | Close: 262.82 | Avg: 214.347 | MeanRev: OUT | Position: 0
+
+
+Day 448 | Date: 2025-10-27 | Close: 268.81 | Avg: 214.455 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 448 | Date: 2025-10-27 | Close: 268.81 | Avg: 214.455 | MeanRev: OUT | Position: 0
+
+
+Day 449 | Date: 2025-10-28 | Close: 269.0 | Avg: 214.577 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 449 | Date: 2025-10-28 | Close: 269.0 | Avg: 214.577 | MeanRev: OUT | Position: 0
+
+
+Day 450 | Date: 2025-10-29 | Close: 269.7 | Avg: 214.698 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 450 | Date: 2025-10-29 | Close: 269.7 | Avg: 214.698 | MeanRev: OUT | Position: 0
+
+
+Day 451 | Date: 2025-10-30 | Close: 271.4 | Avg: 214.820 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 451 | Date: 2025-10-30 | Close: 271.4 | Avg: 214.820 | MeanRev: OUT | Position: 0
+
+
+Day 452 | Date: 2025-10-31 | Close: 270.37 | Avg: 214.946 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 452 | Date: 2025-10-31 | Close: 270.37 | Avg: 214.946 | MeanRev: OUT | Position: 0
+
+
+Day 453 | Date: 2025-11-03 | Close: 269.05 | Avg: 215.068 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 453 | Date: 2025-11-03 | Close: 269.05 | Avg: 215.068 | MeanRev: OUT | Position: 0
+
+
+Day 454 | Date: 2025-11-04 | Close: 270.04 | Avg: 215.187 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 454 | Date: 2025-11-04 | Close: 270.04 | Avg: 215.187 | MeanRev: OUT | Position: 0
+
+
+Day 455 | Date: 2025-11-05 | Close: 270.14 | Avg: 215.308 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 455 | Date: 2025-11-05 | Close: 270.14 | Avg: 215.308 | MeanRev: OUT | Position: 0
+
+
+Day 456 | Date: 2025-11-06 | Close: 269.77 | Avg: 215.429 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 456 | Date: 2025-11-06 | Close: 269.77 | Avg: 215.429 | MeanRev: OUT | Position: 0
+
+
+Day 457 | Date: 2025-11-07 | Close: 268.47 | Avg: 215.548 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 457 | Date: 2025-11-07 | Close: 268.47 | Avg: 215.548 | MeanRev: OUT | Position: 0
+
+
+Day 458 | Date: 2025-11-10 | Close: 269.43 | Avg: 215.664 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 458 | Date: 2025-11-10 | Close: 269.43 | Avg: 215.664 | MeanRev: OUT | Position: 0
+
+
+Day 459 | Date: 2025-11-11 | Close: 275.25 | Avg: 215.781 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 459 | Date: 2025-11-11 | Close: 275.25 | Avg: 215.781 | MeanRev: OUT | Position: 0
+
+
+Day 460 | Date: 2025-11-12 | Close: 273.47 | Avg: 215.911 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 460 | Date: 2025-11-12 | Close: 273.47 | Avg: 215.911 | MeanRev: OUT | Position: 0
+
+
+Day 461 | Date: 2025-11-13 | Close: 272.95 | Avg: 216.036 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 461 | Date: 2025-11-13 | Close: 272.95 | Avg: 216.036 | MeanRev: OUT | Position: 0
+
+
+Day 462 | Date: 2025-11-14 | Close: 272.41 | Avg: 216.159 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 462 | Date: 2025-11-14 | Close: 272.41 | Avg: 216.159 | MeanRev: OUT | Position: 0
+
+
+Day 463 | Date: 2025-11-17 | Close: 267.46 | Avg: 216.281 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 463 | Date: 2025-11-17 | Close: 267.46 | Avg: 216.281 | MeanRev: OUT | Position: 0
+
+
+Day 464 | Date: 2025-11-18 | Close: 267.44 | Avg: 216.392 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 464 | Date: 2025-11-18 | Close: 267.44 | Avg: 216.392 | MeanRev: OUT | Position: 0
+
+
+Day 465 | Date: 2025-11-19 | Close: 268.56 | Avg: 216.502 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 465 | Date: 2025-11-19 | Close: 268.56 | Avg: 216.502 | MeanRev: OUT | Position: 0
+
+
+Day 466 | Date: 2025-11-20 | Close: 266.25 | Avg: 216.614 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 466 | Date: 2025-11-20 | Close: 266.25 | Avg: 216.614 | MeanRev: OUT | Position: 0
+
+
+Day 467 | Date: 2025-11-21 | Close: 271.49 | Avg: 216.720 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 467 | Date: 2025-11-21 | Close: 271.49 | Avg: 216.720 | MeanRev: OUT | Position: 0
+
+
+Day 468 | Date: 2025-11-24 | Close: 275.92 | Avg: 216.837 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 468 | Date: 2025-11-24 | Close: 275.92 | Avg: 216.837 | MeanRev: OUT | Position: 0
+
+
+Day 469 | Date: 2025-11-25 | Close: 276.97 | Avg: 216.964 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 469 | Date: 2025-11-25 | Close: 276.97 | Avg: 216.964 | MeanRev: OUT | Position: 0
+
+
+Day 470 | Date: 2025-11-26 | Close: 277.55 | Avg: 217.092 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 470 | Date: 2025-11-26 | Close: 277.55 | Avg: 217.092 | MeanRev: OUT | Position: 0
+
+
+Day 471 | Date: 2025-11-28 | Close: 278.85 | Avg: 217.220 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 471 | Date: 2025-11-28 | Close: 278.85 | Avg: 217.220 | MeanRev: OUT | Position: 0
+
+
+Day 472 | Date: 2025-12-01 | Close: 283.1 | Avg: 217.351 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 472 | Date: 2025-12-01 | Close: 283.1 | Avg: 217.351 | MeanRev: OUT | Position: 0
+
+
+Day 473 | Date: 2025-12-02 | Close: 286.19 | Avg: 217.490 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 473 | Date: 2025-12-02 | Close: 286.19 | Avg: 217.490 | MeanRev: OUT | Position: 0
+
+
+Day 474 | Date: 2025-12-03 | Close: 284.15 | Avg: 217.636 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 474 | Date: 2025-12-03 | Close: 284.15 | Avg: 217.636 | MeanRev: OUT | Position: 0
+
+
+Day 475 | Date: 2025-12-04 | Close: 280.7 | Avg: 217.776 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 475 | Date: 2025-12-04 | Close: 280.7 | Avg: 217.776 | MeanRev: OUT | Position: 0
+
+
+Day 476 | Date: 2025-12-05 | Close: 278.78 | Avg: 217.908 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 476 | Date: 2025-12-05 | Close: 278.78 | Avg: 217.908 | MeanRev: OUT | Position: 0
+
+
+Day 477 | Date: 2025-12-08 | Close: 277.89 | Avg: 218.036 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 477 | Date: 2025-12-08 | Close: 277.89 | Avg: 218.036 | MeanRev: OUT | Position: 0
+
+
+Day 478 | Date: 2025-12-09 | Close: 277.18 | Avg: 218.162 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 478 | Date: 2025-12-09 | Close: 277.18 | Avg: 218.162 | MeanRev: OUT | Position: 0
+
+
+Day 479 | Date: 2025-12-10 | Close: 278.78 | Avg: 218.285 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 479 | Date: 2025-12-10 | Close: 278.78 | Avg: 218.285 | MeanRev: OUT | Position: 0
+
+
+Day 480 | Date: 2025-12-11 | Close: 278.03 | Avg: 218.411 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 480 | Date: 2025-12-11 | Close: 278.03 | Avg: 218.411 | MeanRev: OUT | Position: 0
+
+
+Day 481 | Date: 2025-12-12 | Close: 278.28 | Avg: 218.536 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 481 | Date: 2025-12-12 | Close: 278.28 | Avg: 218.536 | MeanRev: OUT | Position: 0
+
+
+Day 482 | Date: 2025-12-15 | Close: 274.11 | Avg: 218.660 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 482 | Date: 2025-12-15 | Close: 274.11 | Avg: 218.660 | MeanRev: OUT | Position: 0
+
+
+Day 483 | Date: 2025-12-16 | Close: 274.61 | Avg: 218.775 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 483 | Date: 2025-12-16 | Close: 274.61 | Avg: 218.775 | MeanRev: OUT | Position: 0
+
+
+Day 484 | Date: 2025-12-17 | Close: 271.84 | Avg: 218.891 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 484 | Date: 2025-12-17 | Close: 271.84 | Avg: 218.891 | MeanRev: OUT | Position: 0
+
+
+Day 485 | Date: 2025-12-18 | Close: 272.19 | Avg: 219.000 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 485 | Date: 2025-12-18 | Close: 272.19 | Avg: 219.000 | MeanRev: OUT | Position: 0
+
+
+Day 486 | Date: 2025-12-19 | Close: 273.67 | Avg: 219.110 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 486 | Date: 2025-12-19 | Close: 273.67 | Avg: 219.110 | MeanRev: OUT | Position: 0
+
+
+Day 487 | Date: 2025-12-22 | Close: 270.97 | Avg: 219.222 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 487 | Date: 2025-12-22 | Close: 270.97 | Avg: 219.222 | MeanRev: OUT | Position: 0
+
+
+Day 488 | Date: 2025-12-23 | Close: 272.36 | Avg: 219.328 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 488 | Date: 2025-12-23 | Close: 272.36 | Avg: 219.328 | MeanRev: OUT | Position: 0
+
+
+Day 489 | Date: 2025-12-24 | Close: 273.81 | Avg: 219.437 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 489 | Date: 2025-12-24 | Close: 273.81 | Avg: 219.437 | MeanRev: OUT | Position: 0
+
+
+Day 490 | Date: 2025-12-26 | Close: 273.4 | Avg: 219.548 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 490 | Date: 2025-12-26 | Close: 273.4 | Avg: 219.548 | MeanRev: OUT | Position: 0
+
+
+Day 491 | Date: 2025-12-29 | Close: 273.76 | Avg: 219.658 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 491 | Date: 2025-12-29 | Close: 273.76 | Avg: 219.658 | MeanRev: OUT | Position: 0
+
+
+Day 492 | Date: 2025-12-30 | Close: 273.08 | Avg: 219.768 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 492 | Date: 2025-12-30 | Close: 273.08 | Avg: 219.768 | MeanRev: OUT | Position: 0
+
+
+Day 493 | Date: 2025-12-31 | Close: 271.86 | Avg: 219.876 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 493 | Date: 2025-12-31 | Close: 271.86 | Avg: 219.876 | MeanRev: OUT | Position: 0
+
+
+Day 494 | Date: 2026-01-02 | Close: 271.01 | Avg: 219.982 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 494 | Date: 2026-01-02 | Close: 271.01 | Avg: 219.982 | MeanRev: OUT | Position: 0
+
+
+Day 495 | Date: 2026-01-05 | Close: 267.26 | Avg: 220.085 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 495 | Date: 2026-01-05 | Close: 267.26 | Avg: 220.085 | MeanRev: OUT | Position: 0
+
+
+Day 496 | Date: 2026-01-06 | Close: 262.36 | Avg: 220.181 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 496 | Date: 2026-01-06 | Close: 262.36 | Avg: 220.181 | MeanRev: OUT | Position: 0
+
+
+Day 497 | Date: 2026-01-07 | Close: 260.33 | Avg: 220.266 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 497 | Date: 2026-01-07 | Close: 260.33 | Avg: 220.266 | MeanRev: OUT | Position: 0
+
+
+Day 498 | Date: 2026-01-08 | Close: 259.04 | Avg: 220.346 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 498 | Date: 2026-01-08 | Close: 259.04 | Avg: 220.346 | MeanRev: OUT | Position: 0
+
+
+Day 499 | Date: 2026-01-09 | Close: 259.37 | Avg: 220.424 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 499 | Date: 2026-01-09 | Close: 259.37 | Avg: 220.424 | MeanRev: OUT | Position: 0
+
+
+Day 500 | Date: 2026-01-12 | Close: 260.25 | Avg: 220.502 | Trend: HOLD | Position: 1 | Entry: 213.250
+Day 500 | Date: 2026-01-12 | Close: 260.25 | Avg: 220.502 | MeanRev: OUT | Position: 0
+
+
+ 25.746 
