@@ -1,7 +1,7 @@
 import trend_signal
 import mean_rev_signal
 
-def process_one_day(day,date,closingPrice,average,trendMethod,positionTrend, entryPriceTrend, exitPriceTrend, profitTrend, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion):
+def process_one_day(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, trendMethod, positionTrend, entryPriceTrend, exitPriceTrend, profitTrend, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion):
     '''
     Decides which signaling method is used on the current day. 
     Redirects towards trend_signal if trendMethod is true, mean_rev_signal otherwise.
@@ -24,8 +24,8 @@ def process_one_day(day,date,closingPrice,average,trendMethod,positionTrend, ent
     :param profitMeanReversion: profit=exitPriceMeanReversion-entryPriceMeanReversion 
     '''
     if(trendMethod):
-        positionTrend, profitTrend, entryPriceTrend, exitPriceTrend=trend_signal.trend_step(day,date,closingPrice,average,positionTrend, entryPriceTrend, exitPriceTrend, profitTrend)
-        return (positionTrend, profitTrend, entryPriceTrend, exitPriceTrend)
+        positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action=trend_signal.trend_step(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionTrend, entryPriceTrend, exitPriceTrend, profitTrend)
+        return (positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action)
     else:
-        positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion=mean_rev_signal.mean_rev_step(day,date,closingPrice,average, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion)
-        return (positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion)
+        positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action=mean_rev_signal.mean_rev_step(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion)
+        return (positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action)
