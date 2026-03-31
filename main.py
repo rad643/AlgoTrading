@@ -1,5 +1,5 @@
 import data_loader as dl
-import process_1_day as pd
+import process_1_day
 import dataclasses
 
 @dataclasses.dataclass
@@ -39,12 +39,15 @@ class Engine:
         self.totalProfit=0
         previousProfitTrend=0
         previousProfitMeanReversion=0
-        generatorAverageDayDateClosingPrice=dl.read_ticker_csv("position_sizing.csv", cashValue)
+        generatorAverageDayDateClosingPrice=dl.read_ticker_csv("data/5_day_input.csv", cashValue)
         for day,date,closingPrice,average,nextDayOpeningPrice in generatorAverageDayDateClosingPrice:
+
             if(average!=None):
+
                 if(self.trendMethod):
+
                     previousProfitTrend=self.profitTrend
-                    self.positionTrend, self.profitTrend, self.entryPriceTrend, self.exitPriceTrend, cashValue, self.equity, self.pending_action=pd.process_one_day(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, self.equity, self.pending_action, self.positionSizing, self.flat_fee_per_share, self.fixed_bps, self.trendMethod, self.positionTrend, self.entryPriceTrend, self.exitPriceTrend, self.profitTrend, self.positionMeanReversion, self.entryPriceMeanReversion, self.exitPriceMeanReversion, self.profitMeanReversion)
+                    self.positionTrend, self.profitTrend, self.entryPriceTrend, self.exitPriceTrend, cashValue, self.equity, self.pending_action=process_1_day.process_one_day(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, self.equity, self.pending_action, self.positionSizing, self.flat_fee_per_share, self.fixed_bps, self.trendMethod, self.positionTrend, self.entryPriceTrend, self.exitPriceTrend, self.profitTrend, self.positionMeanReversion, self.entryPriceMeanReversion, self.exitPriceMeanReversion, self.profitMeanReversion)
                     # We track only NEW realized profit per iteration.
                     # process_one_day returns cumulative realized profit.
                     # To avoid double-counting, we compute the delta between:
@@ -56,11 +59,15 @@ class Engine:
                     if( (self.profitTrend-previousProfitTrend) !=0 ):
                         self.totalProfit+=(self.profitTrend-previousProfitTrend)
                     self.listStoreEquityValues.append(self.equity)
+
                 else:
+
                     previousProfitMeanReversion=self.profitMeanReversion
-                    self.positionMeanReversion, self.profitMeanReversion, self.entryPriceMeanReversion, self.exitPriceMeanReversion, cashValue, self.equity, self.pending_action=pd.process_one_day(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, self.equity, self.pending_action, self.positionSizing, self.flat_fee_per_share, self.fixed_bps, self.trendMethod, self.positionTrend, self.entryPriceTrend, self.exitPriceTrend, self.profitTrend, self.positionMeanReversion, self.entryPriceMeanReversion, self.exitPriceMeanReversion, self.profitMeanReversion)
+                    self.positionMeanReversion, self.profitMeanReversion, self.entryPriceMeanReversion, self.exitPriceMeanReversion, cashValue, self.equity, self.pending_action=process_1_day.process_one_day(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, self.equity, self.pending_action, self.positionSizing, self.flat_fee_per_share, self.fixed_bps, self.trendMethod, self.positionTrend, self.entryPriceTrend, self.exitPriceTrend, self.profitTrend, self.positionMeanReversion, self.entryPriceMeanReversion, self.exitPriceMeanReversion, self.profitMeanReversion)
                     if( (self.profitMeanReversion-previousProfitMeanReversion) !=0 ):
                         self.totalProfit+=(self.profitMeanReversion-previousProfitMeanReversion)
+                    self.listStoreEquityValues.append(self.equity)
+
             else:#average=none so we skip days 1 and 2 and just append the corresponding equities to the list 
                 self.listStoreEquityValues.append(self.equity)
             
@@ -68,5 +75,5 @@ class Engine:
 
 if __name__=="__main__":
     initial_amount_cash_to_start_with=100
-    engine1=Engine()
-    print(engine1.execution_per_day(initial_amount_cash_to_start_with))
+    engine=Engine()
+    print(engine.execution_per_day(initial_amount_cash_to_start_with))

@@ -6,6 +6,10 @@ def averageUpToDay(list_store_closing_prices_up_to_day):
 
     :param list_store_closing_prices_up_to_day: Description
     """
+    #verify that the parameter is a list 
+    if not isinstance(list_store_closing_prices_up_to_day, list):
+        raise TypeError
+
     closingPricesSum = 0
     averageCurrentDay = 0
     for i in range(len(list_store_closing_prices_up_to_day)):

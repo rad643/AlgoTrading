@@ -23,9 +23,27 @@ def process_one_day(day, date, closingPrice, average, nextDayOpeningPrice, cashV
     :param exitPriceMeanReversion: closingPrice on the current day at which you sold 1 share based on Mean Rev method
     :param profitMeanReversion: profit=exitPriceMeanReversion-entryPriceMeanReversion 
     '''
+
+    #pending_action needs to be a string
+    if not type(pending_action) is str:
+        raise TypeError
+    
+    #pending_action is a string but not the correct one 
+    if not pending_action in {"BUY", "SELL", "HOLD", ""}:
+        raise ValueError
+
+    #trendMethod needs to be a bool
+    if not type(trendMethod) is bool:
+        raise TypeError
+    
+    #average needs to be of float or integer data type 
+    if not (type(average) is float or type(average) is int): 
+        raise TypeError
+
+    #we need to see towards which investment method we branch out 
     if(trendMethod):
         positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action=trend_signal.trend_step(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionTrend, entryPriceTrend, exitPriceTrend, profitTrend)
-        return (positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action)
+        return (round(positionTrend,3), round(profitTrend,3), round(entryPriceTrend,3), round(exitPriceTrend,3), round(cashValue,3), round(equity,3), pending_action)
     else:
         positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action=mean_rev_signal.mean_rev_step(day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion)
-        return (positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action)
+        return (round(positionMeanReversion,3), round(profitMeanReversion,3), round(entryPriceMeanReversion,3), round(exitPriceMeanReversion,3), round(cashValue,3), round(equity,3), pending_action)

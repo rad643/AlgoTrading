@@ -27,7 +27,20 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
         and the pending action signal that will be executed at the next days market opening.
     """
 
-    #we first start by checking for any action signals pending from the day before that need to be executed today based on today's opening price 
+    #pending_action needs to be a string and in {"BUY", "SELL", "HOLD", ""}
+    if not isinstance(pending_action, str):
+        raise TypeError
+    if not pending_action in {"BUY", "SELL", "HOLD", ""}:
+        raise ValueError
+    
+    #cashValue needs to be either integer or float, and it can't be negative or zero 
+    if not isinstance( cashValue, (int,float) ): 
+        raise TypeError
+    if cashValue<=0:
+        raise ValueError
+    
+
+    #we start by checking for any action signals pending from the day before that need to be executed today based on today's opening price 
 
 
     #if we have a pending signal from the day before that told us to BUY today, we buy at the opening price of today's market 
@@ -37,13 +50,13 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
         if(positionTrend==0): 
 
             #the price at which you're buying the shares today is the opening price of the market + slippage execution->fixed bias points=0.05% due to market volatility
-            entryPriceTrend=nextDayOpeningPrice+(fixed_bps*nextDayOpeningPrice) 
+            entryPriceTrend=round(nextDayOpeningPrice+(fixed_bps*nextDayOpeningPrice),3)
             #this tells you how many shares you can buy depending on your allowed budget
             positionTrend=positionSizing//entryPriceTrend  
             #subtract the number of shares bought and the comission fee for the broker which is applied by share
-            cashValue=cashValue-(positionTrend*entryPriceTrend)-(positionTrend*flat_fee_per_share) 
+            cashValue=round(cashValue-(positionTrend*entryPriceTrend)-(positionTrend*flat_fee_per_share), 3)
             #unrealized profit 
-            equity=cashValue+(positionTrend*closingPrice) 
+            equity=round(cashValue+(positionTrend*closingPrice) ,3)
 
             #now we need to check what the signal will be regarding tomorrow's required execution action and update it accordingly, and then print it to the screen 
 
@@ -68,7 +81,7 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
         #but you already own shares=> HOLD => nothing gets updated other than your equity (unrealized profit)
         else: 
             #unrealized profit
-            equity=cashValue+(positionTrend*closingPrice)
+            equity=round(cashValue+(positionTrend*closingPrice),3)
 
             #now we need to check what the signal will be regarding tomorrow's required execution action and update it accordingly, and then print it to the screen 
 
@@ -100,15 +113,15 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
         if(positionTrend!=0):  
 
             #the exit price is the opening price of the market - slippage execution->fixed bias points=0.05% due to market volatility
-            exitPriceTrend=nextDayOpeningPrice-(fixed_bps*nextDayOpeningPrice) 
+            exitPriceTrend=round(nextDayOpeningPrice-(fixed_bps*nextDayOpeningPrice) ,3)
             #realized profit is the price at which you sold on the corresponding day - the price at which you bought them initially 
-            profitTrend=((exitPriceTrend*positionTrend)-(entryPriceTrend*positionTrend))  #profitTrend is always gross
+            profitTrend=round(((exitPriceTrend*positionTrend)-(entryPriceTrend*positionTrend)),3)  #profitTrend is always gross
             #cash value is gonna be price at which you sold the shares - the comission fee for the broker which is applied per share
-            cashValue=cashValue+(positionTrend*exitPriceTrend)-(positionTrend*flat_fee_per_share)  #cashValue is net
+            cashValue=round(cashValue+(positionTrend*exitPriceTrend)-(positionTrend*flat_fee_per_share),3)  #cashValue is net
             #we sold everything so we now own zero shares 
             positionTrend=0
             #unrealized profit 
-            equity=cashValue+(positionTrend*closingPrice)
+            equity=round(cashValue+(positionTrend*closingPrice),3)
 
             #now we need to check what the signal will be regarding tomorrow's required execution action and update it accordingly, and then print it to the screen 
 
@@ -133,7 +146,7 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
         #but you don't own any shares so you got nothing to sell => HOLD => nothing gets updated other than your equity (unrealized profit)
         else: 
             #unrealized profit 
-            equity=cashValue+(positionTrend*closingPrice)
+            equity=round(cashValue+(positionTrend*closingPrice),3)
 
             #now we need to check what the signal will be regarding tomorrow's required execution action and update it accordingly, and then print it to the screen 
 
@@ -162,7 +175,7 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
     elif(pending_action=="HOLD"):
 
         #unrealized profit
-        equity=cashValue+(positionTrend*closingPrice) 
+        equity=round(cashValue+(positionTrend*closingPrice) ,3)
 
         #now we need to check what the signal will be regarding tomorrow's required execution action and update it accordingly, and then print it to the screen 
 
@@ -191,7 +204,7 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
     elif(pending_action==""):
 
         #unrealized profit
-        equity=cashValue+(positionTrend*closingPrice)
+        equity=round(cashValue+(positionTrend*closingPrice),3)
 
         #now we need to check what the signal will be regarding tomorrow's required execution action and update it accordingly, and then print it to the screen
 
