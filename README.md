@@ -1,84 +1,128 @@
+
+
+---
+
 # AlgoTrading Backtesting Engine
 
-A Python-based algorithmic trading backtesting engine that simulates trading strategies on historical market data with realistic execution assumptions.
+A Python-based algorithmic trading backtesting engine that simulates trading strategies under realistic execution conditions and evaluates performance using industry-standard metrics.
 
 ---
 
 ## Overview
 
-This project implements a backtesting engine designed to model how trading strategies behave under more realistic market conditions.
+This project implements a backtesting engine designed to model real trading behavior, including execution delays and market frictions.
 
 It supports:
 
 * Strategy-based signal generation (Trend Following & Mean Reversion)
-* Next-bar execution (signals generated at close, executed at next open)
+* Next-bar execution (signal at close → execute at next open)
 * Transaction costs (commission per share)
 * Slippage modeling (fixed basis points)
 * Position sizing based on available capital
-
-The goal is to move beyond naive backtesting and incorporate key market frictions that affect real-world performance.
+* Performance evaluation using pandas
 
 ---
 
 ## Features
 
-* **Trend Strategy**
+### Strategies
 
-  * Generates buy/sell signals based on price vs moving average
+* **Trend Following**
 
-* **Mean Reversion Strategy**
+  * Buy when price > average
+  * Sell when price < average
 
-  * Trades based on deviations from average price
+* **Mean Reversion**
 
-* **Position Sizing**
+  * Trade based on deviation from average price
 
-  * Allocates 20% of available cash per trade
+---
 
-* **Execution Model**
+### Execution Model
 
-  * Signals generated at closing price
-  * Trades executed at next day’s opening price
+* Signals generated at **closing price**
+* Trades executed at **next day’s opening price**
+* Includes:
 
-* **Slippage Model**
+  * Slippage: **0.05% fixed bias**
+  * Commission: **$0.005 per share**
 
-  * Fixed bias (0.05%) applied to execution price
+---
 
-* **Commission Model**
+### Portfolio Mechanics
 
-  * Flat fee per share traded
+* Position sizing: **20% of available cash**
+* Supports **multiple shares**
+* Equity:
 
-* **Equity Tracking**
+  * `equity = cash + position × closingPrice`
+* Profit:
 
-  * Tracks daily equity (cash + unrealized position value)
+  * **Realized only on SELL**
 
-* **Realized Profit Tracking**
+---
 
-  * Profit is realized only on full position exit (SELL)
+### Data Handling
 
-* **Unit Tested**
+* CSV data loaded via generator
+* Moving average computed incrementally
+* Daily state processed via execution engine
 
-  * Core modules fully tested (data loading, signals, execution logic, engine)
+
+---
+
+### Performance Metrics (Step 9)
+
+Implemented using **pandas (vectorized)**:
+
+* Maximum Drawdown (MDD)
+* Sharpe Ratio
+* Expectancy
+* Payoff Ratio
+* Profit Factor
+
+Metrics operate on:
+
+* Equity curve (daily values)
+* Trade P&L statistics
+
+Example:
+
+```python
+equities = pd.Series(listStoreEquityValues)
+returns = equities.pct_change()
+```
+
+Core implementation:
+
 
 ---
 
 ## Example Output
 
-The engine prints daily state transitions including:
+The engine prints daily trading state:
 
 * Date
 * Closing price
 * Moving average
 * Signal (BUY / SELL / HOLD)
-* Position size
-* Cash balance
-* Equity value
 * Execution price (on trade days)
-* Realized P&L (on SELL)
+* Position size
+* Cash
+* Equity
+* Realized P&L
+
+Example:
+
+```
+Day 4 | Date: 2024-01-19 | Close: 190.417 | Execution price: 188.295 | Avg: 183.876 | Trend: BUY | Position: 10.0 | Cash: 8117.0 | Equity: 10021.17
+```
 
 ---
 
 ## Project Structure
 
+```
 project/
 │
 ├── main.py
@@ -87,6 +131,7 @@ project/
 ├── process_1_day.py
 ├── trend_signal.py
 ├── mean_rev_signal.py
+├── performanceMetrics.py
 │
 ├── data/
 │   └── 5_day_input.csv
@@ -97,41 +142,23 @@ project/
 │   ├── test_process_1_day.py
 │   ├── test_trend_signal.py
 │   ├── test_mean_rev_signal.py
-│   └── test_execution_per_day.py
+│   ├── test_execution_per_day.py
+│   └── test_performanceMetrics.py
+```
 
 ---
 
 ## Setup
 
-### 1. Create virtual environment
-
 ```bash
 python3 -m venv .venv
-```
-
-### 2. Activate environment
-
-```bash
 source .venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
-pip install pytest
+pip install pytest pandas
 ```
 
 ---
 
 ## Running Tests
-
-From project root:
-
-```bash
-PYTHONPATH=. pytest tests/
-```
-
-or (quiet mode):
 
 ```bash
 PYTHONPATH=. pytest -q tests/
@@ -141,12 +168,20 @@ PYTHONPATH=. pytest -q tests/
 
 ## Current Status
 
-* Completed up to **Step 8**
-* Includes realistic execution model (next-bar execution, slippage, commissions)
-* Full unit test coverage for core logic
+* Completed up to **Step 9**
+* Includes:
+
+  * Realistic execution model
+  * Position sizing (>1 share)
+  * Full unit test coverage
+  * Performance metrics using pandas
 
 ---
 
-## Next Step
+## Next Steps
 
-Step 9: Performance Metrics (using pandas)
+* Step 10: Parameter configuration & experiments
+* Step 11: NumPy vectorization
+* Step 12+: Engine architecture & scaling
+
+---
