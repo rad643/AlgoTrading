@@ -1,10 +1,11 @@
-def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionMeanReversion:int, entryPriceMeanReversion:float, exitPriceMeanReversion:float, profitMeanReversion:float)->tuple:
+def mean_rev_step(verbose_run: bool, day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionMeanReversion:int, entryPriceMeanReversion:float, exitPriceMeanReversion:float, profitMeanReversion:float)->tuple:
     """
     Description: Executes any pending trading action from the previous day (buy or sell) 
     at the current days market opening price, updates portfolio variables (position, cash, equity, and realized profit),
     and determines the next pending trading signal based on the comparison between the current days closing price and the moving average.
 
     Args:
+        verbose_run (bool): flag variable deciding whether or not to print the 500 daily lines to the console
         day (int): current day 
         date (str): current date 
         closingPrice (float): closing price of the current day 
@@ -75,7 +76,9 @@ def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayO
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {entryPriceMeanReversion} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {entryPriceMeanReversion} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
+                print("\n")
 
         #but you already own shares=> HOLD => nothing gets updated other than your equity (unrealized profit)
         else: 
@@ -100,8 +103,9 @@ def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayO
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state 
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
-        print("\n")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
+                print("\n")
 
 
 
@@ -140,7 +144,9 @@ def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayO
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {exitPriceMeanReversion} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity} | P&L: {format(profitMeanReversion,".3f")}")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {exitPriceMeanReversion} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity} | P&L: {format(profitMeanReversion,".3f")}")
+                print("\n")
 
         #but you don't own any shares so you got nothing to sell => HOLD => nothing gets updated other than your equity (unrealized profit)
         else: 
@@ -165,8 +171,9 @@ def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayO
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
-        print("\n")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
+                print("\n")
 
 
 
@@ -194,8 +201,9 @@ def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayO
             pending_action="HOLD"
 
         #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-        print("Day %s | Date: %s | Close: %f | Avg: %.3f | Mean Reversion: %s | Position: %d | Cash: %.3f | Equity: %.3f" % (day, date, closingPrice, average, pending_action, positionMeanReversion, cashValue, equity))  
-        print("\n")
+        if verbose_run:
+            print("Day %s | Date: %s | Close: %f | Avg: %.3f | Mean Reversion: %s | Position: %d | Cash: %.3f | Equity: %.3f" % (day, date, closingPrice, average, pending_action, positionMeanReversion, cashValue, equity))  
+            print("\n")
 
 
     
@@ -222,9 +230,10 @@ def mean_rev_step(day:int, date:str, closingPrice:float, average:float, nextDayO
             #update pending action for tomorrow accordingly
             pending_action="HOLD"  
                 
-        #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state    
-        print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
-        print("\n")
+        #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state  
+        if verbose_run:  
+            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Mean Reversion: {pending_action} | Position: {positionMeanReversion} | Cash: {cashValue} | Equity: {equity}")
+            print("\n")
 
 
 

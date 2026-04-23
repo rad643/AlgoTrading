@@ -1,10 +1,11 @@
-def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionTrend:int, entryPriceTrend:float, exitPriceTrend:float, profitTrend:float)->tuple:
+def trend_step(verbose_run: bool, day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionTrend:int, entryPriceTrend:float, exitPriceTrend:float, profitTrend:float)->tuple:
     """
     Description: Executes any pending trading action from the previous day (buy or sell) 
     at the current days market opening price, updates portfolio variables (position, cash, equity, and realized profit),
     and determines the next pending trading signal based on the comparison between the current days closing price and the moving average.
 
     Args:
+        verbose_run (bool): flag variable deciding whether or not to print the 500 daily lines to the console
         day (int): current day 
         date (str): current date 
         closingPrice (float): closing price of the current day 
@@ -76,7 +77,9 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {entryPriceTrend} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {entryPriceTrend} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
+                print("\n")
 
         #but you already own shares=> HOLD => nothing gets updated other than your equity (unrealized profit)
         else: 
@@ -101,8 +104,9 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state 
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
-        print("\n")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
+                print("\n")
 
 
 
@@ -141,7 +145,9 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {exitPriceTrend} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity} | P&L: {format(profitTrend,".3f")}")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Execution price: {exitPriceTrend} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity} | P&L: {format(profitTrend,".3f")}")
+                print("\n")
 
         #but you don't own any shares so you got nothing to sell => HOLD => nothing gets updated other than your equity (unrealized profit)
         else: 
@@ -166,8 +172,9 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
                 pending_action="HOLD"
 
             #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
-        print("\n")
+            if verbose_run:
+                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
+                print("\n")
 
 
 
@@ -195,8 +202,9 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
             pending_action="HOLD"
 
         #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state
-        print("Day %s | Date: %s | Close: %f | Avg: %.3f | Trend: %s | Position: %d | Cash: %.3f | Equity: %.3f" % (day, date, closingPrice, average, pending_action, positionTrend, cashValue, equity))  
-        print("\n")
+        if verbose_run:
+            print("Day %s | Date: %s | Close: %f | Avg: %.3f | Trend: %s | Position: %d | Cash: %.3f | Equity: %.3f" % (day, date, closingPrice, average, pending_action, positionTrend, cashValue, equity))  
+            print("\n")
 
 
     
@@ -224,8 +232,9 @@ def trend_step(day:int, date:str, closingPrice:float, average:float, nextDayOpen
             pending_action="HOLD"  
                 
         #print to the screen what the current day is doing; all variables with the exception of "pending_action" represent today's state    
-        print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
-        print("\n")
+        if verbose_run:
+            print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: {format(average,".3f")} | Trend: {pending_action} | Position: {positionTrend} | Cash: {cashValue} | Equity: {equity}")
+            print("\n")
 
 
 

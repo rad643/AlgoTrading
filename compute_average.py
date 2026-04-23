@@ -1,3 +1,5 @@
+import numpy as np
+
 def averageUpToDay(list_store_closing_prices_up_to_day):
     """
 
@@ -9,10 +11,8 @@ def averageUpToDay(list_store_closing_prices_up_to_day):
     #verify that the parameter is a list 
     if not isinstance(list_store_closing_prices_up_to_day, list):
         raise TypeError
+    # compute the average with numpy vectorization 
+    arr=np.array(list_store_closing_prices_up_to_day)
+    return np.mean(arr)
 
-    closingPricesSum = 0
-    averageCurrentDay = 0
-    for i in range(len(list_store_closing_prices_up_to_day)):
-        closingPricesSum += list_store_closing_prices_up_to_day[i]
-    averageCurrentDay = closingPricesSum / len(list_store_closing_prices_up_to_day)
-    return averageCurrentDay
+    

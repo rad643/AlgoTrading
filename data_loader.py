@@ -1,6 +1,6 @@
-import compute_average as ca
+import compute_average as ca 
 
-def read_ticker_csv(csv_path, cashValue):
+def read_ticker_csv(csv_path, cashValue, verbose_run):
     '''
     opens the csv file and goes through it line by line 
     splits it so it can extract the day and the closing price corresponding to that day 
@@ -22,17 +22,19 @@ def read_ticker_csv(csv_path, cashValue):
             nextDayOpeningPrice=float(line[openingPriceIndex]) #next bar execution: buy/sell at next day's opening price 
             if(day==1): #no average yet on day 1
                 listStorePreviousClosingPrices.append(closingPrice) #store the closing price in the list
-                print("Position sizing rule: 20% of available cash")
-                print("Fixed bias points model: 0.05% of the execution price")
-                print("Commission model: $0.005 per share (flat)\n")
-                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: N/A | Action: NONE | Position: 0 | Cash: {cashValue} | Equity: {cashValue}")
+                if verbose_run:
+                    print("Position sizing rule: 20% of available cash")
+                    print("Fixed bias points model: 0.05% of the execution price")
+                    print("Commission model: $0.005 per share (flat)\n")
+                    print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: N/A | Action: NONE | Position: 0 | Cash: {cashValue} | Equity: {cashValue}")
+                    print("\n")
                 yield(day,date,closingPrice,None,None)
-                print("\n")
             elif(day==2): #no average yet on day 2
                 listStorePreviousClosingPrices.append(closingPrice) #store the closing price in the list
-                print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: N/A | Action: NONE | Position: 0 | Cash: {cashValue} | Equity: {cashValue}")
+                if verbose_run:
+                    print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: N/A | Action: NONE | Position: 0 | Cash: {cashValue} | Equity: {cashValue}")
+                    print("\n")
                 yield(day,date,closingPrice,None,None)
-                print("\n")
             else: #i need to compute average 
                 average=ca.averageUpToDay(listStorePreviousClosingPrices)#first compute the average of all days up until that day
                 listStorePreviousClosingPrices.append(closingPrice)#and then store the closing price of the day
