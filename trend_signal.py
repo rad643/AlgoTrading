@@ -1,4 +1,4 @@
-def trend_step(verbose_run: bool, day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionTrend:int, entryPriceTrend:float, exitPriceTrend:float, profitTrend:float)->tuple:
+def trend_step(verbose_run: bool, day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionTrend:int, entry_day: int, exit_day: int, entryPriceTrend:float, exitPriceTrend:float, profitTrend:float)->tuple:
     """
     Description: Executes any pending trading action from the previous day (buy or sell) 
     at the current days market opening price, updates portfolio variables (position, cash, equity, and realized profit),
@@ -50,6 +50,8 @@ def trend_step(verbose_run: bool, day:int, date:str, closingPrice:float, average
         #and you have no shares => BUY
         if(positionTrend==0): 
 
+            # you enter a position 
+            entry_day=day
             #the price at which you're buying the shares today is the opening price of the market + slippage execution->fixed bias points=0.05% due to market volatility
             entryPriceTrend=round(nextDayOpeningPrice+(fixed_bps*nextDayOpeningPrice),3)
             #this tells you how many shares you can buy depending on your allowed budget
@@ -116,6 +118,8 @@ def trend_step(verbose_run: bool, day:int, date:str, closingPrice:float, average
         #and you own multiple shares => sell everything you have
         if(positionTrend!=0):  
 
+            # exit the position
+            exit_day=day
             #the exit price is the opening price of the market - slippage execution->fixed bias points=0.05% due to market volatility
             exitPriceTrend=round(nextDayOpeningPrice-(fixed_bps*nextDayOpeningPrice) ,3)
             #realized profit is the price at which you sold on the corresponding day - the price at which you bought them initially 
@@ -239,7 +243,7 @@ def trend_step(verbose_run: bool, day:int, date:str, closingPrice:float, average
 
 
     #return the required values for tomorrow's execution day 
-    return (positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action)
+    return (positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action, entry_day, exit_day)
     
      
 

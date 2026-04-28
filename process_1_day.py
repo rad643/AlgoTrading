@@ -1,7 +1,7 @@
 import trend_signal
 import mean_rev_signal
 
-def process_one_day(verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, trendMethod, positionTrend, entryPriceTrend, exitPriceTrend, profitTrend, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion):
+def process_one_day(verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, trendMethod, positionTrend, entry_day, exit_day, entryPriceTrend, exitPriceTrend, profitTrend, positionMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, profitMeanReversion):
     '''
     Decides which signaling method is used on the current day. 
     Redirects towards trend_signal if trendMethod is true, mean_rev_signal otherwise.
@@ -43,8 +43,8 @@ def process_one_day(verbose_run, day, date, closingPrice, average, nextDayOpenin
 
     #we need to see towards which investment method we branch out 
     if(trendMethod):
-        positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action=trend_signal.trend_step(verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionTrend, entryPriceTrend, exitPriceTrend, profitTrend)
-        return (round(positionTrend,3), round(profitTrend,3), round(entryPriceTrend,3), round(exitPriceTrend,3), round(cashValue,3), round(equity,3), pending_action)
+        positionTrend, profitTrend, entryPriceTrend, exitPriceTrend, cashValue, equity, pending_action, entry_day, exit_day=trend_signal.trend_step(verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionTrend, entry_day, exit_day, entryPriceTrend, exitPriceTrend, profitTrend)
+        return (positionTrend, round(profitTrend,3), round(entryPriceTrend,3), round(exitPriceTrend,3), round(cashValue,3), round(equity,3), pending_action, entry_day, exit_day)
     else:
-        positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action=mean_rev_signal.mean_rev_step(verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionMeanReversion, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion)
-        return (round(positionMeanReversion,3), round(profitMeanReversion,3), round(entryPriceMeanReversion,3), round(exitPriceMeanReversion,3), round(cashValue,3), round(equity,3), pending_action)
+        positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action, entry_day, exit_day=mean_rev_signal.mean_rev_step(verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, cashValue, equity, pending_action, positionSizing, flat_fee_per_share, fixed_bps, positionMeanReversion, entry_day, exit_day, entryPriceMeanReversion,exitPriceMeanReversion, profitMeanReversion)
+        return (positionMeanReversion, round(profitMeanReversion,3), round(entryPriceMeanReversion,3), round(exitPriceMeanReversion,3), round(cashValue,3), round(equity,3), pending_action, entry_day, exit_day)
