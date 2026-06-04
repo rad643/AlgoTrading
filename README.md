@@ -90,6 +90,8 @@ Implemented using **pandas (vectorized)** in `performanceMetrics.py`:
 
 Metrics operate on the equity curve and trade P&L statistics collected during the backtest loop. If a strategy produces no losing trades (or no winning trades), trade-dependent metrics (Expectancy, Payoff Ratio, Profit Factor) are reported as `NaN`.
 
+> **Note:** `TradingEngine.performance_metrics_data_frame(state)` must always be called **after** `TradingEngine.backtest_run(state)` — it depends on `state.listStoreEquityValues` being populated by the backtest run before any performance metrics can be computed.
+
 ---
 
 ## Example Output

@@ -9,11 +9,93 @@ import plotly.graph_objects as go
 @dataclasses.dataclass
 class ExecutionState:
     """
-    Dataclass holding all mutable state for a single backtest run.
-    One instance = one (ticker, strategy) configuration.
-    Shared class variable backtest_run_number tracks the total number of runs across all instances.
-    Call reset() before reusing an instance to restore all fields to their initial values.
+    Mutable state for one backtest run.
+
+    One ExecutionState object represents:
+    - one ticker
+    - one strategy choice
+    - one starting cash value
+    - one full backtest run state
+
+    Core config:
+        trendMethod:
+            True = Trend strategy.
+            False = Mean Reversion strategy.
+
+        csv_ticker:
+            Path to the CSV file used for this run.
+
+        cashValue:
+            Current available cash during the run.
+
+        ticker_name:
+            Human-readable ticker name used in output DataFrames.
+
+        verbose_run:
+            If True, prints daily backtest output.
+
+    Execution costs:
+        fixed_bps:
+            Slippage percentage applied to entry/exit execution price.
+
+        flat_fee_per_share:
+            Commission charged per share.
+
+    Portfolio state:
+        positionSizing:
+            Maximum cash allocated per trade. Set to 20% of starting cash.
+
+        listStoreEquityValues:
+            Stores daily equity values for equity curve, drawdown, and Sharpe ratio.
+
+        equity:
+            Current portfolio value = cash + market value of held shares.
+
+    Trade state:
+        positionTrend / positionMeanReversion:
+            Number of shares currently held for each strategy.
+
+        entry_day / exit_day:
+            Day number of the latest trade entry and exit.
+
+        entryPriceTrend / exitPriceTrend:
+            Entry and exit prices for Trend trades.
+
+        entryPriceMeanReversion / exitPriceMeanReversion:
+            Entry and exit prices for Mean Reversion trades.
+
+        profitTrend / profitMeanReversion:
+            Latest realized profit for the active strategy.
+
+    Performance counters:
+        totalProfit:
+            Total realized profit accumulated during the run.
+
+        positiveProfitTrend / negativeProfitTrend:
+            Number of winning/losing Trend trades.
+
+        positiveProfitMeanRev / negativeProfitMeanRev:
+            Number of winning/losing Mean Reversion trades.
+
+        numberTradesTrend / numberTradesMeanRev:
+            Total completed trades per strategy.
+
+        totalProfitPositiveTradesTrend / totalProfitNegativeTradesTrend:
+            Sum of winning/losing Trend trade profits.
+
+        totalProfitPositiveTradesMeanRev / totalProfitNegativeTradesMeanRev:
+            Sum of winning/losing Mean Reversion trade profits.
+
+    Signal state:
+        pending_action:
+            Signal from the previous day to execute today.
+            Expected values: "BUY", "SELL", "HOLD", or "".
+
+    Class-level state:
+        backtest_run_number:
+            Shared counter across all ExecutionState instances.
     """
+ 
 
     # instance field variables 
     trendMethod: bool
@@ -97,54 +179,161 @@ class TradingEngine:
     """
 
     @staticmethod
-    def backtest_run(state): # state is an ExecutionState object 
+    def build_data_frames(log_events,equity_curve,drawdown_series,trades,prices):
+        return{
+            "log_events":log_events,
+            "equity_curve":equity_curve,
+            "drawdown_series":drawdown_series,
+            "trades":trades,
+            "prices":prices
+        }
+
+    @staticmethod
+    def build_run_df(run_number, ticker, strategy,starting_cash,total_net_profit,mdd,expectancy,payoff_ratio,profit_factor,sharpe_ratio,labels):
+        return{
+            "run_number":run_number,
+            "ticker":ticker,
+            "strategy":strategy,
+            "starting cash":starting_cash,
+            "total net profit": total_net_profit,
+            "mdd": mdd,
+            "expectancy": expectancy,
+            "payoff ratio": payoff_ratio,
+            "profit factor": profit_factor,
+            "sharpe ratio": sharpe_ratio, 
+            "labels": labels
+        }
+
+    @staticmethod 
+    def build_drawdown_series(day,run_number,ticker,strategy,equity,peak_so_far_,drawdown,drawdown_pct):
+        return{
+            "day":day,
+            "run_number": run_number,
+            "ticker":ticker,
+            "strategy":strategy,
+            "equity": equity,
+            "peak_so_far":peak_so_far_,
+            "drawdown":drawdown,
+            "drawdown_pct":drawdown_pct
+        }
+
+    @staticmethod
+    def build_one_completed_trade_row(run_number,ticker,strategy,entry_day,entry_price,exit_day,exit_price,profit,return_pct,labels):
+        return {
+            "run_number":run_number,
+            "ticker":ticker,
+            "strategy": strategy,
+            "entry_day":entry_day,
+            "entry_price":entry_price,
+            "exit_day":exit_day,
+            "exit_price":exit_price,
+            "profit":profit,
+            "return_pct":return_pct,
+            "labels":labels
+        }
+
+    @staticmethod
+    def build_event_log_row(run_number, day, date, ticker, strategy, event_type, message, cash, equity, position, execution_price, pnl, labels):
+        return {
+            "run_number":  run_number,
+            "day": day,
+            "date": date,
+            "ticker": ticker, 
+            "strategy": strategy, 
+            "event_type": event_type, 
+            "message": message, 
+            "cash": cash, 
+            "equity": equity, 
+            "position": position, 
+            "execution_price": execution_price, 
+            "pnl": pnl, 
+            "labels": labels
+        }
+
+    @staticmethod
+    def build_price_row(day, date, ticker, strategy, closing_price, average):
+        return {
+            "day": day, 
+            "date": date, 
+            "ticker": ticker, 
+            "strategy": strategy,
+            "closing price": closing_price,
+            "average": average
+        }
+
+    @staticmethod
+    def strategy(state:ExecutionState)->str:
+        """choooses which strategy to use based on the ExecutionState object's trendMethod boolean
+        Args:
+            state (ExecutionState): object on which the backtest is being performed 
+        Returns:
+            str: wihch strategy method is to be used as a string 
+        """
+        return "Trend" if state.trendMethod else "Mean Reversion"
+    
+    @staticmethod
+    def labels(state:ExecutionState)->str:
+        """computes the corresponding name for the "labels" column in the "trades" df based on the ticker's name and the strategy used
+        Args:
+            state (ExecutionState): current object on which the backtest is being performed 
+        Returns:
+            str: the correct name formatting inside the "labels" column for the "trades" df 
+        """
+        return state.ticker_name+"-"+TradingEngine.strategy(state) 
+    
+    @staticmethod
+    def position(state:ExecutionState)->int:
+        """ returns the number of shares held (as an integer) depending on the strategy used 
+        Args:
+            state (ExecutionState): current object on which the backtest is being performed 
+        Returns:
+            int: 
+        """
+        return state.positionTrend if TradingEngine.strategy(state)=="Trend" else state.positionMeanReversion
+
+    @staticmethod
+    def backtest_run(state: ExecutionState)->dict: # state is an ExecutionState object 
 
         # first, reset all variables back to 0 in case you are reusing the same ExecutionState instance twice 
         state.reset()
-        # list of dictionaries containing all the closing prices and all the averages from each single ticker file 
-        list_dictionaries_prices=[]
-        # list of dictionaries holding all the completed trades (1 full dictionary=1 fully completed trade)
-        list_dictionaries_completed_trades=[]
         # list of dictionaries holding all the logged events 
         list_dictionaries_event_logs=[]
-        # compute dictionary containing each single log-worthy event (1 dictionary= 1 event row)
-        event_log={}
+        list_dictionaries_prices=[]
+        list_dictionaries_completed_trades=[]
         # compute the dictionary for the BACKTEST_START logging event 
-        event_log["run_number"]=ExecutionState.backtest_run_number+1
-        event_log["day"]=float("nan")
-        event_log["date"]=None
-        event_log["ticker"]=state.ticker_name
-        event_log["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-        event_log["event_type"]="BACKTEST_START"
-        event_log["message"]="Backtest started"
-        event_log["cash"]=state.startingCashValue
-        event_log["equity"]=state.equity
-        event_log["position"]=state.positionTrend if state.trendMethod else state.positionMeanReversion
-        event_log["execution_price"]=None
-        event_log["pnl"]=None
-        event_log["labels"]=None
-        list_dictionaries_event_logs.append(event_log)
-
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1, float("nan"), 
+                                                        None, state.ticker_name, 
+                                                        TradingEngine.strategy(state), 
+                                                        "BACKTEST_START",
+                                                        "Backtest started",
+                                                        state.startingCashValue, 
+                                                        state.equity, 
+                                                        TradingEngine.position(state),
+                                                        None, 
+                                                        None,
+                                                        None)
+        list_dictionaries_event_logs.append(event_log_row)
         # extract data from the csv file 
         generatorAverageDayDateClosingPrice=dl.read_ticker_csv(state.csv_ticker, state.cashValue, state.verbose_run)
         # 1 "for" loop iteration=1 day executed,  entire "for" loop iteration=1 full backtest run 
-        for day,date,closingPrice,average,nextDayOpeningPrice in generatorAverageDayDateClosingPrice:
-            # dictionary computing each row of the price data frame reset per loop iteration (1 day= 1 row in the price data frame)
-            price={}
+        for extracted_tuple in generatorAverageDayDateClosingPrice:
+
+            day=extracted_tuple[0]
+            date=extracted_tuple[1]
+            closingPrice=extracted_tuple[2]
+            average=extracted_tuple[3]
+            nextDayOpeningPrice=extracted_tuple[4]
+
             #Days starting from day 3 onwards 
             if(average!=None):
 
                 #TREND method
                 if state.trendMethod:
+                    
                     # compute the dictionary row for the price data frame 
-                    price["day"]=day
-                    price["date"]=date
-                    price["ticker"]=state.ticker_name
-                    price["strategy"]="Trend" 
-                    price["closing price"]=closingPrice
-                    price["average"]=average
+                    price_row=TradingEngine.build_price_row(day, date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
                     # append to the list of dictionaries/rows for the price data frame 
-                    list_dictionaries_prices.append(price)
+                    list_dictionaries_prices.append(price_row)
                     #we only compute when there's a change in the profit 
                     previousProfitTrend=state.profitTrend
                     # before "process_1_day()" we hold no shares
@@ -153,20 +342,18 @@ class TradingEngine:
                     state.positionTrend, state.profitTrend, state.entryPriceTrend, state.exitPriceTrend, state.cashValue, state.equity, state.pending_action, state.entry_day, state.exit_day=process_1_day.process_one_day(state.verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
                     # a trade took place
                     if( (state.profitTrend-previousProfitTrend) !=0 ):
-                        # create the dictionary containing 1 completed trade
-                        one_completed_trade={}
-                        one_completed_trade["run_number"]=ExecutionState.backtest_run_number+1
-                        one_completed_trade["ticker"]=state.ticker_name
-                        one_completed_trade["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-                        one_completed_trade["entry_day"]=state.entry_day
-                        one_completed_trade["entry_price"]=round(state.entryPriceTrend,3)
-                        one_completed_trade["exit_day"]=state.exit_day
-                        one_completed_trade["exit_price"]=round(state.exitPriceTrend,3)
-                        one_completed_trade["profit"]=round(state.profitTrend,3)
-                        one_completed_trade["return_pct"]=round(((state.exitPriceTrend-state.entryPriceTrend)/state.entryPriceTrend)*100,2)
-                        one_completed_trade["labels"]=one_completed_trade["ticker"]+"-"+one_completed_trade["strategy"]
+                        one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
+                                                                                            state.ticker_name,
+                                                                                            TradingEngine.strategy(state),
+                                                                                            state.entry_day,
+                                                                                            round(state.entryPriceTrend,3),
+                                                                                            state.exit_day,
+                                                                                            round(state.exitPriceTrend,3),
+                                                                                            round(state.profitTrend,3),
+                                                                                            round(((state.exitPriceTrend-state.entryPriceTrend)/state.entryPriceTrend)*100,2),
+                                                                                            TradingEngine.labels(state))
                         # add it to the list of all dictionaries 
-                        list_dictionaries_completed_trades.append(one_completed_trade)
+                        list_dictionaries_completed_trades.append(one_completed_trade_row)
                         #add 1 trading day's profit to the total net profit 
                         state.totalProfit+=state.profitTrend
                         #nb of total trades executed during Trend (total nb of P&L's) increases 
@@ -191,75 +378,58 @@ class TradingEngine:
                     # we bought => we compute BUY_EXECUTED logging event 
                     if ( previous_position==0 and current_position>0 ):
                         # we compute the dictionary row for the BUY_EXECUTED logging event 
-                        # reset event_log dict back to 0 so we can use it cleanly
-                        event_log={}
-                        event_log["run_number"]=ExecutionState.backtest_run_number+1
-                        event_log["day"]=day
-                        event_log["date"]=date
-                        event_log["ticker"]=state.ticker_name
-                        event_log["strategy"]="Trend" 
-                        event_log["event_type"]="BUY_EXECUTED"
-                        event_log["message"]="A Buy has been executed"
-                        event_log["cash"]=state.cashValue 
-                        event_log["equity"]=state.equity
-                        event_log["position"]=state.positionTrend
-                        event_log["execution_price"]=state.entryPriceTrend 
-                        event_log["pnl"]=None
-                        event_log["labels"]=event_log["ticker"]+"-"+event_log["strategy"]
-                        list_dictionaries_event_logs.append(event_log)
+                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                        day, date, state.ticker_name, 
+                                                                        TradingEngine.strategy(state), "BUY_EXECUTED",
+                                                                        "A Buy has been executed",
+                                                                        state.cashValue,
+                                                                        state.equity, 
+                                                                        state.positionTrend,
+                                                                        state.entryPriceTrend,
+                                                                        None, 
+                                                                        TradingEngine.labels(state) )
+                        list_dictionaries_event_logs.append(event_log_row)
+
                     # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
                     # we sold => we compute SELL_EXECUTED logging event 
                     if ( previous_position>0 and current_position==0 ):
                         # we compute the dictionary row for the BUY_EXECUTED logging event 
-                        # reset event_log dict back to 0 so we can use it cleanly
-                        event_log={}
-                        event_log["run_number"]=ExecutionState.backtest_run_number+1
-                        event_log["day"]=day
-                        event_log["date"]=date
-                        event_log["ticker"]=state.ticker_name
-                        event_log["strategy"]="Trend" 
-                        event_log["event_type"]="SELL_EXECUTED"
-                        event_log["message"]="A Sell has been executed"
-                        event_log["cash"]=state.cashValue 
-                        event_log["equity"]=state.equity
-                        event_log["position"]=state.positionTrend
-                        event_log["execution_price"]=state.exitPriceTrend
-                        event_log["pnl"]=state.profitTrend
-                        event_log["labels"]=event_log["ticker"]+"-"+event_log["strategy"]
-                        list_dictionaries_event_logs.append(event_log)
+                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                        day, date, state.ticker_name,
+                                                                        TradingEngine.strategy(state),
+                                                                        "SELL_EXECUTED",
+                                                                        "A Sell has been executed",
+                                                                        state.cashValue,
+                                                                        state.equity,
+                                                                        state.positionTrend,
+                                                                        state.exitPriceTrend,
+                                                                        state.profitTrend,
+                                                                        TradingEngine.labels(state) )
+                        list_dictionaries_event_logs.append(event_log_row)
 
                         # if a sell has been executed, then a fully completed trade took place => TRADE_CLOSED log event happens immediately after SELL_EXECUTED log event
                         # create the dictionary row for the TRADE_CLOSED logging event 
-                        event_log={}
-                        event_log["run_number"]=ExecutionState.backtest_run_number+1
-                        event_log["day"]=day
-                        event_log["date"]=date
-                        event_log["ticker"]=state.ticker_name
-                        event_log["strategy"]="Trend" 
-                        event_log["event_type"]="TRADE_CLOSED"
-                        event_log["message"]="A Trade has been executed"
-                        event_log["cash"]=state.cashValue 
-                        event_log["equity"]=state.equity
-                        event_log["position"]=state.positionTrend
-                        event_log["execution_price"]=state.exitPriceTrend 
-                        event_log["pnl"]=state.profitTrend
-                        event_log["labels"]=event_log["ticker"]+"-"+event_log["strategy"]
-                        list_dictionaries_event_logs.append(event_log)
+                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                        day,date,state.ticker_name,
+                                                                        TradingEngine.strategy(state) , "TRADE_CLOSED",
+                                                                        "A Trade has been executed",
+                                                                        state.cashValue,
+                                                                        state.equity,
+                                                                        state.positionTrend,
+                                                                        state.exitPriceTrend,
+                                                                        state.profitTrend,
+                                                                        TradingEngine.labels(state) )
+                        list_dictionaries_event_logs.append(event_log_row)
 
                     #add trading day's equity to the equity curve 
-                    state.listStoreEquityValues.append(state.equity)
+                    state.listStoreEquityValues.append(state.equity) 
 
                 #MEAN REVERSION method 
                 else:
-                    # compute the dictionary row for the price data frame 
-                    price["day"]=day
-                    price["date"]=date
-                    price["ticker"]=state.ticker_name
-                    price["strategy"]="Mean Reversion"
-                    price["closing price"]=closingPrice
-                    price["average"]=average
+                    
+                    price_row=TradingEngine.build_price_row(day, date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
                     # append to the list of dictionaries/rows for the price data frame 
-                    list_dictionaries_prices.append(price)
+                    list_dictionaries_prices.append(price_row)
                     #we only compute when there's a change in the profit 
                     previousProfitMeanReversion=state.profitMeanReversion
                     # before "process_1_day()" we hold no shares
@@ -268,20 +438,18 @@ class TradingEngine:
                     state.positionMeanReversion, state.profitMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.cashValue, state.equity, state.pending_action,state.entry_day,state.exit_day=process_1_day.process_one_day(state.verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
                     # a trade took place 
                     if( (state.profitMeanReversion-previousProfitMeanReversion) !=0 ):
-                        # create the dictionary containing 1 completed trade
-                        one_completed_trade={}
-                        one_completed_trade["run_number"]=ExecutionState.backtest_run_number+1
-                        one_completed_trade["ticker"]=state.ticker_name
-                        one_completed_trade["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-                        one_completed_trade["entry_day"]=state.entry_day
-                        one_completed_trade["entry_price"]=round(state.entryPriceMeanReversion,3)
-                        one_completed_trade["exit_day"]=state.exit_day
-                        one_completed_trade["exit_price"]=round(state.exitPriceMeanReversion,3)
-                        one_completed_trade["profit"]=round(state.profitMeanReversion,3)
-                        one_completed_trade["return_pct"]=round(((state.exitPriceMeanReversion-state.entryPriceMeanReversion)/state.entryPriceMeanReversion)*100,2)
-                        one_completed_trade["labels"]=one_completed_trade["ticker"]+"-"+one_completed_trade["strategy"]
+                        one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
+                                                                                            state.ticker_name,
+                                                                                            TradingEngine.strategy(state),
+                                                                                            state.entry_day,
+                                                                                            round(state.entryPriceMeanReversion,3),
+                                                                                            state.exit_day,
+                                                                                            round(state.exitPriceMeanReversion,3),
+                                                                                            round(state.profitMeanReversion,3),
+                                                                                            round(((state.exitPriceMeanReversion-state.entryPriceMeanReversion)/state.entryPriceMeanReversion)*100,2),
+                                                                                            TradingEngine.labels(state))
                         # add it to the list of all dictionaries 
-                        list_dictionaries_completed_trades.append(one_completed_trade)
+                        list_dictionaries_completed_trades.append(one_completed_trade_row)
                         #add 1 trading day's profit to the total net profit 
                         state.totalProfit+=state.profitMeanReversion
                         #nb of total trades executed during Mean Rev (total nb of P&L's) increases 
@@ -306,61 +474,51 @@ class TradingEngine:
                     # we bought => we compute BUY_EXECUTED logging event 
                     if ( previous_position==0 and current_position>0 ):
                         # we compute the dictionary row for the BUY_EXECUTED logging event 
-                        # reset event_log dict back to 0 so we can use it cleanly
-                        event_log={}
-                        event_log["run_number"]=ExecutionState.backtest_run_number+1
-                        event_log["day"]=day
-                        event_log["date"]=date
-                        event_log["ticker"]=state.ticker_name
-                        event_log["strategy"]="Mean Reversion" 
-                        event_log["event_type"]="BUY_EXECUTED"
-                        event_log["message"]="A Buy has been executed"
-                        event_log["cash"]=state.cashValue 
-                        event_log["equity"]=state.equity
-                        event_log["position"]=state.positionMeanReversion
-                        event_log["execution_price"]=state.entryPriceMeanReversion 
-                        event_log["pnl"]=None
-                        event_log["labels"]=event_log["ticker"]+"-"+event_log["strategy"]
-                        list_dictionaries_event_logs.append(event_log)
+                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                        day,date,state.ticker_name,
+                                                                        TradingEngine.strategy(state) ,
+                                                                        "BUY_EXECUTED",
+                                                                        "A Buy has been executed",
+                                                                        state.cashValue,
+                                                                        state.equity,
+                                                                        state.positionMeanReversion,
+                                                                        state.entryPriceMeanReversion,
+                                                                        None,
+                                                                        TradingEngine.labels(state) )
+                        list_dictionaries_event_logs.append(event_log_row)
 
                     # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
                     # we sold => we compute SELL_EXECUTED logging event 
                     if ( previous_position>0 and current_position==0 ):
                         # we compute the dictionary row for the SELL_EXECUTED logging event 
-                        # reset event_log dict back to 0 so we can use it cleanly
-                        event_log={}
-                        event_log["run_number"]=ExecutionState.backtest_run_number+1
-                        event_log["day"]=day
-                        event_log["date"]=date
-                        event_log["ticker"]=state.ticker_name
-                        event_log["strategy"]="Mean Reversion" 
-                        event_log["event_type"]="SELL_EXECUTED"
-                        event_log["message"]="A Sell has been executed"
-                        event_log["cash"]=state.cashValue 
-                        event_log["equity"]=state.equity
-                        event_log["position"]=state.positionMeanReversion
-                        event_log["execution_price"]=state.exitPriceMeanReversion 
-                        event_log["pnl"]=state.profitMeanReversion 
-                        event_log["labels"]=event_log["ticker"]+"-"+event_log["strategy"]
-                        list_dictionaries_event_logs.append(event_log)
+                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                        day,date,state.ticker_name,
+                                                                        TradingEngine.strategy(state),
+                                                                        "SELL_EXECUTED",
+                                                                        "A Sell has been executed",
+                                                                        state.cashValue,
+                                                                        state.equity, 
+                                                                        state.positionMeanReversion,
+                                                                        state.exitPriceMeanReversion,
+                                                                        state.profitMeanReversion,
+                                                                        TradingEngine.labels(state) )
+                        list_dictionaries_event_logs.append(event_log_row)
 
                         # if a sell has been executed, then a fully completed trade took place => TRADE_CLOSED log event happens immediately after SELL_EXECUTED log event
                         # create the dictionary row for the TRADE_CLOSED logging event
-                        event_log={}
-                        event_log["run_number"]=ExecutionState.backtest_run_number+1
-                        event_log["day"]=day
-                        event_log["date"]=date
-                        event_log["ticker"]=state.ticker_name
-                        event_log["strategy"]="Mean Reversion" 
-                        event_log["event_type"]="TRADE_CLOSED"
-                        event_log["message"]="A Trade has been executed"
-                        event_log["cash"]=state.cashValue 
-                        event_log["equity"]=state.equity
-                        event_log["position"]=state.positionMeanReversion
-                        event_log["execution_price"]=state.exitPriceMeanReversion 
-                        event_log["pnl"]=state.profitMeanReversion 
-                        event_log["labels"]=event_log["ticker"]+"-"+event_log["strategy"]
-                        list_dictionaries_event_logs.append(event_log)
+                
+                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                        day,date,state.ticker_name,
+                                                                        TradingEngine.strategy(state) ,
+                                                                        "TRADE_CLOSED",
+                                                                        "A Trade has been executed",
+                                                                        state.cashValue,
+                                                                        state.equity,
+                                                                        state.positionMeanReversion,
+                                                                        state.exitPriceMeanReversion,
+                                                                        state.profitMeanReversion,
+                                                                        TradingEngine.labels(state) )
+                        list_dictionaries_event_logs.append(event_log_row)
 
                     #add trading day's equity to the equity curve 
                     state.listStoreEquityValues.append(state.equity) 
@@ -368,31 +526,22 @@ class TradingEngine:
             # Days 1 and 2 
             else:
                 state.listStoreEquityValues.append(state.equity)
-                price["day"]=day
-                price["date"]=date
-                price["ticker"]=state.ticker_name
-                price["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-                price["closing price"]=closingPrice
-                price["average"]=None
+                price_row=TradingEngine.build_price_row(day, date, state.ticker_name, TradingEngine.strategy(state), closingPrice, None)
                 # append to the list of dictionaries/rows for the price data frame 
-                list_dictionaries_prices.append(price)
+                list_dictionaries_prices.append(price_row)
                 
-        # compute the dictionary for the BACKTEST_END logging event 
-        event_log={}
-        event_log["run_number"]=ExecutionState.backtest_run_number+1
-        event_log["day"]=day
-        event_log["date"]=date
-        event_log["ticker"]=state.ticker_name
-        event_log["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-        event_log["event_type"]="BACKTEST_END"
-        event_log["message"]="Backtest has ended"
-        event_log["cash"]=state.cashValue
-        event_log["equity"]=state.equity
-        event_log["position"]=state.positionTrend if state.trendMethod else state.positionMeanReversion
-        event_log["execution_price"]=None
-        event_log["pnl"]=state.totalProfit
-        event_log["labels"]=None
-        list_dictionaries_event_logs.append(event_log)
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                        day,date,state.ticker_name,
+                                                        TradingEngine.strategy(state),
+                                                        "BACKTEST_END",
+                                                        "Backtest has ended",
+                                                        state.cashValue,
+                                                        state.equity,
+                                                        TradingEngine.position(state),
+                                                        None,
+                                                        state.totalProfit,
+                                                        None)
+        list_dictionaries_event_logs.append(event_log_row)
 
         # data frame for all the prices of the backtest used for the price markers plotting chart
         price_data_frame=pd.DataFrame(data=list_dictionaries_prices)
@@ -418,16 +567,15 @@ class TradingEngine:
         list_dictionaries_rows_per_equity_drawdown_series=[]
         # create list of dictionaries for drawdown series (1 dictionary= 1 day)
         for i in range(len(state.listStoreEquityValues)): 
-            dictionary_per_equity_row_drawdown_series={} 
-            dictionary_per_equity_row_drawdown_series["day"]=i+1
-            dictionary_per_equity_row_drawdown_series["run_number"]=ExecutionState.backtest_run_number
-            dictionary_per_equity_row_drawdown_series["ticker"]=state.ticker_name
-            dictionary_per_equity_row_drawdown_series["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-            dictionary_per_equity_row_drawdown_series["equity"]=state.listStoreEquityValues[i]
-            dictionary_per_equity_row_drawdown_series["peak_so_far"]=running_max.iloc[i]
-            dictionary_per_equity_row_drawdown_series["drawdown"]=drawdown.iloc[i]
-            dictionary_per_equity_row_drawdown_series["drawdown_pct"]=drawdown_pct.iloc[i]
-            list_dictionaries_rows_per_equity_drawdown_series.append(dictionary_per_equity_row_drawdown_series)
+            row_drawdown_series=TradingEngine.build_drawdown_series(i+1,
+                                                                    ExecutionState.backtest_run_number,
+                                                                    state.ticker_name,
+                                                                    TradingEngine.strategy(state),
+                                                                    state.listStoreEquityValues[i],
+                                                                    running_max.iloc[i],
+                                                                    drawdown.iloc[i],
+                                                                    drawdown_pct.iloc[i])
+            list_dictionaries_rows_per_equity_drawdown_series.append(row_drawdown_series)
         # drawdown series final computed data frame from all dictionary rows 
         drawdown_series=pd.DataFrame(data=list_dictionaries_rows_per_equity_drawdown_series)
         # add another extra column in the drawdown series data frame called 'labels' that uniquely identifies each line
@@ -435,74 +583,95 @@ class TradingEngine:
         # equity curve final computed data frame from all dictionary rows 
         equityCurveDataFrame=drawdown_series[ ["day", "run_number", "ticker", "strategy", "equity","labels"] ]
         # single dictionary containing all structured data outputs's (run data frame, equity curve, trades, drawdown series, log events) final computed data frames 
-        dictionary_data_frames={}
-        dictionary_data_frames["log_events"]=loggingEventsDataFrame
-        dictionary_data_frames["equity_curve"]=equityCurveDataFrame
-        dictionary_data_frames["drawdown_series"]=drawdown_series
-        dictionary_data_frames["trades"]=tradesDataFrame
-        dictionary_data_frames["prices"]=price_data_frame
+        dictionary_data_frames=TradingEngine.build_data_frames(loggingEventsDataFrame,
+                                                               equityCurveDataFrame,
+                                                               drawdown_series,
+                                                               tradesDataFrame,
+                                                               price_data_frame)
 
         return dictionary_data_frames
     
     @staticmethod
-    def performance_metrics_data_frame(state):
+    def try_except_performance_metric(fn):
+        """Calls a performance metric function and returns nan if it raises ZeroDivisionError.
+        Used to guard metrics that require at least one winning and one losing trade to be defined.
 
-        #TREND method performance metrics computation 
-        if state.trendMethod: 
-            strategyUsed="Trend"
-            mddMetric=performanceMetrics.mdd(state.listStoreEquityValues)
-            try:
-                expectancy=performanceMetrics.expectancy(state.positiveProfitTrend, state.numberTradesTrend, state.totalProfitPositiveTradesTrend, state.negativeProfitTrend, state.totalProfitNegativeTradesTrend)
-            except ZeroDivisionError:
-                expectancy=float("nan")
-            try:
-                payoffRatio=performanceMetrics.payoff_ratio(state.totalProfitPositiveTradesTrend, state.totalProfitNegativeTradesTrend, state.positiveProfitTrend, state.negativeProfitTrend)
-            except ZeroDivisionError:
-                payoffRatio=float("nan")
-            try:
-                profitFactor=performanceMetrics.profit_factor(state.totalProfitPositiveTradesTrend, state.totalProfitNegativeTradesTrend)
-            except ZeroDivisionError:
-                profitFactor=float("nan")
-            try: 
-                sharpeRatio=performanceMetrics.sharpe_ratio(state.listStoreEquityValues)
-            #guard for the mathematically undefined case (std=0 means all returns are identical, so Sharpe is meaningless)
-            except ZeroDivisionError:
-                sharpeRatio=float("nan")
-        # MEAN REVERSION method performance metrics computation 
+        Args:
+            fn: a zero-argument callable (lambda) wrapping the metric function call
+
+        Returns:
+            float: the metric result, or float("nan") if ZeroDivisionError is raised
+        """
+        try:
+            return fn()
+        except ZeroDivisionError:
+            return float("nan")
+
+    @staticmethod
+    def strategy_performance_metrics_stats(state: ExecutionState)->dict:
+        """Selects the correct set of trade statistics from state based on the active strategy.
+
+        Args:
+            state (ExecutionState): current backtest state
+
+        Returns:
+            dict: trade statistics keyed by positive_count, negative_count, trade_count, positive_total, negative_total
+        """
+        if state.trendMethod:
+            return {
+                    "positive_count": state.positiveProfitTrend,
+                    "negative_count": state.negativeProfitTrend,
+                    "trade_count": state.numberTradesTrend,
+                    "positive_total": state.totalProfitPositiveTradesTrend,
+                    "negative_total": state.totalProfitNegativeTradesTrend }
         else:
-            strategyUsed="Mean Reversion"
-            mddMetric=performanceMetrics.mdd(state.listStoreEquityValues)
-            try: 
-                expectancy=performanceMetrics.expectancy(state.positiveProfitMeanRev, state.numberTradesMeanRev, state.totalProfitPositiveTradesMeanRev, state.negativeProfitMeanRev, state.totalProfitNegativeTradesMeanRev)
-            except ZeroDivisionError:
-                expectancy=float("nan")
-            try:
-                payoffRatio=performanceMetrics.payoff_ratio(state.totalProfitPositiveTradesMeanRev, state.totalProfitNegativeTradesMeanRev, state.positiveProfitMeanRev, state.negativeProfitMeanRev)
-            except ZeroDivisionError:
-                payoffRatio=float("nan")
-            try:
-                profitFactor=performanceMetrics.profit_factor(state.totalProfitPositiveTradesMeanRev, state.totalProfitNegativeTradesMeanRev)
-            except ZeroDivisionError:
-                profitFactor=float("nan")
-            try: 
-                sharpeRatio=performanceMetrics.sharpe_ratio(state.listStoreEquityValues)
-            #guard for the mathematically undefined case (std=0 means all returns are identical, so Sharpe is meaningless)
-            except ZeroDivisionError:
-                sharpeRatio=float("nan")
+             return {
+                    "positive_count": state.positiveProfitMeanRev,
+                    "negative_count": state.negativeProfitMeanRev,
+                    "trade_count": state.numberTradesMeanRev,
+                    "positive_total": state.totalProfitPositiveTradesMeanRev,
+                    "negative_total": state.totalProfitNegativeTradesMeanRev }   
 
-        run_data_frame={}
-        run_data_frame["run_number"]=ExecutionState.backtest_run_number
-        run_data_frame["ticker"]=state.ticker_name
-        run_data_frame["strategy"]="Trend" if state.trendMethod else "Mean Reversion"
-        run_data_frame["starting cash"]=state.startingCashValue
-        run_data_frame["total net profit"]=round(state.totalProfit,3)
-        run_data_frame["mdd"]=mddMetric
-        run_data_frame["expectancy"]=expectancy
-        run_data_frame["payoff ratio"]=payoffRatio
-        run_data_frame["profit factor"]=profitFactor
-        run_data_frame["sharpe ratio"]=sharpeRatio
-        run_data_frame["labels"]=run_data_frame["ticker"]+"-"+run_data_frame["strategy"]
-                              
+
+    @staticmethod
+    def performance_metrics_data_frame(state: ExecutionState)->pd.DataFrame:
+        """Computes all performance metrics for a completed backtest run and returns them as a one-row DataFrame.
+        Must be called after backtest_run() — depends on state.listStoreEquityValues being populated.
+
+        Args:
+            state (ExecutionState): completed backtest state
+
+        Returns:
+            pd.DataFrame: one-row DataFrame containing run_number, ticker, strategy, starting cash, 
+                        total net profit, mdd, expectancy, payoff ratio, profit factor, sharpe ratio, labels
+        """
+        stats_dictionary=TradingEngine.strategy_performance_metrics_stats(state)
+        mddMetric=performanceMetrics.mdd(state.listStoreEquityValues)
+        expectancy=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.expectancy(stats_dictionary["positive_count"],
+                                                                                                     stats_dictionary["trade_count"],
+                                                                                                     stats_dictionary["positive_total"],
+                                                                                                     stats_dictionary["negative_count"],
+                                                                                                     stats_dictionary["negative_total"]))
+        payoffRatio=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.payoff_ratio(stats_dictionary["positive_total"],
+                                                                                                        stats_dictionary["negative_total"],
+                                                                                                        stats_dictionary["positive_count"],
+                                                                                                        stats_dictionary["negative_count"]))
+        profitFactor=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.profit_factor(stats_dictionary["positive_total"],
+                                                                                                          stats_dictionary["negative_total"]))
+        sharpeRatio=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.sharpe_ratio(state.listStoreEquityValues))
+
+        run_data_frame=TradingEngine.build_run_df(ExecutionState.backtest_run_number,
+                                                  state.ticker_name,
+                                                  TradingEngine.strategy(state),
+                                                  state.startingCashValue,
+                                                  round(state.totalProfit,3),
+                                                  mddMetric,
+                                                  expectancy,
+                                                  payoffRatio,
+                                                  profitFactor,
+                                                  sharpeRatio,
+                                                  TradingEngine.labels(state))
+
         return pd.DataFrame( data=run_data_frame , index=[0])
 
 
@@ -602,40 +771,130 @@ class PlottingLayer:
 
 
 
-    ''' 
     
+    
+
 class AggregationLayer:
-    
-    # total runs 
-    total_runs=ExecutionState.backtest_run_number
 
-    # best run summary
-    max_total_net_profit=results["Final Data Frame Run"]["total net profit"].max()
-    best_run_summary=(results["Final Data Frame Run"] [results["Final Data Frame Run"]["total net profit"]==max_total_net_profit]).squeeze().to_dict()
-    
-    # worst run summary 
-    min_total_net_profit=results["Final Data Frame Run"]["total net profit"].min()
-    worst_run_summary=(results["Final Data Frame Run"] [results["Final Data Frame Run"]["total net profit"]==min_total_net_profit]).squeeze().to_dict()
-    
-    # average performance summary 
-    average_total_net_profit=round(results["Final Data Frame Run"]["total net profit"].mean(),2) 
-    average_mdd=round(results["Final Data Frame Run"]["mdd"].mean(),2)
-    average_expectancy=round(results["Final Data Frame Run"]["expectancy"].mean(),2)
-    average_payoff_ratio=round(results["Final Data Frame Run"]["payoff ratio"].mean(),2)
-    average_profit_factor=round(results["Final Data Frame Run"]["profit factor"].mean(),2)
-    average_sharpe_ratio=round(results["Final Data Frame Run"]["sharpe ratio"].mean(),2)
-    average_performance_summary={ 
-        "average total net profit": float(average_total_net_profit),
-        "average mdd": float(average_mdd),
-        "average expectancy": float(average_expectancy), 
-        "average payoff ratio": float(average_payoff_ratio),
-        "average profit factor": float(average_profit_factor),
-        "average sharpe ratio": float(average_sharpe_ratio) }
-    
-    # selected run summary (ticker-strategy)
-    print(results["Final Data Frame Run"] [results["Final Data Frame Run"]["labels"]=="Apple-Trend"]) '''
+    def __init__(self,results_data_frames: dict):
+        if not isinstance(results_data_frames,dict):
+            raise TypeError("The resulting data frames need to be stored inside a dictionary")
+        self.results_data_frames=results_data_frames
 
+    @staticmethod
+    def build_average_performance_summary(average_total_net_profit,average_mdd,average_expectancy,average_payoff_ratio,average_profit_factor,average_sharpe_ratio):
+        return{
+            "average total net profit":average_total_net_profit,
+            "average mdd":average_mdd,
+            "average expectancy":average_expectancy,
+            "average payoff ratio":average_payoff_ratio,
+            "average profit factor":average_profit_factor,
+            "average sharpe ratio": average_sharpe_ratio
+        }
     
+    @staticmethod
+    def build_aggregation_outputs(total_runs,best_run_summary,worst_run_summary,average_performance_summary,selected_run_summary,selected_run_trade_list):
+        return{
+            "total_runs":total_runs,
+            "best_run_summary":best_run_summary,
+            "worst_run_summary":worst_run_summary,
+            "average_performance_summary":average_performance_summary,
+            "selected_run_summary":selected_run_summary,
+            "selected_run_trade_list":selected_run_trade_list
+        }
+
+    # total backtest runs by the Trading Engine
+    def total_runs_summary(self)->int:
+
+        return len(self.results_data_frames["Final Data Frame Run"])
+    
+    def run_summary(self,max):
+
+        if max:
+            total_net_profit=self.results_data_frames["Final Data Frame Run"]["total net profit"].max()
+        else:
+            total_net_profit=self.results_data_frames["Final Data Frame Run"]["total net profit"].min()
+        run_summary=self.results_data_frames["Final Data Frame Run"] [self.results_data_frames["Final Data Frame Run"]["total net profit"]==total_net_profit] # select the row/rows from the data frame matching the value for 'total net profit'
+        run_summary=run_summary.iloc[0] # select only the first row matching that value
+        run_summary=run_summary.to_dict() # convert the Series into a dictionary
+        return run_summary
+    
+    # best run summary from the run data frame based on the total net profit 
+    def best_run_summary(self)->dict:
+
+        return self.run_summary(max=True)
+    
+    # worst run summary from the run data frame based on the total net profit 
+    def worst_run_summary(self)->dict:
+
+        return self.run_summary(max=False)
+    
+    # average performance summary of each metric from all the backtest runs 
+    def average_performance_summary(self)->dict:
+
+        average_total_net_profit=round(self.results_data_frames["Final Data Frame Run"]["total net profit"].mean(),2) 
+        average_mdd=round(self.results_data_frames["Final Data Frame Run"]["mdd"].mean(),2)
+        average_expectancy=round(self.results_data_frames["Final Data Frame Run"]["expectancy"].mean(),2)
+        average_payoff_ratio=round(self.results_data_frames["Final Data Frame Run"]["payoff ratio"].mean(),2)
+        average_profit_factor=round(self.results_data_frames["Final Data Frame Run"]["profit factor"].mean(),2)
+        average_sharpe_ratio=round(self.results_data_frames["Final Data Frame Run"]["sharpe ratio"].mean(),2)
+        average_performance_summary=AggregationLayer.build_average_performance_summary(float(average_total_net_profit),
+                                                                                       float(average_mdd),
+                                                                                       float(average_expectancy),
+                                                                                       float(average_payoff_ratio),
+                                                                                       float(average_profit_factor),
+                                                                                       float(average_sharpe_ratio))
+        return average_performance_summary
+    
+    # user input selected run summary (ticker-strategy) from the run data frame 
+    def selected_run_summary(self,ticker,strategy)->dict:
+
+        AggregationLayer.ticker_strategy_validation(ticker,strategy)
+        selected_run_summary=(self.results_data_frames["Final Data Frame Run"] [self.results_data_frames["Final Data Frame Run"]["labels"]==f"{ticker}-{strategy}"])
+        selected_run_summary=selected_run_summary.iloc[0] # if multiple identical ticker/strategy pairs, pick the first pair only
+        if selected_run_summary.empty:
+            raise ValueError("The selected run summary data frame is empty")
+        selected_run_summary=selected_run_summary.to_dict()
+        return selected_run_summary
+
+    # user input selection for a complete trade run based on ticker and strategy from the Completed Trades data frame 
+    def selected_run_trade_list(self,ticker,strategy)->pd.DataFrame:
+
+        AggregationLayer.ticker_strategy_validation(ticker,strategy)
+        selected_run_trade=(self.results_data_frames["Completed Trades"] [self.results_data_frames["Completed Trades"]["labels"]==f"{ticker}-{strategy}"])
+        if selected_run_trade.empty:
+            raise ValueError("The selected run trade list is empty")
+        return selected_run_trade
+    
+    @staticmethod
+    def ticker_strategy_validation(ticker,strategy):
+        if ticker not in ["Apple", "Google", "Microsoft"]:
+            raise ValueError("This selected ticker does not exist")
+        if strategy not in ["Trend", "Mean Reversion"]:
+            raise ValueError("This selected strategy does not exist")
+        
+    def aggregation_outputs(self,ticker:str,strategy:str)->dict:
+
+        """collect the already-working pieces into one dictionary.
+           calls/reuses: total runs, best run summary, worst run summary, average performance summary, 
+           selected run summary and selected run trade list   
+
+
+        Args:
+            ticker (str): Apple, Google, Microsoft
+            strategy (str): strategy method
+
+        Returns:
+            dict: final dictionary ready for Step 15 "UI-ready package"
+        """
+        aggregation_outputs=AggregationLayer.build_aggregation_outputs(self.total_runs_summary(),
+                                                                       self.best_run_summary(),
+                                                                       self.worst_run_summary(),
+                                                                       self.average_performance_summary(),
+                                                                       self.selected_run_summary(ticker,strategy),
+                                                                       self.selected_run_trade_list(ticker,strategy))
+        return aggregation_outputs
+
 
 
 
@@ -647,6 +906,18 @@ class ExperimentRunner:
     on each, and concatenates all results into five final DataFrames returned in a single dictionary:
     Final Data Frame Run, Equity Curve, Drawdown Series, Completed Trades, Log Events.
     """
+
+    @staticmethod
+    def build_results(run_data_frame,equity_curves_df,drawdown_series_df,trades_df,log_events_df,prices_df):
+
+        return{
+            "Final Data Frame Run":run_data_frame,
+            "Equity Curve":equity_curves_df,
+            "Drawdown Series":drawdown_series_df,
+            "Completed Trades":trades_df,
+            "Log Events":log_events_df,
+            "Prices":prices_df
+        }
 
     # method running 5 different outputs: run data frame, trades data frame, equity curves, drawdown series, logs
     def structured_data_outputs(self):
@@ -701,13 +972,12 @@ class ExperimentRunner:
         prices_df=pd.concat(prices)
 
         # add all the final structured outputs to a single final returned dictionary, and make each structured output key-accessible
-        results["Final Data Frame Run"]=final_data_frame_run
-        results["Equity Curve"]=equity_curves_df
-        results["Drawdown Series"]=drawdown_series_df
-        results["Completed Trades"]=trades_df
-        results["Log Events"]=log_events_df
-        results["Prices"]=prices_df
-
+        results=ExperimentRunner.build_results(final_data_frame_run,
+                                               equity_curves_df,
+                                               drawdown_series_df,
+                                               trades_df,
+                                               log_events_df,
+                                               prices_df)       
         return results
 
 
@@ -715,6 +985,10 @@ if __name__=="__main__":
     experimentRunner=ExperimentRunner()
     results=experimentRunner.structured_data_outputs()
     plottedChart=PlottingLayer(results)
+    aggregationLayerSummary=AggregationLayer(results)
+
+    #print(aggregationLayerSummary.worst_run_summary())
+
     #plottedChart.user_interface_oriented_plotting_equity_curve()
     #plottedChart.user_interface_oriented_plotting_drawdown_series()
     #plottedChart.user_interface_oriented_plotting_completed_trades()
@@ -722,15 +996,9 @@ if __name__=="__main__":
     #plottedChart.user_interface_oriented_plotting_run_data_frame()
     #plottedChart.user_interface_oriented_plotting_price_chart("Apple", "Trend")
     
-    print(results["Final Data Frame Run"])
+    #print(results["Final Data Frame Run"])
     #print(results["Completed Trades"])
     #print(results["Drawdown Series"])
     #print(results["Equity Curve"])
     #print(results["Log Events"])
     #print(results["Prices"]) 
-    print(results["Final Data Frame Run"] [results["Final Data Frame Run"]["labels"]=="Apple-Trend"])
-    
-    
-
-
-    
