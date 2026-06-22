@@ -194,13 +194,13 @@ class TradingEngine:
             "run_number":run_number,
             "ticker":ticker,
             "strategy":strategy,
-            "starting cash":starting_cash,
-            "total net profit": total_net_profit,
+            "starting_cash":starting_cash,
+            "total_net_profit": total_net_profit,
             "mdd": mdd,
             "expectancy": expectancy,
-            "payoff ratio": payoff_ratio,
-            "profit factor": profit_factor,
-            "sharpe ratio": sharpe_ratio, 
+            "payoff_ratio": payoff_ratio,
+            "profit_factor": profit_factor,
+            "sharpe_ratio": sharpe_ratio, 
             "labels": labels
         }
 
@@ -987,7 +987,7 @@ if __name__=="__main__":
     plottedChart=PlottingLayer(results)
     aggregationLayerSummary=AggregationLayer(results)
 
-    #print(aggregationLayerSummary.worst_run_summary())
+    print(results["Log Events"])
 
     #plottedChart.user_interface_oriented_plotting_equity_curve()
     #plottedChart.user_interface_oriented_plotting_drawdown_series()
