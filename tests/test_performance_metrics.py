@@ -1,5 +1,5 @@
 import unittest
-import performanceMetrics
+import metrics.performanceMetrics as performanceMetrics
 import pandas as pd 
 
 class testMDD(unittest.TestCase):

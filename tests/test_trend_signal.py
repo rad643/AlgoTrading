@@ -3,7 +3,7 @@ import unittest
 import io
 #we need redirect_stdout() to capture the printed stdout
 import contextlib
-import trend_signal as ts
+import strategies.trend.signal as ts
 
 class TestTrendSignal(unittest.TestCase):
 

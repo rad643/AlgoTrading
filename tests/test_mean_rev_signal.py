@@ -3,7 +3,7 @@ import unittest
 import io
 #we need redirect_stdout() to capture the printed stdout
 import contextlib
-import mean_rev_signal as mrv
+import strategies.mean_reversion.signal as mrv
 
 class TestMeanRevSignal(unittest.TestCase):
 

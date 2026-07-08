@@ -1,7 +1,7 @@
-import data_loader as dl
-import process_1_day
+import data_loading.data_loader as dl
+import engine.process_1_day as process_1_day
 import dataclasses
-import performanceMetrics
+import metrics.performanceMetrics as performanceMetrics
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -735,7 +735,7 @@ class PlottingLayer:
 
         run_data_frame_chart=px.bar(data_frame=self.results_data_frames["Final Data Frame Run"],
                 x="run_number",
-                y="total net profit",
+                y="total_net_profit",
                 color= "labels",
                 title="Run Chart",
                 barmode="group",
@@ -987,18 +987,16 @@ if __name__=="__main__":
     plottedChart=PlottingLayer(results)
     aggregationLayerSummary=AggregationLayer(results)
 
-    print(results["Log Events"])
-
-    #plottedChart.user_interface_oriented_plotting_equity_curve()
-    #plottedChart.user_interface_oriented_plotting_drawdown_series()
-    #plottedChart.user_interface_oriented_plotting_completed_trades()
-    #plottedChart.user_interface_oriented_plotting_log_events()
-    #plottedChart.user_interface_oriented_plotting_run_data_frame()
-    #plottedChart.user_interface_oriented_plotting_price_chart("Apple", "Trend")
+    plottedChart.user_interface_oriented_plotting_equity_curve()
+    plottedChart.user_interface_oriented_plotting_drawdown_series()
+    plottedChart.user_interface_oriented_plotting_completed_trades()
+    plottedChart.user_interface_oriented_plotting_log_events()
+    plottedChart.user_interface_oriented_plotting_run_data_frame()
+    plottedChart.user_interface_oriented_plotting_price_chart("Apple", "Trend")
     
-    #print(results["Final Data Frame Run"])
-    #print(results["Completed Trades"])
-    #print(results["Drawdown Series"])
-    #print(results["Equity Curve"])
-    #print(results["Log Events"])
-    #print(results["Prices"]) 
+    print(results["Final Data Frame Run"])
+    print(results["Completed Trades"])
+    print(results["Drawdown Series"])
+    print(results["Equity Curve"])
+    print(results["Log Events"])
+    print(results["Prices"]) 
