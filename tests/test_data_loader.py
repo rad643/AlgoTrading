@@ -2,7 +2,7 @@
 import tempfile
 #we're only importing os to delete the temporary csv files we created manually inside the test
 import os 
-import data_loader as dl
+import data_loading.data_loader as dl
 import unittest
 
 #unittest framework: multiple tests/methods=multiple edge cases 

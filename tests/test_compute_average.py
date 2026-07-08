@@ -1,5 +1,5 @@
 import unittest
-import compute_average as ca 
+import data_loading.compute_average as ca 
 
 class TestComputeAverage(unittest.TestCase):
     #assert correct output for valid list 
