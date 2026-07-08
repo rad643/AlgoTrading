@@ -1,12 +1,12 @@
 from typing import Annotated
 from fastapi import Depends
-from sqlmodel import Session
 from api.database.session import get_session
 from api.router.services.log_events_service import LogEventsService
 from api.router.services.summary_service import SummaryService
 from api.router.services.trades_service import TradesService
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-SessionDep=Annotated [Session, Depends(get_session)]
+SessionDep=Annotated [AsyncSession, Depends(get_session)]
 
 def get_summary_service(session: SessionDep):
     return SummaryService(session)

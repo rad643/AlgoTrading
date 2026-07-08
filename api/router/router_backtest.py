@@ -12,7 +12,7 @@ from main import ExecutionState, TradingEngine
 router_backtest=APIRouter(tags=["backtest"])
 
 @router_backtest.post("/run_backtest", description="Backtest Run")
-def create_backtest(config: BacktestConfig, session: SessionDep)->dict[str, Any]: 
+async def create_backtest(config: BacktestConfig, session: SessionDep)->dict[str, Any]: 
 
     # create state object 
     # which will serve as the engine parameter 
@@ -26,8 +26,8 @@ def create_backtest(config: BacktestConfig, session: SessionDep)->dict[str, Any]
     run_dict=run_dict[0]
     new_summary=Summary(**run_dict) # cast it to a Summary object so that SQL Model can add it to the summary table
     session.add(new_summary)
-    session.commit()
-    session.refresh(new_summary)
+    await session.commit()
+    await session.refresh(new_summary)
 
     # compute the log events 
     log_events=engine["log_events"]
@@ -38,8 +38,8 @@ def create_backtest(config: BacktestConfig, session: SessionDep)->dict[str, Any]
         event['date']=dt.strptime(event['date'],"%Y-%m-%d") if event['date'] else None
         new_event=LogEvent(**event) # cast the event dict to a LogEvent object so that sql can add it to the log_events table
         session.add(new_event)
-        session.commit()
-        session.refresh(new_event)
+        await session.commit()
+        await session.refresh(new_event)
         log_events_list_with_id.append(new_event.model_dump()) # new list formed of the log events
         # returned from the database after the commit session
         # now also including the 'id' field which will appear in the Swagger response body for the post route
@@ -52,13 +52,13 @@ def create_backtest(config: BacktestConfig, session: SessionDep)->dict[str, Any]
     for event in trades_list:
         new_trade=Trade(**event) # cast the event dict to a Trade object so that sql can add it to the trades table
         session.add(new_trade)
-        session.commit()
-        session.refresh(new_trade)
+        await session.commit()
+        await session.refresh(new_trade)
         trades_list_with_id.append(new_trade.model_dump()) # new list formed of the trades
         # returned from the database after the commit session
         # now also including the 'id' field which will appear in the Swagger response body for the post route
     
-    session.refresh(new_summary) # re populates new_summary variable with the fields from the summary table
+    await session.refresh(new_summary) # re populates new_summary variable with the fields from the summary table
     # so that 'id' field can also appear in the Swagger response body for the post route
 
     return { "summary": new_summary ,

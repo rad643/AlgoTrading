@@ -11,7 +11,7 @@ from rich import panel,print
 async def lifespan_handler(app:FastAPI):
     # server setup message and database table creation
     print(panel.Panel("Server booting...", border_style='green'))
-    create_database()
+    await create_database()
 
     # pauses here
     yield 
