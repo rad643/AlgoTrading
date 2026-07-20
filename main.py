@@ -99,7 +99,7 @@ class ExecutionState:
 
     # instance field variables 
     trendMethod: bool
-    csv_ticker: str
+    symbol: str
     cashValue: float
     ticker_name: str
     verbose_run: bool=False
@@ -292,7 +292,7 @@ class TradingEngine:
         return state.positionTrend if TradingEngine.strategy(state)=="Trend" else state.positionMeanReversion
 
     @staticmethod
-    def backtest_run(state: ExecutionState)->dict: # state is an ExecutionState object 
+    def backtest_run(state: ExecutionState, one_df: pd.DataFrame)->dict: # state is an ExecutionState object 
 
         # first, reset all variables back to 0 in case you are reusing the same ExecutionState instance twice 
         state.reset()
@@ -314,7 +314,7 @@ class TradingEngine:
                                                         None)
         list_dictionaries_event_logs.append(event_log_row)
         # extract data from the csv file 
-        generatorAverageDayDateClosingPrice=dl.read_ticker_csv(state.csv_ticker, state.cashValue, state.verbose_run)
+        generatorAverageDayDateClosingPrice=dl.read_ticker_csv(one_df, state.cashValue, state.verbose_run)
         # 1 "for" loop iteration=1 day executed,  entire "for" loop iteration=1 full backtest run 
         for extracted_tuple in generatorAverageDayDateClosingPrice:
 
@@ -550,9 +550,11 @@ class TradingEngine:
         # converts the day column to pandas nullable integer type — pd.Int64Dtype() — which supports NaN without forcing float promotion => "day" won't be printed with a .0 decimal anymore 
         loggingEventsDataFrame["day"] = loggingEventsDataFrame["day"].astype(pd.Int64Dtype())
         # final data frame containing all the completed trades in the list converted into a pandas data frame
-        tradesDataFrame=pd.DataFrame(data=list_dictionaries_completed_trades)
-        # adding an extra column that counts the number of completed trades that took place starting from 1 per individual backtest run
-        tradesDataFrame["number_trades_took_place"]=tradesDataFrame.groupby(by="run_number").cumcount()+1
+        tradesDataFrame = pd.DataFrame(data=list_dictionaries_completed_trades)
+        if tradesDataFrame.empty:
+            tradesDataFrame = pd.DataFrame(columns=["run_number", "ticker", "strategy", "entry_day", "entry_price", "exit_day", "exit_price", "profit", "return_pct", "labels", "number_trades_took_place"])
+        else:
+            tradesDataFrame["number_trades_took_place"] = tradesDataFrame.groupby(by="run_number").cumcount() + 1
         # count the number of backtest runs at Class level (not per engine instance)
         ExecutionState.backtest_run_number+=1
         # 1 dimensional array representing all the raw daily equities 
@@ -922,13 +924,17 @@ class ExperimentRunner:
     # method running 5 different outputs: run data frame, trades data frame, equity curves, drawdown series, logs
     def structured_data_outputs(self):
         
+        tickers= "AAPL,GOOGL,MSFT"
+
         # multiple ExecutionState objects representing multiple experiments with different configurated parameters 
-        states=[    ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple"), 
-                    ExecutionState(trendMethod=False, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple"),
-                    ExecutionState(trendMethod=True, csv_ticker="data/google.csv", cashValue=10000, ticker_name="Google"),
-                    ExecutionState(trendMethod=False, csv_ticker="data/google.csv", cashValue=10000, ticker_name="Google"),
-                    ExecutionState(trendMethod=True, csv_ticker="data/microsoft.csv", cashValue=10000, ticker_name="Microsoft"),
-                    ExecutionState(trendMethod=False, csv_ticker="data/microsoft.csv", cashValue=10000, ticker_name="Microsoft") ]
+        states=[    ExecutionState(trendMethod=True, symbol="AAPL", cashValue=10000, ticker_name="Apple"), 
+                    ExecutionState(trendMethod=False, symbol="AAPL", cashValue=10000, ticker_name="Apple"),
+                    ExecutionState(trendMethod=True, symbol="GOOGL", cashValue=10000, ticker_name="Google"),
+                    ExecutionState(trendMethod=False, symbol="GOOGL", cashValue=10000, ticker_name="Google"),
+                    ExecutionState(trendMethod=True, symbol="MSFT", cashValue=10000, ticker_name="Microsoft"),
+                    ExecutionState(trendMethod=False, symbol="MSFT", cashValue=10000, ticker_name="Microsoft") ]
+
+        tickers_dfs = dl.hist_data(tickers, timeframe='1Day', start="2024-01-16", end="2026-01-13", limit=1000)
 
         # list of all the prices data frames , 1 prices data frame corresponding to 1 ExecutionState object 
         prices=[]
@@ -948,7 +954,7 @@ class ExperimentRunner:
         # add each ExecutionState object to its corresponding structured data output 
         for state in states: 
             # call Trading Engine's backtest_run() method once per ExecutionState object, and store its returned dictionary
-            dictionary_data_frames=TradingEngine.backtest_run(state)
+            dictionary_data_frames=TradingEngine.backtest_run(state, tickers_dfs[state.symbol])
             # extract all 4 outputs from that same "backtest_run(state)" result 
             equity_curves_logs.append(dictionary_data_frames["equity_curve"])
             drawdown_series.append(dictionary_data_frames["drawdown_series"])
