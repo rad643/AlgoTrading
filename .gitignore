@@ -4,3 +4,7 @@ __pycache__/
 
 .env
 api/.env
+
+.claude/
+.vscode/launch.json
+data/*.db
