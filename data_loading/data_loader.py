@@ -1,4 +1,6 @@
+from datetime import date
 import json
+from typing import Generator
 import pandas as pd
 import requests
 import time  
@@ -10,15 +12,18 @@ credentials= open(".env", 'r').read()
 
 headers=json.loads(credentials) 
 
-def hist_data(tickers, timeframe= "15Min", start= '', end='' , limit= 1000):
-    """_summary_
+def hist_data(tickers, timeframe= "15Min", start= '', end='' , limit= 1000)->dict[str,pd.DataFrame]:
+    """extract historical data from alpaca's api through direct http request connection 
 
     Args:
-        tickers (_type_): _description_
-        timeframe (str, optional): _description_. Defaults to "15Min".
-        start (str, optional): _description_. Defaults to ''.
-        end (str, optional): _description_. Defaults to ''.
-        limit (int, optional): _description_. Defaults to 1000.
+        tickers (str): comma-separated string of all the tickers you wanna request data from (mandatory parameter)
+        timeframe (str, optional): timeframe between each bar candle . Defaults to "15Min".
+        start (str, optional): start of the historical bar candles . Defaults to ''.
+        end (str, optional): end of the historical bar candles . Defaults to ''.
+        limit (int, optional): maximum number of bars sent back by the API in 1 page ( split across all tickers not per ticker ) . Defaults to 1000.
+
+    Returns: 
+        dict : dictionary consisting of all the tickers as keys , and their corresponding returned data frames back from the api as the values to the keys 
     """
 
     params = {"symbols": tickers,
@@ -50,7 +55,19 @@ def hist_data(tickers, timeframe= "15Min", start= '', end='' , limit= 1000):
     return d 
         
 
-def read_ticker_csv(one_df, cashValue, verbose_run):
+def read_ticker_dataframe(one_df: pd.DataFrame , cashValue: float, verbose_run: bool)-> Generator[tuple[ int, date, float, float | None, float | None ], None, None]: 
+    """ Iterates through each row of a ticker's price DataFrame, yielding one tuple per day for the backtest loop.
+    
+    Args:
+        one_df (pd.DataFrame): the data frame corresponding to the symbol from the tickers_dfs dictionary 
+        cashValue (float): Current available cash during the run
+        verbose_run (bool): If True, prints daily backtest output
+
+    Yields:
+        Generator[tuple[ int, date, float, float | None, float | None ], None, None]: (day, date, closingPrice, average, openingPrice)
+        `average` and `openingPrice` are None for days 1-2 (warm-up period, no prior average yet)
+        from day 3 onward, `average` is the mean of all closing prices before the current day
+    """
 
     listStorePreviousClosingPrices=[]
     

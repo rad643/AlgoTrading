@@ -1,3 +1,5 @@
+from typing import Any
+from datetime import date
 import data_loading.data_loader as dl
 import engine.process_1_day as process_1_day
 import dataclasses
@@ -22,8 +24,8 @@ class ExecutionState:
             True = Trend strategy.
             False = Mean Reversion strategy.
 
-        csv_ticker:
-            Path to the CSV file used for this run.
+        symbol:
+            Corresponding ticker symbol 
 
         cashValue:
             Current available cash during the run.
@@ -179,7 +181,12 @@ class TradingEngine:
     """
 
     @staticmethod
-    def build_data_frames(log_events,equity_curve,drawdown_series,trades,prices):
+    def build_data_frames(log_events:pd.DataFrame,
+                          equity_curve:pd.DataFrame,
+                          drawdown_series:pd.DataFrame,
+                          trades:pd.DataFrame,
+                          prices:pd.DataFrame)->dict[str,pd.DataFrame]:
+        """ Wiring function that puts together the final dictionary of data frames computed from the backtest_run() method """
         return{
             "log_events":log_events,
             "equity_curve":equity_curve,
@@ -189,7 +196,19 @@ class TradingEngine:
         }
 
     @staticmethod
-    def build_run_df(run_number, ticker, strategy,starting_cash,total_net_profit,mdd,expectancy,payoff_ratio,profit_factor,sharpe_ratio,labels):
+    def build_run_df(run_number:int,
+                     ticker:str,
+                     strategy:str,
+                     starting_cash:float,
+                     total_net_profit:float,
+                     mdd:float,
+                     expectancy:float,
+                     payoff_ratio:float,
+                     profit_factor:float,
+                     sharpe_ratio:float,
+                     labels:str)-> dict[str, Any]:
+        """ Wiring function that puts together the final summary 'run' data frame
+        into a dictionary with values computed from the performance_metrics_data_frame() method"""
         return{
             "run_number":run_number,
             "ticker":ticker,
@@ -205,7 +224,16 @@ class TradingEngine:
         }
 
     @staticmethod 
-    def build_drawdown_series(day,run_number,ticker,strategy,equity,peak_so_far_,drawdown,drawdown_pct):
+    def build_drawdown_series(day:int,
+                              run_number:int,
+                              ticker:str,
+                              strategy:str,
+                              equity:float,
+                              peak_so_far_:float,
+                              drawdown: float,
+                              drawdown_pct: float)-> dict[str, Any]:
+        """ Wiring function that computes a dictionary for each drawdown serie (1 dictionary of drawdowns = 1 single day) 
+        with each 1 dictionary of drawdowns corresponding to 1 single row in the later final 'drawdown series' data frame """
         return{
             "day":day,
             "run_number": run_number,
@@ -218,7 +246,19 @@ class TradingEngine:
         }
 
     @staticmethod
-    def build_one_completed_trade_row(run_number,ticker,strategy,entry_day,entry_price,exit_day,exit_price,profit,return_pct,labels):
+    def build_one_completed_trade_row(run_number:int,
+                                      ticker:str,
+                                      strategy:str,
+                                      entry_day:int,
+                                      entry_price:float,
+                                      exit_day:int,
+                                      exit_price:float,
+                                      profit:float,
+                                      return_pct:float,
+                                      labels:str)->dict[str,Any]:
+        """ Wiring function that, if a completed trade takes place, then it computes and returns a dictionary 
+        corresponding to that 1 single completed trade (1 single dictionary = 1 single completed trade), 
+        and it represents 1 single row in the latter final 'trades' data frame """
         return {
             "run_number":run_number,
             "ticker":ticker,
@@ -233,7 +273,22 @@ class TradingEngine:
         }
 
     @staticmethod
-    def build_event_log_row(run_number, day, date, ticker, strategy, event_type, message, cash, equity, position, execution_price, pnl, labels):
+    def build_event_log_row(run_number:int, 
+                            day:int, 
+                            date:date,
+                            ticker:str, 
+                            strategy:str, 
+                            event_type:str, 
+                            message:str,
+                            cash:float, 
+                            equity:float, 
+                            position:int,
+                            execution_price:float, 
+                            pnl:float, 
+                            labels: str)->dict[str, Any]:
+        """ Wiring function that builds and returns a dictionary in order to 
+        log every event that took place (1 single dictionary = 1 single event logged in),
+        and it represents 1 single row in the later final 'log_events' data frame """
         return {
             "run_number":  run_number,
             "day": day,
@@ -251,13 +306,21 @@ class TradingEngine:
         }
 
     @staticmethod
-    def build_price_row(day, date, ticker, strategy, closing_price, average):
+    def build_price_row(day:int, 
+                        date: date,
+                        ticker: str, 
+                        strategy: str, 
+                        closing_price:float, 
+                        average:float)->dict[str,Any]:
+        """ Wiring function that builds and returns a dictionary
+        corresponding to each row in the later computed prices data frame
+        (1 dictionary of prices = 1 row in the 'prices' data frame)"""
         return {
             "day": day, 
             "date": date, 
             "ticker": ticker, 
             "strategy": strategy,
-            "closing price": closing_price,
+            "closing_price": closing_price,
             "average": average
         }
 
@@ -267,7 +330,7 @@ class TradingEngine:
         Args:
             state (ExecutionState): object on which the backtest is being performed 
         Returns:
-            str: wihch strategy method is to be used as a string 
+            str: which strategy method is to be used as a string 
         """
         return "Trend" if state.trendMethod else "Mean Reversion"
     
@@ -292,7 +355,21 @@ class TradingEngine:
         return state.positionTrend if TradingEngine.strategy(state)=="Trend" else state.positionMeanReversion
 
     @staticmethod
-    def backtest_run(state: ExecutionState, one_df: pd.DataFrame)->dict: # state is an ExecutionState object 
+    def backtest_run(state: ExecutionState, one_df: pd.DataFrame)->dict: 
+
+        """ Runs a full backtest for one ticker: iterates day-by-day over one_df, delegating each day's
+        buy/sell decision to process_1_day (Trend or Mean Reversion, per state.trendMethod), and logs
+        BUY_EXECUTED/SELL_EXECUTED/TRADE_CLOSED events, completed trades, prices, and the equity/drawdown
+        series as they occur. Mutates `state` in place; calls state.reset() first so the instance can be reused
+
+
+        Args:
+            state (ExecutionState): mutable run state (cash, position, strategy config); reset() is called at the start
+            one_df (pd.DataFrame): OHLC price data for a single ticker, as consumed by dl.read_ticker_dataframe
+
+        Returns:
+            dict: {"log_events", "equity_curve", "drawdown_series", "trades", "prices"} — one DataFrame each
+        """
 
         # first, reset all variables back to 0 in case you are reusing the same ExecutionState instance twice 
         state.reset()
@@ -313,8 +390,8 @@ class TradingEngine:
                                                         None,
                                                         None)
         list_dictionaries_event_logs.append(event_log_row)
-        # extract data from the csv file 
-        generatorAverageDayDateClosingPrice=dl.read_ticker_csv(one_df, state.cashValue, state.verbose_run)
+        
+        generatorAverageDayDateClosingPrice=dl.read_ticker_dataframe(one_df, state.cashValue, state.verbose_run)
         # 1 "for" loop iteration=1 day executed,  entire "for" loop iteration=1 full backtest run 
         for extracted_tuple in generatorAverageDayDateClosingPrice:
 
