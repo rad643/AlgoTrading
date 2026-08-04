@@ -1,596 +1,596 @@
+from unittest import TestCase
+from unittest.mock import Mock
 import main 
-import unittest
-import pandas as pd
-import tempfile
-import os 
-
-class TestTradingEnginePerformanceMetrics(unittest.TestCase):
-
-    # testing for the correct returned data frame using TREND method on a temporarily created file 
-    def test_correct_data_frame_trend_strategy(self: "TestTradingEnginePerformanceMetrics"):
-
-        # Reset the class-level run counter so this test starts from a known run number (since it's not instance-specific)
-        main.ExecutionState.backtest_run_number=0
-
-        try: 
-            #create temporary 5 row input csv file 
-            f=tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False)
-            f.write("Date,Open,High,Low,Close,Adj Close,Volume\n")
-            f.write("2026-01-01,5,5,5,5,5,1000\n")
-            f.write("2026-01-02,6,6,6,6,6,1000\n")
-            f.write("2026-01-03,10,10,10,10,10,1000\n")
-            f.write("2026-01-04,11,11,11,11,11,1000\n")
-            f.write("2026-01-05,6,6,6,6,6,1000\n")
-            f.write("2026-01-06,20,20,20,20,20,1000\n")
-            f.write("2026-01-07,20,20,20,20,20,1000\n")
-            f.close()
-
-            # create ExecutionState instance to test TradingEngine's performance_metrics_data_frame() method on
-            state_trend_5_day_file=main.ExecutionState(trendMethod=True, csv_ticker=f.name, cashValue=10000, ticker_name="Test")
-            # performance_metrics_data_frame() requires backtest_run() to be called first to populate listStoreEquityValues with raw daily equity values
-            main.TradingEngine.backtest_run(state_trend_5_day_file)
-            # compute run data frame for state_trend_5_day_file
-            run_data_frame_trend_5_day_file=main.TradingEngine.performance_metrics_data_frame(state_trend_5_day_file)
-            # ignore the index inside the run data frame 
-            run_data_frame_trend_5_day_file=run_data_frame_trend_5_day_file.reset_index(drop=True)
-
-            # create expected returned data frame 
-            d={ "run_number": 1, 
-                "ticker": "Test",
-                "strategy": "Trend", 
-                "starting cash": 10000, 
-                "total net profit": 1626.285,
-                "mdd": 9.07, 
-                "expectancy": float("nan"), 
-                "payoff ratio": float("nan"), 
-                "profit factor": float("nan"), 
-                "sharpe ratio": 0.247,
-                "labels": "Test-Trend" }                         
-            expected_data_frame=pd.DataFrame( data=d , index=[0])
-            # ignore index to assert data frame values only 
-            expected_data_frame=expected_data_frame.reset_index(drop=True)
-
-            # compare Engine instance from backtest_run() with the expected returned data frame 
-            pd.testing.assert_frame_equal( expected_data_frame, run_data_frame_trend_5_day_file )
-        
-        finally:
-            # finally remove the temporarily created file 
-            os.remove(f.name)
+from data_loading import data_loader as dl 
+import pandas as pd 
+from datetime import date 
+from pathlib import Path 
+import math 
 
 
-
-    # testing for the correct returned data frame using MEAN REVERSION method on a temporarily created file 
-    def test_correct_data_frame_mean_rev_strategy(self: "TestTradingEnginePerformanceMetrics"):
-
-        # Reset the class-level run counter so this test starts from a known run number (since it's not instance-specific)
-        main.ExecutionState.backtest_run_number=0
-
-        try:
-            #create temporary 5 row input csv file 
-            f=tempfile.NamedTemporaryFile(mode='w', suffix=".csv", delete=False)
-            f.write("Date,Open,High,Low,Close,Adj Close,Volume\n")
-            f.write("2026-01-01,5,5,5,5,5,1000\n")
-            f.write("2026-01-02,6,6,6,6,6,1000\n")
-            f.write("2026-01-03,10,10,10,10,10,1000\n")
-            f.write("2026-01-04,11,11,11,11,11,1000\n")
-            f.write("2026-01-05,6,6,6,6,6,1000\n")
-            f.write("2026-01-06,20,20,20,20,20,1000\n")
-            f.write("2026-01-07,20,20,20,20,20,1000\n")
-            f.close()
-
-            # create ExecutionState instance to test TradingEngine's performance_metrics_data_frame() method on
-            state_mean_reversion_5_day_file=main.ExecutionState(trendMethod=False, csv_ticker=f.name, cashValue=10000, ticker_name="Test")
-            # performance_metrics_data_frame() requires backtest_run() to be called first to populate listStoreEquityValues with raw daily equity values
-            main.TradingEngine.backtest_run(state_mean_reversion_5_day_file)
-            # compute run data frame for state_mean_reversion_5_day_file
-            run_data_frame_mean_reversion_5_day_file=main.TradingEngine.performance_metrics_data_frame(state_mean_reversion_5_day_file)
-            # ignore the index inside the run data frame 
-            run_data_frame_mean_reversion_5_day_file=run_data_frame_mean_reversion_5_day_file.reset_index(drop=True)
-
-            # create expected returned data frame 
-            d={ "run_number": 1,
-                "ticker": "Test",
-                "strategy": "Mean Reversion", 
-                "starting cash": 10000, 
-                "total net profit": -1.98,
-                "mdd": 0.03, 
-                "expectancy": float("nan"), 
-                "payoff ratio": float("nan"), 
-                "profit factor": 0.0, 
-                "sharpe ratio": -0.645,
-                "labels": "Test-Mean Reversion" }                         
-            expected_data_frame_mean_rev=pd.DataFrame( data=d , index=[0])
-            # ignore index to assert data frame values only 
-            expected_data_frame_mean_rev=expected_data_frame_mean_rev.reset_index(drop=True)
-
-            # compare Engine instance from backtest_run() with the expected returned data frame 
-            pd.testing.assert_frame_equal( expected_data_frame_mean_rev, run_data_frame_mean_reversion_5_day_file )
-        
-        finally:
-            # finally remove the temporarily created file 
-            os.remove(f.name)
-
-    
-    # test for reset correctness on running the same Engine instance multiple times 
-    def test_reset_correctness_engine_instance(self:"TestTradingEnginePerformanceMetrics"):
-
-        # Reset the class-level run counter so this test starts from a known run number (since it's not instance-specific)
-        main.ExecutionState.backtest_run_number=0
-
-        # create ExecutionState object 
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-
-        # run TradingEngine.backtest_run(state) multiple times on the same 'state' ExecutionState object 
-        run1=main.TradingEngine.backtest_run(state)
-        # backtest_run_number increments with each call, so reset between runs to keep run_number identical across both
-        main.ExecutionState.backtest_run_number=0
-        run2=main.TradingEngine.backtest_run(state)
-
-        # check for reset correctness 
-        pd.testing.assert_frame_equal( run1["log_events"], run2["log_events"] )
-        pd.testing.assert_frame_equal(run1["equity_curve"], run2["equity_curve"])
-        pd.testing.assert_frame_equal(run1["drawdown_series"], run2["drawdown_series"])
-        pd.testing.assert_frame_equal(run1["trades"], run2["trades"])
-        pd.testing.assert_frame_equal(run1["prices"], run2["prices"])
-
-
-
-class TestTradingEngineBacktestRun(unittest.TestCase):
+class TestExecutionState(TestCase):
 
     def setUp(self):
-        # Reset the class-level run counter so this test starts from a known run number (since it's not instance-specific)
-        main.ExecutionState.backtest_run_number=0
 
-    def test_returned_dictionary(self: "TestTradingEngineBacktestRun"):
-        """Test that TradingEngine.backtest_run() returns a dictionary.
+        self.state = main.ExecutionState(trendMethod=True, symbol='AAPL', cashValue=10000, ticker_name='Apple')
 
-        Args:
-            self (TestTradingEngineBacktestRun):  Current unittest test case instance.
-        """
-        # create the object and then run backtest_run on it to generate the returned dictionary
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        output=main.TradingEngine.backtest_run(state)
+    def test_post_init(self):
 
-        self.assertIsInstance(output,dict)
+        self.assertEqual( self.state.startingCashValue, self.state.cashValue)
+        self.assertEqual( self.state.positionSizing, 0.2*self.state.cashValue)
+        self.assertEqual( self.state.equity, self.state.cashValue)
 
-    def test_expected_keys(self: "TestTradingEngineBacktestRun"):
-        """Test that backtest_run() returns all expected output dictionary keys.
+    def test_reset(self):
 
-        Args:
-            self (TestTradingEngineBacktestRun):  Current unittest test case instance.
-        """
-        # create the object and then run backtest_run on it to generate the returned dictionary
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        output=main.TradingEngine.backtest_run(state)
+        self.state.reset()
 
-        expected_keys=["log_events", "equity_curve", "drawdown_series", "trades","prices"]
-
-        self.assertEqual( expected_keys, list(output.keys()) )
-
-    def test_dictionary_values_types(self: "TestTradingEngineBacktestRun"):
-        """Check each returned dictionary value is a pd.DataFrame type
-
-        Args:
-            self (TestTradingEngineBacktestRun): Current unittest test case instance.
-        """
-        # create the object and then run backtest_run on it to generate the returned dictionary
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        output=main.TradingEngine.backtest_run(state)
-
-        self.assertIsInstance( output["log_events"], pd.DataFrame ) 
-        self.assertIsInstance( output["equity_curve"], pd.DataFrame )
-        self.assertIsInstance( output["drawdown_series"], pd.DataFrame )
-        self.assertIsInstance( output["trades"], pd.DataFrame )
-        self.assertIsInstance( output["prices"], pd.DataFrame )
-
-    def test_expected_columns_per_data_frame(self: "TestTradingEngineBacktestRun"):
-        """Tests that the column labels for each of the 5 returned data frames correspond to the output  
-
-        Args:
-            self (TestTradingEngineBacktestRun): Current unittest test case instance.
-        """
-        # create the object and then run backtest_run on it to generate the returned dictionary
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        output=main.TradingEngine.backtest_run(state)
-
-        # put all of the expected column labels of each of the 5 data frames from the returned dictionary object into a list 
-        expected_columns_log_events_df=["run_number", "day", "date", "ticker", "strategy", "event_type", "message", 
-                          "cash", "equity", "position", "execution_price", "pnl", "labels"]
-        expected_columns_equity_curve_df=["day", "run_number", "ticker", "strategy", "equity","labels"]
-        expected_columns_drawdown_series_df=["day","run_number", "ticker", "strategy", "equity", 
-                                             "peak_so_far", "drawdown", "drawdown_pct", "labels"]
-        expected_columns_trades_df=["run_number", "ticker", "strategy", "entry_day", "entry_price",
-                                    "exit_day", "exit_price", "profit", "return_pct",
-                                    "labels", "number_trades_took_place"]                     
-        expected_columns_prices_df=["day", "date", "ticker", "strategy", "closing price", "average"]
-
-        self.assertEqual( list(output["log_events"].columns), expected_columns_log_events_df )
-        self.assertEqual( list(output["equity_curve"].columns), expected_columns_equity_curve_df )
-        self.assertEqual( list(output["drawdown_series"].columns), expected_columns_drawdown_series_df)
-        self.assertEqual( list(output["trades"].columns), expected_columns_trades_df)
-        self.assertEqual( list(output["prices"].columns), expected_columns_prices_df)
-
-    def test_empty_data_frames(self: "TestTradingEngineBacktestRun"):
-        """ tests if any of the 5 data frames is empty (any of the axes are of length 0)
-
-        Args:
-            self (TestTradingEngineBacktestRun): Current unittest test case instance.
-        """
-        # create the object and then run backtest_run on it to generate the returned dictionary
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        output=main.TradingEngine.backtest_run(state)
-
-        self.assertTrue(output["log_events"].empty==False)
-        self.assertTrue(output["equity_curve"].empty==False)
-        self.assertTrue(output["drawdown_series"].empty==False)
-        self.assertTrue(output["trades"].empty==False)
-        self.assertTrue(output["prices"].empty==False)
+        self.assertEqual( self.state.listStoreEquityValues, [] )
+        self.assertEqual( self.state.cashValue, self.state.startingCashValue)
+        self.assertEqual( self.state.positionSizing, self.state.cashValue*0.2)
+        self.assertEqual( self.state.equity, self.state.cashValue)
+        self.assertEqual( self.state.positionTrend, 0)
+        self.assertEqual( self.state.entry_day, 0)
+        self.assertEqual( self.state.exit_day, 0)
+        self.assertEqual( self.state.entryPriceTrend, 0)
+        self.assertEqual( self.state.exitPriceTrend, 0)
+        self.assertEqual( self.state.profitTrend, 0)
+        self.assertEqual( self.state.positionMeanReversion, 0)
+        self.assertEqual( self.state.entryPriceMeanReversion, 0)
+        self.assertEqual( self.state.exitPriceMeanReversion, 0)
+        self.assertEqual( self.state.profitMeanReversion, 0)
+        self.assertEqual( self.state.totalProfit, 0)
+        self.assertEqual( self.state.positiveProfitTrend, 0)
+        self.assertEqual( self.state.negativeProfitTrend, 0)
+        self.assertEqual( self.state.positiveProfitMeanRev, 0)
+        self.assertEqual( self.state.negativeProfitMeanRev, 0)
+        self.assertEqual( self.state.positionSizing, self.state.cashValue*0.2)
+        self.assertEqual( self.state.numberTradesTrend, 0)
+        self.assertEqual( self.state.numberTradesMeanRev, 0)
+        self.assertEqual( self.state.totalProfitPositiveTradesTrend, 0)
+        self.assertEqual( self.state.totalProfitNegativeTradesTrend, 0)
+        self.assertEqual( self.state.totalProfitPositiveTradesMeanRev, 0)
+        self.assertEqual( self.state.totalProfitNegativeTradesMeanRev, 0)
+        self.assertEqual( self.state.pending_action, '')
 
 
+class TestTradingEngineWiringFunctions(TestCase):
+
+    def test_build_data_frames(self):
+        """ build 5 simple abstract data frames (values can be anything).
+        Tests that the method builds the dictionary keys from passed in arguments.
+        Checks that the dictionary values are the same data frame objects as the arguments that were passed in
+        and not just copies (identical content)  """
+
+        log_events = { 'col1': [1,2], 'col2': [3,4] }
+        log_events_df = pd.DataFrame(data=log_events)
+
+        equity_curve = { 'col1': [5,6], 'col2': [7,8] }
+        equity_curve_df = pd.DataFrame(data=equity_curve)
+
+        drawdown_series = { 'col1': [9,10], 'col2': [11,12] }
+        drawdown_series_df = pd.DataFrame(data=drawdown_series)
+
+        trades = { 'col1': [13,14], 'col2': [15,16] }
+        trades_df = pd.DataFrame(data=trades)
+
+        prices = { 'col1': [17,18], 'col2': [19,20] }
+        prices_df = pd.DataFrame(data=prices)
+        
+        dict_df = main.TradingEngine.build_data_frames(log_events_df,
+                                                       equity_curve_df,
+                                                       drawdown_series_df,
+                                                       trades_df,
+                                                       prices_df)
+
+        self.assertEqual( len(dict_df), 5 )
+        self.assertIs( dict_df['log_events'], log_events_df )
+        self.assertIs( dict_df['equity_curve'], equity_curve_df )
+        self.assertIs( dict_df['drawdown_series'], drawdown_series_df )
+        self.assertIs( dict_df['trades'], trades_df )
+        self.assertIs( dict_df['prices'], prices_df )
+
+    def test_build_run_df(self):
+        """ build 11 simple abstract variables (values can be anything).
+        Tests that the method builds the dictionary keys from passed in arguments.
+        Checks that the dictionary values are the same objects as the arguments that were passed in
+        and not just copies (identical content)  """
+        
+        run_number = 1
+        ticker='Apple'
+        strategy = 'Trend'
+        starting_cash = 100
+        total_net_profit= 3
+        mdd= 4
+        expectancy= 5
+        payoff_ratio = 6
+        profit_factor= 7
+        sharpe_ratio= 8
+        labels='Apple-Trend'
+
+        d = main.TradingEngine.build_run_df(run_number,
+                ticker,
+                strategy,
+                starting_cash,
+                total_net_profit,
+                mdd,
+                expectancy,
+                payoff_ratio,
+                profit_factor,
+                sharpe_ratio,
+                labels)
+
+        self.assertEqual( len(d), 11 )
+        self.assertEqual( d['run_number'], run_number )
+        self.assertEqual( d['ticker'], ticker )
+        self.assertEqual( d['strategy'], strategy )
+        self.assertEqual( d['starting_cash'], starting_cash )
+        self.assertEqual( d['total_net_profit'], total_net_profit )
+        self.assertEqual( d['mdd'], mdd)
+        self.assertEqual( d['expectancy'], expectancy)
+        self.assertEqual( d['payoff_ratio'], payoff_ratio)
+        self.assertEqual( d['profit_factor'], profit_factor)
+        self.assertEqual( d['sharpe_ratio'], sharpe_ratio)
+        self.assertEqual( d['labels'], labels)
+
+    def test_build_drawdown_series(self):
+        """ build 8 simple abstract variables (values can be anything).
+        Tests that the method builds the dictionary keys from passed in arguments.
+        Checks that the dictionary values are the same objects as the arguments that were passed in
+        and not just copies (identical content) """
+
+        day = 1
+        run_number = 1
+        ticker = "Apple"
+        strategy = "Trend"
+        equity = 10000.56
+        peak_so_far_ = 12000.34
+        drawdown = -500.56
+        drawdown_pct = -21.45
+
+        dict_drawdown_serie = main.TradingEngine.build_drawdown_series(day,
+                                                 run_number,
+                                                 ticker,
+                                                 strategy,
+                                                 equity, 
+                                                 peak_so_far_,
+                                                 drawdown, 
+                                                 drawdown_pct)
+
+        self.assertEqual( len(dict_drawdown_serie), 8)
+        self.assertIs( dict_drawdown_serie['day'], day)
+        self.assertIs( dict_drawdown_serie['run_number'], run_number )
+        self.assertIs( dict_drawdown_serie['ticker'], ticker)
+        self.assertIs( dict_drawdown_serie['strategy'], strategy)
+        self.assertIs( dict_drawdown_serie['equity'], equity )
+        self.assertIs( dict_drawdown_serie['peak_so_far'], peak_so_far_)
+        self.assertIs( dict_drawdown_serie['drawdown'], drawdown )
+        self.assertIs( dict_drawdown_serie['drawdown_pct'], drawdown_pct )
+
+    def test_build_one_completed_trade_row(self):
+        """ build 10 simple abstract variables (values can be anything).
+        Tests that the method builds the dictionary keys from passed in arguments.
+        Checks that the dictionary values are the same objects as the arguments that were passed in
+        and not just copies (identical content)"""
+
+        run_number = 1
+        ticker= 'Apple'
+        strategy = 'Trend'
+        entry_day = 45
+        entry_price = 320.56
+        exit_day = 120
+        exit_price = 315.23
+        profit = 100.23
+        return_pct = 5.67
+        labels = 'Apple-Trend'
+
+        dict_df = main.TradingEngine.build_one_completed_trade_row(
+            run_number,
+            ticker,
+            strategy, 
+            entry_day,
+            entry_price, 
+            exit_day,
+            exit_price, 
+            profit, 
+            return_pct, 
+            labels 
+        )
+
+        self.assertEqual( len(dict_df), 10 )
+        self.assertIs( dict_df['run_number'], run_number)
+        self.assertIs( dict_df['ticker'], ticker)
+        self.assertIs( dict_df['strategy'], strategy)
+        self.assertIs( dict_df['entry_day'], entry_day)
+        self.assertIs( dict_df['entry_price'], entry_price)
+        self.assertIs( dict_df['exit_day'], exit_day)
+        self.assertIs( dict_df['exit_price'], exit_price)
+        self.assertIs( dict_df['profit'], profit )
+        self.assertIs( dict_df['return_pct'], return_pct )
+        self.assertIs( dict_df['labels'], labels )
+
+    def test_build_event_log_row(self):
+        """ build 13 simple abstract variables (values can be anything).
+        Tests that the method builds the dictionary keys from passed in arguments.
+        Checks that the dictionary values are the same objects as the arguments that were passed in
+        and not just copies (identical content) """
+
+        run_number = 1
+        day = 3
+        my_date = date( 2024, 1, 20 )
+        ticker = "Apple"
+        strategy = "Mean Reversion"
+        event_type = 'backtest_start'
+        message = 'Backtest has started'
+        cash = 10000
+        equity = 10320.56
+        position = 10
+        execution_price = 410.21
+        pnl = 540.2
+        labels = 'Apple-Mean Reversion'
+
+        dict_df = main.TradingEngine.build_event_log_row(
+            run_number,
+            day,
+            my_date,
+            ticker,
+            strategy,
+            event_type,
+            message,
+            cash,
+            equity,
+            position, 
+            execution_price, 
+            pnl,
+            labels
+        )
+
+        self.assertEqual( len(dict_df), 13 )
+        self.assertIs( dict_df['run_number'], run_number)
+        self.assertIs( dict_df['day'], day)
+        self.assertIs( dict_df['date'], my_date)
+        self.assertIs( dict_df['ticker'], ticker)
+        self.assertIs( dict_df['strategy'], strategy)
+        self.assertIs( dict_df['event_type'], event_type)
+        self.assertIs( dict_df['message'], message)
+        self.assertIs( dict_df['cash'], cash)
+        self.assertIs( dict_df['equity'], equity)
+        self.assertIs( dict_df['position'], position)
+        self.assertIs( dict_df['execution_price'], execution_price)
+        self.assertIs( dict_df['pnl'], pnl)
+        self.assertIs( dict_df['labels'], labels)
+
+    def test_build_price_row(self):
+        """ build 6 simple abstract variables (values can be anything).
+        Tests that the method builds the dictionary keys from passed in arguments.
+        Checks that the dictionary values are the same objects as the arguments that were passed in
+        and not just copies (identical content) """
+
+        day = 1
+        my_date = date(2026, 1 , 25)
+        ticker = 'Google'
+        strategy = 'Mean Reversion'
+        closing_price = 345.78
+        average = 450.1
+
+        dict_df = main.TradingEngine.build_price_row(
+            day,
+            my_date,
+            ticker,
+            strategy,
+            closing_price,
+            average
+        )
+
+        self.assertEqual( len(dict_df), 6 )
+        self.assertIs( dict_df['day'], day )
+        self.assertIs( dict_df['date'], my_date )
+        self.assertIs( dict_df['ticker'], ticker )
+        self.assertIs( dict_df['strategy'], strategy )
+        self.assertIs( dict_df['closing_price'], closing_price )
+        self.assertIs( dict_df['average'], average )
 
 
-class TestExperimentRunner(unittest.TestCase):
+class TestTradingEngineAccessors(TestCase):
+    """ class that only tests the 3 accessor methods from main for their branching behavior"""
 
     def setUp(self):
-        # Reset the class-level run counter so this test starts from a known run number (since it's not instance-specific)
-        main.ExecutionState.backtest_run_number=0
+        """ using a fixture that runs before the creation of every new test so that each test 
+        can run as a clean fresh state -> isolating behavior.  
+        Create 2 ExecutionState objects, 1 using Trend the other using Mean Reversion."""
+
+        self.state_trend = main.ExecutionState(trendMethod=True, 
+                                        symbol='GOOGL', 
+                                        cashValue=10000, 
+                                        ticker_name="Google")
+
+        self.state_mean_reversion = main.ExecutionState(trendMethod=False, 
+                                                symbol='GOOGL', 
+                                                cashValue=10000, 
+                                                ticker_name="Google")
+
+    def test_strategy(self):
+
+        result_trend = main.TradingEngine.strategy(self.state_trend)
+        result_mean_reversion = main.TradingEngine.strategy(self.state_mean_reversion)
+
+        self.assertEqual( 'Trend', result_trend )
+        self.assertEqual( 'Mean Reversion', result_mean_reversion)
+
+    def test_labels(self):
+
+        result_trend = main.TradingEngine.labels(self.state_trend)
+        result_mean_reversion = main.TradingEngine.labels(self.state_mean_reversion)
+
+        self.assertEqual( 'Google-Trend', result_trend)
+        self.assertEqual( 'Google-Mean Reversion', result_mean_reversion )
     
-    def test_returned_dictionary(self: "TestExperimentRunner"):
-        """Test that ExperimentRunner.structured_data_outputs() returns a dictionary.
+    def test_position(self):
+        """ Hard-code each ExecutionState object's position (number of shares),
+        then call the actual function from main.py to compute the position for both of the Execution State objects,
+        and assert the value returned by the function against the hard-coded value"""
 
-        Args:
-            self (TestExperimentRunner):  Current unittest test case instance.
-        """
-        # construct the ExperimentRunner instance and call structured_data_outputs() on it to compute the dictionary containing the data frames 
-        experimentRunner=main.ExperimentRunner()
-        results=experimentRunner.structured_data_outputs()
+        self.state_trend.positionTrend = 11
+        position_trend = main.TradingEngine.position(self.state_trend)
+        self.assertEqual( position_trend, self.state_trend.positionTrend )
 
-        self.assertIsInstance(results,dict)
+        self.state_mean_reversion.positionMeanReversion = 5
+        position_mean_reversion = main.TradingEngine.position(self.state_mean_reversion)
+        self.assertEqual( position_mean_reversion, self.state_mean_reversion.positionMeanReversion )
+
+    def test_entry_price(self):
+
+        self.state_trend.entryPriceTrend = 345.19
+        entry_price_trend = main.TradingEngine.entry_price(self.state_trend)
+        self.assertEqual( entry_price_trend, self.state_trend.entryPriceTrend )
+
+        self.state_mean_reversion.entryPriceMeanReversion = 450.12
+        entry_price_mean_reversion = main.TradingEngine.entry_price(self.state_mean_reversion)
+        self.assertEqual( entry_price_mean_reversion, self.state_mean_reversion.entryPriceMeanReversion)
+
+    def test_exit_price(self):
+    
+        self.state_trend.exitPriceTrend = 350.19
+        exit_price_trend = main.TradingEngine.exit_price(self.state_trend)
+        self.assertEqual( exit_price_trend, self.state_trend.exitPriceTrend )
+
+        self.state_mean_reversion.exitPriceMeanReversion = 419.12
+        exit_price_mean_reversion = main.TradingEngine.exit_price(self.state_mean_reversion)
+        self.assertEqual( exit_price_mean_reversion, self.state_mean_reversion.exitPriceMeanReversion)
+
+    def test_profit(self):
         
-    def test_expected_keys(self: "TestExperimentRunner"):
-        """Test that structured_data_outputs() returns all expected dictionary keys.
+        self.state_trend.profitTrend = 104.54
+        profit_trend = main.TradingEngine.profit(self.state_trend)
+        self.assertEqual( profit_trend, self.state_trend.profitTrend )
 
-        Args:
-            self (TestExperimentRunner):  Current unittest test case instance.
-        """
-        # construct the ExperimentRunner instance and call structured_data_outputs() on it to compute the dictionary containing the data frames
-        experimentRunner=main.ExperimentRunner()
-        results=experimentRunner.structured_data_outputs()
+        self.state_mean_reversion.profitMeanReversion = 312.62
+        profit_mean_reversion = main.TradingEngine.profit(self.state_mean_reversion)
+        self.assertEqual( profit_mean_reversion, self.state_mean_reversion.profitMeanReversion )
 
-        expected_keys=["Final Data Frame Run", "Equity Curve", "Drawdown Series", "Completed Trades",
-                       "Log Events", "Prices"]
+
+class TestLogEvents(TestCase):
+
+    def setUp(self):
+
+        self.state = main.ExecutionState(
+                                        
+            trendMethod = True , 
+            symbol = 'AAPL' , 
+            cashValue = 10000, 
+            ticker_name = 'Apple'
+    
+        )
+
+        self.state.entryPriceTrend = 187.5
+        self.state.exitPriceTrend  = 193.2
+        self.state.profitTrend     = 57.0
+        self.state.positionTrend   = 10
+        self.state.totalProfit     = 431.9
+        self.state.cashValue       = 9500.0
+        self.state.equity          = 10057.0
+
+    def test_backtest_start_logging_event(self):
+
+        main.TradingEngine.backtest_start_logging_event(self.state)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], main.ExecutionState.backtest_run_number+1 )
+        self.assertTrue( math.isnan(row['day']) )
+        self.assertEqual( row['date'], None )
+        self.assertEqual( row['ticker'] , self.state.ticker_name )
+        self.assertEqual( row['strategy'], main.TradingEngine.strategy(self.state) )
+        self.assertEqual( row['event_type'], "BACKTEST_START" )
+        self.assertEqual( row['message'], "Backtest started" )
+        self.assertEqual( row['cash'], self.state.startingCashValue)
+        self.assertEqual( row['equity'], self.state.equity)
+        self.assertEqual( row['position'], main.TradingEngine.position(self.state))
+        self.assertEqual( row['execution_price'], None)
+        self.assertEqual( row['pnl'], None)
+        self.assertEqual( row['labels'], None)
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_buy_executed_log_event(self):
+
+        day = 4
+        my_date = date ( 2026 , 1 , 12 )
+
+        main.TradingEngine.buy_executed_log_event(self.state, day, my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], main.ExecutionState.backtest_run_number+1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , self.state.ticker_name )
+        self.assertEqual( row['strategy'], main.TradingEngine.strategy(self.state) )
+        self.assertEqual( row['event_type'], "BUY_EXECUTED" )
+        self.assertEqual( row['message'], "A Buy has been executed" )
+        self.assertEqual( row['cash'], 9500.0 )
+        self.assertEqual( row['equity'], 10057.0 )
+        self.assertEqual( row['position'], 10 )
+        self.assertEqual( row['execution_price'], 187.5 )
+        self.assertEqual( row['pnl'], None )
+        self.assertEqual( row['labels'], main.TradingEngine.labels(self.state))
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_sell_executed_log_event(self):
+
+        day = 5
+        my_date = date ( 2024 , 8 , 25 )
+
+        main.TradingEngine.sell_executed_log_event(self.state, day, my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], main.ExecutionState.backtest_run_number+1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , self.state.ticker_name )
+        self.assertEqual( row['strategy'], main.TradingEngine.strategy(self.state) )
+        self.assertEqual( row['event_type'], "SELL_EXECUTED" )
+        self.assertEqual( row['message'], "A Sell has been executed" )
+        self.assertEqual( row['cash'], 9500.0 )
+        self.assertEqual( row['equity'], 10057.0 )
+        self.assertEqual( row['position'], 10 )
+        self.assertEqual( row['execution_price'], 193.2 )
+        self.assertEqual( row['pnl'], 57.0 )
+        self.assertEqual( row['labels'], main.TradingEngine.labels(self.state))
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_trade_closed_log_event(self):
+
+        day = 30
+        my_date = date ( 2025 , 3 , 18 )
+
+        main.TradingEngine.trade_closed_log_event(self.state, day, my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], main.ExecutionState.backtest_run_number+1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , self.state.ticker_name )
+        self.assertEqual( row['strategy'], main.TradingEngine.strategy(self.state) )
+        self.assertEqual( row['event_type'], "TRADE_CLOSED" )
+        self.assertEqual( row['message'], "A Trade has been executed" )
+        self.assertEqual( row['cash'], 9500.0 )
+        self.assertEqual( row['equity'], 10057.0)
+        self.assertEqual( row['position'], 10 )
+        self.assertEqual( row['execution_price'], 193.2 )
+        self.assertEqual( row['pnl'], 57.0 )
+        self.assertEqual( row['labels'], main.TradingEngine.labels(self.state))
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_backtest_end_logging_event(self):
+
+        day = 21
+        my_date = date ( 2027 , 7 , 4 )
+
+        main.TradingEngine.backtest_end_logging_event(self.state, day, my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], main.ExecutionState.backtest_run_number+1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , self.state.ticker_name )
+        self.assertEqual( row['strategy'], main.TradingEngine.strategy(self.state) )
+        self.assertEqual( row['event_type'], "BACKTEST_END" )
+        self.assertEqual( row['message'], "Backtest has ended" )
+        self.assertEqual( row['cash'], 9500.0 )
+        self.assertEqual( row['equity'], 10057.0 )
+        self.assertEqual( row['position'], 10)
+        self.assertEqual( row['execution_price'], None )
+        self.assertEqual( row['pnl'], 431.9 )
+        self.assertEqual( row['labels'], None )
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_log_events_mean_reversion(self):
+
+        state = main.ExecutionState(
+
+            trendMethod = False ,
+            symbol = 'AAPL' ,
+            cashValue = 10000,
+            ticker_name = 'Apple'
+
+        )
+
+        state.entryPriceMeanReversion = 71.1
+        state.exitPriceMeanReversion  = 74.4
+        state.profitMeanReversion     = 33.0
+        state.positionMeanReversion   = 7
+
+        main.TradingEngine.buy_executed_log_event(state, 4, date(2026, 1, 12))
+        main.TradingEngine.sell_executed_log_event(state, 5, date(2026, 1, 13))
+        main.TradingEngine.trade_closed_log_event(state, 5, date(2026, 1, 13))
+
+        buy = state.list_dictionaries_event_logs[0]
+        sell = state.list_dictionaries_event_logs[1]
+        closed = state.list_dictionaries_event_logs[2]
+
+        self.assertEqual( buy['strategy'], 'Mean Reversion' )
+        self.assertEqual( buy['labels'], 'Apple-Mean Reversion' )
+        self.assertEqual( buy['position'], 7 )
+        self.assertEqual( buy['execution_price'], 71.1 )
+        self.assertEqual( buy['pnl'], None )
+
+        self.assertEqual( sell['execution_price'], 74.4 )
+        self.assertEqual( sell['pnl'], 33.0 )
+        self.assertEqual( sell['position'], 7 )
+
+        self.assertEqual( closed['execution_price'], 74.4 )
+        self.assertEqual( closed['pnl'], 33.0 )
+
+        self.assertEqual( len(state.list_dictionaries_event_logs), 3 )
+
+
+
+
+
+
+
+
         
-        self.assertEqual( list(results.keys()), expected_keys )
-
-    def test_dictionary_values_type(self: "TestExperimentRunner"):
-        """Check each returned dictionary value is a pd.DataFrame dtype
-
-        Args:
-            self (TestExperimentRunner): Current unittest test case instance.
-        """
-        # construct the ExperimentRunner instance and call structured_data_outputs() on it to compute the dictionary containing the data frames
-        experimentRunner=main.ExperimentRunner()
-        results=experimentRunner.structured_data_outputs()
-
-        self.assertIsInstance( results["Final Data Frame Run"], pd.DataFrame )
-        self.assertIsInstance( results["Equity Curve"], pd.DataFrame )
-        self.assertIsInstance( results["Drawdown Series"], pd.DataFrame )
-        self.assertIsInstance( results["Completed Trades"], pd.DataFrame )
-        self.assertIsInstance( results["Log Events"], pd.DataFrame )
-        self.assertIsInstance( results["Prices"], pd.DataFrame )
-
-    def test_length_and_labels_column_run_data_frame(self:"TestExperimentRunner"):
-        """tests that Final Data Frame Run contains exactly 6 rows (1 row per TradingEngine run), and that the run data frame's "labels" column exists
-
-        Args:
-            self (TestExperimentRunner): Current unittest test case instance.
-        """
-        # construct the ExperimentRunner instance and call structured_data_outputs() on it to compute the dictionary containing the data frames
-        experimentRunner=main.ExperimentRunner()
-        results=experimentRunner.structured_data_outputs()
-
-        expected_values_labels_run_data_frame=["Apple-Trend", "Apple-Mean Reversion", 
-                                               "Google-Trend", "Google-Mean Reversion",
-                                               "Microsoft-Trend", "Microsoft-Mean Reversion"]
-
-        self.assertTrue( len(results["Final Data Frame Run"])==6 )
-        self.assertEqual( list(results["Final Data Frame Run"]["labels"]), expected_values_labels_run_data_frame )
-
-    def test_non_empty_data_frames(self:"TestExperimentRunner"):
-        """tests that the data frames are not empty (no axes of length 0)
-        Args:
-            self (TestExperimentRunner): Current unittest test case instance.
-        """
-        # construct the ExperimentRunner instance and call structured_data_outputs() on it to compute the dictionary containing the data frames
-        experimentRunner=main.ExperimentRunner()
-        results=experimentRunner.structured_data_outputs()
-
-        self.assertFalse(results["Equity Curve"].empty)
-        self.assertFalse(results["Drawdown Series"].empty)
-        self.assertFalse(results["Completed Trades"].empty)
-        self.assertFalse(results["Log Events"].empty)
-        self.assertFalse(results["Prices"].empty)
-
-    def test_labels_columns_data_frames(self:"TestExperimentRunner"):
-        """tests that the "labels" columns exist for each data frame
-
-        Args:
-            self (TestExperimentRunner): Current unittest test case instance.
-        """
-        # construct the ExperimentRunner instance and call structured_data_outputs() on it to compute the dictionary containing the data frames
-        experimentRunner=main.ExperimentRunner()
-        results=experimentRunner.structured_data_outputs()
-
-        expected_values_labels=["Apple-Trend", "Apple-Mean Reversion", 
-                                "Google-Trend", "Google-Mean Reversion",
-                                "Microsoft-Trend", "Microsoft-Mean Reversion"]
-
-        self.assertEqual( list(results["Equity Curve"]["labels"].unique()), expected_values_labels )
-        self.assertEqual( list(results["Drawdown Series"]["labels"].unique()), expected_values_labels )
-        self.assertEqual( list(results["Completed Trades"]["labels"].unique()), expected_values_labels )
-        self.assertEqual( list(results["Log Events"]["labels"].dropna().unique()), expected_values_labels )
-        self.assertEqual( list((results["Prices"]["ticker"]+"-"+results["Prices"]["strategy"]).unique()), expected_values_labels )
-
-
 
         
-        
-class TestAggregationLayer(unittest.TestCase):
 
-    def test_total_runs_summary(self):
-        """tests that total_runs_summary returns the correct number of rows
-        of the 'Final Data Frame Run' (length of the data frame) 
+
+
+
+class TestTradingEngineBacktestRun(TestCase):
+
+    def test_characterization_run(self):
         """
+        Builds the path to results.txt so it lives next to test_main.py,
+        no matter which folder I run pytest from.
 
-        # new 'fake' run data frame to test the method on 
-        d={ "run_number": [1,2,3], 
-            "ticker": ["Apple", "Apple", "Google"],
-            "strategy": ["Trend","Trend","Trend"],
-            "starting cash": [1000,1000,1000],
-            "total net profit": [50.6, 46.12, -12.56],
-            "mdd": [8.53, 5.12, 2.64],
-            "expectancy": [-2.54, None, 13.4],
-            "payoff ratio": [2.4, 1.44, 7.2],
-            "profit factor": [5.23, 1.02, 1.23],
-            "sharpe ratio": [0.045, -0.13, 1.5],
-            "labels": ["Apple-Trend", "Apple-Trend", "Google-Trend"] }
-        new_final_run_df=pd.DataFrame(data=d)
-        results={ "Final Data Frame Run": new_final_run_df }
+        Runs the whole backtest and turns every DataFrame into CSV text.
 
-        self.assertTrue(main.AggregationLayer(results).total_runs_summary()==3)
+        First run: write_text() creates results.txt file on disk and the test
+        asserts nothing. Every run after that: compares the new output
+        against that file.
 
-    def test_best_run_summary(self):
-        """tests that best_run_summary returns the entire row from "Final Data Frame Run"
-        which corresponds to the maximum 'total net profit' cell value
+        If they stop matching, my refactoring changed something.
+        Delete results.txt to save a new one.
         """
-
-        # new 'fake' run data frame to test the method on 
-        d={ "run_number": [1,2,3], 
-            "ticker": ["Apple", "Apple", "Google"],
-            "strategy": ["Trend","Trend","Trend"],
-            "starting cash": [1000,1000,1000],
-            "total net profit": [50.6, 46.12, -12.56],
-            "mdd": [8.53, 5.12, 2.64],
-            "expectancy": [-2.54, None, 13.4],
-            "payoff ratio": [2.4, 1.44, 7.2],
-            "profit factor": [5.23, 1.02, 1.23],
-            "sharpe ratio": [0.045, -0.13, 1.5],
-            "labels": ["Apple-Trend", "Apple-Trend", "Google-Trend"] }
-        new_final_run_df=pd.DataFrame(data=d)
-        results={ "Final Data Frame Run": new_final_run_df }
-
-        self.assertTrue(main.AggregationLayer(results).best_run_summary()=={"run_number": 1, 
-                                                                            "ticker": "Apple",
-                                                                            "strategy": "Trend",
-                                                                            "starting cash": 1000,
-                                                                            "total net profit": 50.6,
-                                                                            "mdd": 8.53,
-                                                                            "expectancy": -2.54,
-                                                                            "payoff ratio": 2.4,
-                                                                            "profit factor": 5.23,
-                                                                            "sharpe ratio": 0.045,
-                                                                            "labels": "Apple-Trend"})
         
-    def test_worst_run_summary(self):
-        """tests that worst_run_summary returns the entire row from "Final Data Frame Run"
-        which corresponds to the minimum 'total net profit' cell value
-        """
-        # new 'fake' run data frame to test the method on 
-        d={ "run_number": [1,2,3], 
-            "ticker": ["Apple", "Apple", "Google"],
-            "strategy": ["Trend","Trend","Trend"],
-            "starting cash": [1000,1000,1000],
-            "total net profit": [50.6, 46.12, -12.56],
-            "mdd": [8.53, 5.12, 2.64],
-            "expectancy": [-2.54, None, 13.4],
-            "payoff ratio": [2.4, 1.44, 7.2],
-            "profit factor": [5.23, 1.02, 1.23],
-            "sharpe ratio": [0.045, -0.13, 1.5],
-            "labels": ["Apple-Trend", "Apple-Trend", "Google-Trend"] }
-        new_final_run_df=pd.DataFrame(data=d)
-        results={ "Final Data Frame Run": new_final_run_df }
+        golden = Path(__file__).parent / 'results.txt'
 
-        self.assertTrue(main.AggregationLayer(results).worst_run_summary()=={"run_number": 3, 
-                                                                            "ticker": "Google",
-                                                                            "strategy": "Trend",
-                                                                            "starting cash": 1000,
-                                                                            "total net profit": -12.56,
-                                                                            "mdd": 2.64,
-                                                                            "expectancy": 13.4, 
-                                                                            "payoff ratio": 7.2,
-                                                                            "profit factor": 1.23,
-                                                                            "sharpe ratio": 1.5,
-                                                                            "labels": "Google-Trend"})
+        experimentRunner = main.ExperimentRunner()
+        d = experimentRunner.structured_data_outputs()
+        results = "\n".join(f"=== {k} ===\n{v.to_csv(index=False)}" for k, v in d.items())
 
-    def test_average_performance_summary(self):
-        """tests that the expected averages are calculated 
-        for each individual performance metric per total backtest runs
-        """
-        # new 'fake' run data frame to test the method on 
-        d={ "run_number": [1,2,3], 
-            "ticker": ["Apple", "Apple", "Google"],
-            "strategy": ["Trend","Trend","Trend"],
-            "starting cash": [1000,1000,1000],
-            "total net profit": [50.6, 46.12, -12.56],
-            "mdd": [8.53, 5.12, 2.64],
-            "expectancy": [-2.54, None, 13.4],
-            "payoff ratio": [2.4, 1.44, 7.2],
-            "profit factor": [5.23, 1.02, 1.23],
-            "sharpe ratio": [0.045, -0.13, 1.5],
-            "labels": ["Apple-Trend", "Apple-Trend", "Google-Trend"] }
-        new_final_run_df=pd.DataFrame(data=d)
-        results={ "Final Data Frame Run": new_final_run_df }
+        if not golden.exists():
+            golden.write_text(results)
+            return
 
-        self.assertTrue( main.AggregationLayer(results).average_performance_summary()=={"average total net profit": 28.05, 
-                                                                               "average mdd": 5.43,
-                                                                               'average expectancy': 5.43,
-                                                                               'average payoff ratio': 3.68,
-                                                                               'average profit factor': 2.49,
-                                                                               'average sharpe ratio': 0.47} )
+        self.assertEqual(results, golden.read_text())
         
-    def test_selected_run_summary(self):
-        """Test that selected_run_summary() returns the correct row as a dict 
-        for a given ticker and strategy."""
-
-        # new 'fake' run data frame to test the method on 
-        d={ "run_number": [1,2,3], 
-            "ticker": ["Apple", "Apple", "Google"],
-            "strategy": ["Trend","Trend","Trend"],
-            "starting cash": [1000,1000,1000],
-            "total net profit": [50.6, 50.6, -12.56],
-            "mdd": [8.53, 8.53, 2.64],
-            "expectancy": [13.4, 13.4, None],
-            "payoff ratio": [1.44, 1.44, 7.2],
-            "profit factor": [5.23, 5.23, 1.23],
-            "sharpe ratio": [-0.13, -0.13, 1.5],
-            "labels": ["Apple-Trend", "Apple-Trend", "Google-Trend"] }
-        new_final_run_df=pd.DataFrame(data=d)
-        results={ "Final Data Frame Run": new_final_run_df }
-
-        self.assertTrue( main.AggregationLayer(results).selected_run_summary("Apple", "Trend")=={"run_number": 1, 
-                                                                                                "ticker": "Apple",
-                                                                                                "strategy": "Trend",
-                                                                                                "starting cash": 1000,
-                                                                                                "total net profit": 50.6,
-                                                                                                "mdd": 8.53,
-                                                                                                "expectancy": 13.4, 
-                                                                                                "payoff ratio": 1.44,
-                                                                                                "profit factor": 5.23,
-                                                                                                "sharpe ratio": -0.13,
-                                                                                                "labels": "Apple-Trend"})
-        
-    def test_selected_run_trade_list(self):
-        """Test that selected_run_trade_list() returns the correct 
-        filtered trades DataFrame for a given ticker and strategy."""
-
-        # new 'fake' run data frame to test the method on 
-        d_trades = {
-                    "run_number": [1,2,3],
-                    "ticker":["Apple","Apple","Google" ],
-                    "strategy":["Trend","Trend","Mean Reversion"],
-                    "entry_day":[3,7,4 ],
-                    "entry_price":[100.0,110.0,200.0],
-                    "exit_day":[5,9,6 ],
-                    "exit_price":[105.0,108.0,195.0],
-                    "profit":[50.0,-20.0,-50.0],
-                    "return_pct":[5.0, -1.82,-2.5],
-                    "labels":["Apple-Trend", "Apple-Trend", "Google-Mean Reversion"],
-                    "number_trades_took_place":[1,1,1] }
-        new_final_run_df=pd.DataFrame(data=d_trades)
-        results={ "Completed Trades": new_final_run_df }
-
-        # dictionary for the selected trade run 
-        selected_run={ "run_number": 3, 
-         "ticker": "Google",
-         "strategy": "Mean Reversion",
-         "entry_day": 4,
-         "entry_price": 200.0,
-         "exit_day": 6,
-         "exit_price": 195.0, 
-         "profit": -50.0,
-         "return_pct": -2.5,
-         "labels": "Google-Mean Reversion", 
-         "number_trades_took_place": 1}
-        selected_run_df=pd.DataFrame(data=selected_run,index=[0])
-        selected_run_df=selected_run_df.reset_index(drop=True)
-
-        pd.testing.assert_frame_equal( (main.AggregationLayer(results).selected_run_trade_list("Google", "Mean Reversion")).reset_index(drop=True) , selected_run_df )
-
-    def test_selected_run_trade_list_empty(self):
-        """Test that selected_run_trade_list() raises ValueError 
-        when no trades exist for the given ticker and strategy."""
-
-        # new 'fake' run data frame to test the method on 
-        d_trades = { "run_number": [],
-                    "ticker":[],
-                    "strategy":[],
-                    "entry_day":[],
-                    "entry_price":[],
-                    "exit_day":[],
-                    "exit_price":[],
-                    "profit":[],
-                    "return_pct":[],
-                    "labels":[],
-                    "number_trades_took_place":[] }
-        new_trades_df=pd.DataFrame(data=d_trades)
-        results={ "Completed Trades": new_trades_df }
-
-        with self.assertRaises(ValueError):
-            main.AggregationLayer(results).selected_run_trade_list("Google", "Mean Reversion")
-
-    def test_aggregation_outputs_returned_dictionary(self):
-        """test that it returns the correct dictionary instance"""
-        main.ExecutionState.backtest_run_number=0
-
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        dictionary_data_frames=main.TradingEngine.backtest_run(state)
-        run_data_frame=main.TradingEngine.performance_metrics_data_frame(state)
-        results_data_frames={ "Final Data Frame Run": run_data_frame,
-                              "Equity Curve": dictionary_data_frames["equity_curve"],
-                                "Drawdown Series": dictionary_data_frames["drawdown_series"],
-                                  "Completed Trades": dictionary_data_frames["trades"],
-                                    "Log Events": dictionary_data_frames["log_events"],
-                                      "Prices": dictionary_data_frames["prices"]  }
-
-        self.assertIsInstance( main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend") , dict)
-        
-    def test_aggregation_outputs_expected_keys(self):
-        """test that it contains the 6 expected keys"""
-        main.ExecutionState.backtest_run_number=0
-
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        dictionary_data_frames=main.TradingEngine.backtest_run(state)
-        run_data_frame=main.TradingEngine.performance_metrics_data_frame(state)
-        results_data_frames={ "Final Data Frame Run": run_data_frame,
-                              "Equity Curve": dictionary_data_frames["equity_curve"],
-                                "Drawdown Series": dictionary_data_frames["drawdown_series"],
-                                  "Completed Trades": dictionary_data_frames["trades"],
-                                    "Log Events": dictionary_data_frames["log_events"],
-                                      "Prices": dictionary_data_frames["prices"]  }
-        
-        expected_keys=["total_runs", "best_run_summary", "worst_run_summary", "average_performance_summary",
-                       "selected_run_summary", "selected_run_trade_list"]
-
-        self.assertEqual( list((main.AggregationLayer(results_data_frames).aggregation_outputs("Apple","Trend")).keys()) , expected_keys)
-
-    def test_aggregation_outputs_dictionary_dtype(self):
-        """Check each returned dictionary value belongs to its corresponding expected data type"""
-        main.ExecutionState.backtest_run_number=0
-
-        state=main.ExecutionState(trendMethod=True, csv_ticker="data/aapl_us_d.csv", cashValue=10000, ticker_name="Apple")
-        dictionary_data_frames=main.TradingEngine.backtest_run(state)
-        run_data_frame=main.TradingEngine.performance_metrics_data_frame(state)
-        results_data_frames={ "Final Data Frame Run": run_data_frame,
-                              "Equity Curve": dictionary_data_frames["equity_curve"],
-                                "Drawdown Series": dictionary_data_frames["drawdown_series"],
-                                  "Completed Trades": dictionary_data_frames["trades"],
-                                    "Log Events": dictionary_data_frames["log_events"],
-                                      "Prices": dictionary_data_frames["prices"]  }
-        
-        self.assertIsInstance( (main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend"))["total_runs"], int )
-        self.assertIsInstance( (main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend"))["best_run_summary"], dict )
-        self.assertIsInstance( (main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend"))["worst_run_summary"], dict )
-        self.assertIsInstance( (main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend"))["average_performance_summary"], dict )
-        self.assertIsInstance( (main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend"))["selected_run_summary"], dict )
-        self.assertIsInstance( (main.AggregationLayer(results_data_frames).aggregation_outputs("Apple", "Trend"))["selected_run_trade_list"], pd.DataFrame )
         

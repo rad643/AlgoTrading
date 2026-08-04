@@ -296,17 +296,22 @@ Interactive API documentation is available through FastAPI's `/docs` route while
 Run the suite with:
 
 ```bash
-PYTHONPATH=. pytest -q
+python -m pytest tests/ -v
 ```
 
-The test suite was originally written around the earlier CSV-based version of the engine. Some lower-level strategy and metric tests remain useful, but the old `test_main.py` is currently behind the production architecture and is being refactored to:
+Refactored `main.TradingEngine.backtest_run()` into small helper functions to make it unit-testable; used a golden master test to make sure the output after the refactoring stayed identical to the output before it.
 
-- use in-memory DataFrames;
-- mock Alpaca HTTP responses;
-- test the current engine interface; and
+Ran the pre-refactor version from the last GitHub commit to generate results_old.txt, then used a diff command to compare it against the results.txt produced by the refactored code. Both files came back identical, which confirmed the refactoring hadn't changed any output; After that, every time I refactor something in main.py I just run the characterization test again. If it comes out green, the changes I made haven't changed the output. 
+
+Once the refactoring is complete and the new unit tests for the helper functions are green, the characterization test can be deleted — the unit tests now cover the individual pieces, so the golden master isn't needed as a safety net anymore.
+
+`test_main.py` currently covers the extracted wiring and accessor helpers, plus the golden master (characterization) test over the full backtest pipeline. Remaining work:
+
+- mock Alpaca HTTP responses so tests run without network access;
+- extend unit coverage to the log-event helpers and the remaining `backtest_run()` logic; and
 - add API/database integration tests.
 
-A completely passing test suite is therefore **not currently claimed**.
+The existing suite passes; coverage of the remaining engine logic and the API layer is still to come.
 
 ## Development Roadmap
 

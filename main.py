@@ -108,23 +108,24 @@ class ExecutionState:
     fixed_bps: float=0.0005
     flat_fee_per_share: float=0.005
     positionSizing: float=0
+    list_dictionaries_event_logs: list = dataclasses.field(default_factory = list)
     listStoreEquityValues: list=dataclasses.field(default_factory=list)
-    equity: int=0
+    equity: float =0
     positionTrend: int=0
     entry_day: int=0
     exit_day: int=0
-    entryPriceTrend: int=0
-    exitPriceTrend: int =0
-    profitTrend: int =0
+    entryPriceTrend: float =0
+    exitPriceTrend: float =0
+    profitTrend: float =0
     positionMeanReversion: int =0
-    entryPriceMeanReversion: int =0
-    exitPriceMeanReversion: int =0
-    profitMeanReversion: int =0
-    totalProfit: float=0
-    positiveProfitTrend: int=0
-    negativeProfitTrend: int=0
-    positiveProfitMeanRev: int=0
-    negativeProfitMeanRev: int=0
+    entryPriceMeanReversion: float =0
+    exitPriceMeanReversion: float =0
+    profitMeanReversion: float =0
+    totalProfit: float = 0
+    positiveProfitTrend: float=0
+    negativeProfitTrend: float=0
+    positiveProfitMeanRev: float=0
+    negativeProfitMeanRev: float =0
     numberTradesTrend: int=0
     numberTradesMeanRev: int=0
     totalProfitPositiveTradesTrend: float=0
@@ -142,6 +143,7 @@ class ExecutionState:
 
 
     def reset(self):
+        self.list_dictionaries_event_logs = []
         self.listStoreEquityValues=[]
         self.cashValue=self.startingCashValue
         self.positionSizing=self.cashValue*0.2
@@ -355,6 +357,160 @@ class TradingEngine:
         return state.positionTrend if TradingEngine.strategy(state)=="Trend" else state.positionMeanReversion
 
     @staticmethod
+    def entry_price(state: ExecutionState) -> float:
+        """based on the strategy that you're using, it returns either the entry price for trend or the entry price for mean reversion
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+
+        Returns:
+            float: the corresponding entry price based on the strategy you're using
+        """
+
+        return state.entryPriceTrend if TradingEngine.strategy(state) == "Trend" else state.entryPriceMeanReversion
+
+    @staticmethod
+    def exit_price(state: ExecutionState) -> float:
+        """based on the strategy that you're using, it returns either the exit price for trend or the exit price for mean reversion
+        
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+
+        Returns:
+            float: the corresponding exit price based on the strategy you're using
+        """
+
+        return state.exitPriceTrend if TradingEngine.strategy(state) == "Trend" else state.exitPriceMeanReversion
+
+    @staticmethod
+    def profit(state: ExecutionState) -> float:
+        """based on the strategy that you're using, it returns either the profit you made by using trend or the profit you made by using mean reversion
+                
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+
+        Returns:
+            float: the corresponding profit based on the strategy you're using
+        """
+        return state.profitTrend if TradingEngine.strategy(state) == "Trend" else state.profitMeanReversion
+
+    @staticmethod 
+    def backtest_start_logging_event(state:ExecutionState) -> None:
+        """ The beginning of the backtest running engine is logged as the starting event in the form of a dictionary,
+        and then added to a list of logged events. 
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1, float("nan"), 
+                                                        None, state.ticker_name, 
+                                                        TradingEngine.strategy(state), 
+                                                        "BACKTEST_START",
+                                                        "Backtest started",
+                                                        state.startingCashValue, 
+                                                        state.equity, 
+                                                        TradingEngine.position(state),
+                                                        None, 
+                                                        None,
+                                                        None)
+        state.list_dictionaries_event_logs.append(event_log_row)
+
+    @staticmethod 
+    def buy_executed_log_event(state:ExecutionState , day:int , my_date:date ) -> None:
+        """ Whenever a buy happens, it's logged as a buying executed event in the form of a dictionary,
+        and then added to a list of logged events. 
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                        day, my_date, state.ticker_name,
+                                                        TradingEngine.strategy(state),
+                                                        "BUY_EXECUTED",
+                                                        "A Buy has been executed",
+                                                        state.cashValue,
+                                                        state.equity,
+                                                        TradingEngine.position(state),
+                                                        TradingEngine.entry_price(state) ,
+                                                        None ,
+                                                        TradingEngine.labels(state) )
+        state.list_dictionaries_event_logs.append(event_log_row)
+
+    @staticmethod
+    def sell_executed_log_event(state: ExecutionState , day: int , my_date: date) -> None:
+        """ Whenever a sell happens, it's logged as a selling executed event in the form of a dictionary,
+        and then added to a list of logged events. 
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                        day,my_date,state.ticker_name,
+                                                        TradingEngine.strategy(state),
+                                                        "SELL_EXECUTED",
+                                                        "A Sell has been executed",
+                                                        state.cashValue,
+                                                        state.equity, 
+                                                        TradingEngine.position(state) ,
+                                                        TradingEngine.exit_price(state) ,
+                                                        TradingEngine.profit(state) ,
+                                                        TradingEngine.labels(state) )
+        state.list_dictionaries_event_logs.append(event_log_row)
+
+    @staticmethod 
+    def trade_closed_log_event(state: ExecutionState, day:int , my_date: date) -> None: 
+        """ Whenever a sell has happened, it means that a trade took place, 
+        and the trade is now closed; so it's logged as a trading event in the form of a dictionary,
+        and then added to a list of logged events. 
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                        day,
+                                                        my_date,
+                                                        state.ticker_name,
+                                                        TradingEngine.strategy(state) ,
+                                                        "TRADE_CLOSED",
+                                                        "A Trade has been executed",
+                                                        state.cashValue,
+                                                        state.equity,
+                                                        TradingEngine.position(state) ,
+                                                        TradingEngine.exit_price(state) ,
+                                                        TradingEngine.profit(state) ,
+                                                        TradingEngine.labels(state) )
+        state.list_dictionaries_event_logs.append(event_log_row)
+
+    @staticmethod
+    def backtest_end_logging_event(state: ExecutionState, day:int , my_date:date) -> None :
+        """ The end of the backtest running engine is logged as the final event in the form of a dictionary,
+        and then added to a list of logged events. 
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
+                                                                day,
+                                                                my_date,
+                                                                state.ticker_name,
+                                                                TradingEngine.strategy(state),
+                                                                "BACKTEST_END",
+                                                                "Backtest has ended",
+                                                                state.cashValue,
+                                                                state.equity,
+                                                                TradingEngine.position(state),
+                                                                None,
+                                                                state.totalProfit,
+                                                                None)
+        state.list_dictionaries_event_logs.append(event_log_row)
+
+    @staticmethod
     def backtest_run(state: ExecutionState, one_df: pd.DataFrame)->dict: 
 
         """ Runs a full backtest for one ticker: iterates day-by-day over one_df, delegating each day's
@@ -373,30 +529,18 @@ class TradingEngine:
 
         # first, reset all variables back to 0 in case you are reusing the same ExecutionState instance twice 
         state.reset()
-        # list of dictionaries holding all the logged events 
-        list_dictionaries_event_logs=[]
+        
+        TradingEngine.backtest_start_logging_event(state)
+
         list_dictionaries_prices=[]
         list_dictionaries_completed_trades=[]
-        # compute the dictionary for the BACKTEST_START logging event 
-        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1, float("nan"), 
-                                                        None, state.ticker_name, 
-                                                        TradingEngine.strategy(state), 
-                                                        "BACKTEST_START",
-                                                        "Backtest started",
-                                                        state.startingCashValue, 
-                                                        state.equity, 
-                                                        TradingEngine.position(state),
-                                                        None, 
-                                                        None,
-                                                        None)
-        list_dictionaries_event_logs.append(event_log_row)
         
         generatorAverageDayDateClosingPrice=dl.read_ticker_dataframe(one_df, state.cashValue, state.verbose_run)
         # 1 "for" loop iteration=1 day executed,  entire "for" loop iteration=1 full backtest run 
         for extracted_tuple in generatorAverageDayDateClosingPrice:
 
             day=extracted_tuple[0]
-            date=extracted_tuple[1]
+            my_date=extracted_tuple[1]
             closingPrice=extracted_tuple[2]
             average=extracted_tuple[3]
             nextDayOpeningPrice=extracted_tuple[4]
@@ -408,7 +552,7 @@ class TradingEngine:
                 if state.trendMethod:
                     
                     # compute the dictionary row for the price data frame 
-                    price_row=TradingEngine.build_price_row(day, date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
+                    price_row=TradingEngine.build_price_row(day, my_date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
                     # append to the list of dictionaries/rows for the price data frame 
                     list_dictionaries_prices.append(price_row)
                     #we only compute when there's a change in the profit 
@@ -416,7 +560,7 @@ class TradingEngine:
                     # before "process_1_day()" we hold no shares
                     previous_position=state.positionTrend 
                     # Process one trading day, update portfolio state, and print the day’s execution/output details
-                    state.positionTrend, state.profitTrend, state.entryPriceTrend, state.exitPriceTrend, state.cashValue, state.equity, state.pending_action, state.entry_day, state.exit_day=process_1_day.process_one_day(state.verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
+                    state.positionTrend, state.profitTrend, state.entryPriceTrend, state.exitPriceTrend, state.cashValue, state.equity, state.pending_action, state.entry_day, state.exit_day=process_1_day.process_one_day(state.verbose_run, day, my_date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
                     # a trade took place
                     if( (state.profitTrend-previousProfitTrend) !=0 ):
                         one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
@@ -454,49 +598,19 @@ class TradingEngine:
                     # if after "process_1_day()" we do hold shares, but before it we didn't =>
                     # we bought => we compute BUY_EXECUTED logging event 
                     if ( previous_position==0 and current_position>0 ):
-                        # we compute the dictionary row for the BUY_EXECUTED logging event 
-                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                                        day, date, state.ticker_name, 
-                                                                        TradingEngine.strategy(state), "BUY_EXECUTED",
-                                                                        "A Buy has been executed",
-                                                                        state.cashValue,
-                                                                        state.equity, 
-                                                                        state.positionTrend,
-                                                                        state.entryPriceTrend,
-                                                                        None, 
-                                                                        TradingEngine.labels(state) )
-                        list_dictionaries_event_logs.append(event_log_row)
+
+                        TradingEngine.buy_executed_log_event(state, day, my_date)
 
                     # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
                     # we sold => we compute SELL_EXECUTED logging event 
                     if ( previous_position>0 and current_position==0 ):
-                        # we compute the dictionary row for the BUY_EXECUTED logging event 
-                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                                        day, date, state.ticker_name,
-                                                                        TradingEngine.strategy(state),
-                                                                        "SELL_EXECUTED",
-                                                                        "A Sell has been executed",
-                                                                        state.cashValue,
-                                                                        state.equity,
-                                                                        state.positionTrend,
-                                                                        state.exitPriceTrend,
-                                                                        state.profitTrend,
-                                                                        TradingEngine.labels(state) )
-                        list_dictionaries_event_logs.append(event_log_row)
 
-                        # if a sell has been executed, then a fully completed trade took place => TRADE_CLOSED log event happens immediately after SELL_EXECUTED log event
-                        # create the dictionary row for the TRADE_CLOSED logging event 
-                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                                        day,date,state.ticker_name,
-                                                                        TradingEngine.strategy(state) , "TRADE_CLOSED",
-                                                                        "A Trade has been executed",
-                                                                        state.cashValue,
-                                                                        state.equity,
-                                                                        state.positionTrend,
-                                                                        state.exitPriceTrend,
-                                                                        state.profitTrend,
-                                                                        TradingEngine.labels(state) )
-                        list_dictionaries_event_logs.append(event_log_row)
+                        TradingEngine.sell_executed_log_event(state, day, my_date)
+
+                        TradingEngine.trade_closed_log_event(state, day, my_date)
+
+
+
 
                     #add trading day's equity to the equity curve 
                     state.listStoreEquityValues.append(state.equity) 
@@ -504,7 +618,7 @@ class TradingEngine:
                 #MEAN REVERSION method 
                 else:
                     
-                    price_row=TradingEngine.build_price_row(day, date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
+                    price_row=TradingEngine.build_price_row(day, my_date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
                     # append to the list of dictionaries/rows for the price data frame 
                     list_dictionaries_prices.append(price_row)
                     #we only compute when there's a change in the profit 
@@ -512,7 +626,7 @@ class TradingEngine:
                     # before "process_1_day()" we hold no shares
                     previous_position=state.positionMeanReversion 
                     # Process one trading day, update portfolio state, and print the day’s execution/output details
-                    state.positionMeanReversion, state.profitMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.cashValue, state.equity, state.pending_action,state.entry_day,state.exit_day=process_1_day.process_one_day(state.verbose_run, day, date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
+                    state.positionMeanReversion, state.profitMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.cashValue, state.equity, state.pending_action,state.entry_day,state.exit_day=process_1_day.process_one_day(state.verbose_run, day, my_date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
                     # a trade took place 
                     if( (state.profitMeanReversion-previousProfitMeanReversion) !=0 ):
                         one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
@@ -550,52 +664,18 @@ class TradingEngine:
                     # if after "process_1_day()" we do hold shares, but before it we didn't =>
                     # we bought => we compute BUY_EXECUTED logging event 
                     if ( previous_position==0 and current_position>0 ):
-                        # we compute the dictionary row for the BUY_EXECUTED logging event 
-                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                                        day,date,state.ticker_name,
-                                                                        TradingEngine.strategy(state) ,
-                                                                        "BUY_EXECUTED",
-                                                                        "A Buy has been executed",
-                                                                        state.cashValue,
-                                                                        state.equity,
-                                                                        state.positionMeanReversion,
-                                                                        state.entryPriceMeanReversion,
-                                                                        None,
-                                                                        TradingEngine.labels(state) )
-                        list_dictionaries_event_logs.append(event_log_row)
+
+                        TradingEngine.buy_executed_log_event(state, day, my_date)
 
                     # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
                     # we sold => we compute SELL_EXECUTED logging event 
                     if ( previous_position>0 and current_position==0 ):
-                        # we compute the dictionary row for the SELL_EXECUTED logging event 
-                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                                        day,date,state.ticker_name,
-                                                                        TradingEngine.strategy(state),
-                                                                        "SELL_EXECUTED",
-                                                                        "A Sell has been executed",
-                                                                        state.cashValue,
-                                                                        state.equity, 
-                                                                        state.positionMeanReversion,
-                                                                        state.exitPriceMeanReversion,
-                                                                        state.profitMeanReversion,
-                                                                        TradingEngine.labels(state) )
-                        list_dictionaries_event_logs.append(event_log_row)
 
-                        # if a sell has been executed, then a fully completed trade took place => TRADE_CLOSED log event happens immediately after SELL_EXECUTED log event
-                        # create the dictionary row for the TRADE_CLOSED logging event
-                
-                        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                                        day,date,state.ticker_name,
-                                                                        TradingEngine.strategy(state) ,
-                                                                        "TRADE_CLOSED",
-                                                                        "A Trade has been executed",
-                                                                        state.cashValue,
-                                                                        state.equity,
-                                                                        state.positionMeanReversion,
-                                                                        state.exitPriceMeanReversion,
-                                                                        state.profitMeanReversion,
-                                                                        TradingEngine.labels(state) )
-                        list_dictionaries_event_logs.append(event_log_row)
+                        TradingEngine.sell_executed_log_event(state, day, my_date)
+
+                        TradingEngine.trade_closed_log_event(state, day, my_date)
+
+                        
 
                     #add trading day's equity to the equity curve 
                     state.listStoreEquityValues.append(state.equity) 
@@ -603,27 +683,16 @@ class TradingEngine:
             # Days 1 and 2 
             else:
                 state.listStoreEquityValues.append(state.equity)
-                price_row=TradingEngine.build_price_row(day, date, state.ticker_name, TradingEngine.strategy(state), closingPrice, None)
+                price_row=TradingEngine.build_price_row(day, my_date, state.ticker_name, TradingEngine.strategy(state), closingPrice, None)
                 # append to the list of dictionaries/rows for the price data frame 
                 list_dictionaries_prices.append(price_row)
                 
-        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1,
-                                                        day,date,state.ticker_name,
-                                                        TradingEngine.strategy(state),
-                                                        "BACKTEST_END",
-                                                        "Backtest has ended",
-                                                        state.cashValue,
-                                                        state.equity,
-                                                        TradingEngine.position(state),
-                                                        None,
-                                                        state.totalProfit,
-                                                        None)
-        list_dictionaries_event_logs.append(event_log_row)
+        TradingEngine.backtest_end_logging_event(state, day, my_date)
 
         # data frame for all the prices of the backtest used for the price markers plotting chart
         price_data_frame=pd.DataFrame(data=list_dictionaries_prices)
         # data frame containing all of the 5 logging events (backtest_start,buy_executed,sell_executed,trade_closed,backtest_end) in the list converted into a pandas data frame
-        loggingEventsDataFrame=pd.DataFrame(data=list_dictionaries_event_logs)
+        loggingEventsDataFrame=pd.DataFrame(data=state.list_dictionaries_event_logs)
         # converts the day column to pandas nullable integer type — pd.Int64Dtype() — which supports NaN without forcing float promotion => "day" won't be printed with a .0 decimal anymore 
         loggingEventsDataFrame["day"] = loggingEventsDataFrame["day"].astype(pd.Int64Dtype())
         # final data frame containing all the completed trades in the list converted into a pandas data frame
@@ -835,7 +904,7 @@ class PlottingLayer:
 
         # closing price + average (lines) -> prices data frame 
         ticker_strategy_data_frame=self.results_data_frames["Prices"] [ (self.results_data_frames["Prices"] ["ticker"]==f"{ticker}") & (self.results_data_frames["Prices"] ["strategy"]==f"{strategy}") ]
-        ticker_strategy_closing_prices=ticker_strategy_data_frame["closing price"]
+        ticker_strategy_closing_prices=ticker_strategy_data_frame["closing_price"]
         ticker_strategy_averages=ticker_strategy_data_frame["average"]
         
         # add the closing prices line and averages line to the y-axis of the price chart 
