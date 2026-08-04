@@ -8,3 +8,4 @@ api/.env
 .claude/
 .vscode/launch.json
 data/*.db
+results_old.txt
