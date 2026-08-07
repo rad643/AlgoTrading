@@ -329,9 +329,10 @@ The existing suite passes; coverage of the aggregation layer and the API layer i
 
 ## Development Roadmap
 
+The full plan lives in [ROADMAP.md](ROADMAP.md) — phases, courses, and the v2 list. Short version:
+
 ### Completed or substantially implemented
 
-- Core single-position backtesting loop
 - Trade logging and state refactoring
 - Cash and equity tracking
 - Multi-share position sizing
@@ -341,29 +342,22 @@ The existing suite passes; coverage of the aggregation layer and the API layer i
 - Partial NumPy/pandas vectorisation
 - Modular engine architecture
 - Structured DataFrame outputs
-- Plotly visualisation layer
-- UI-oriented aggregation layer
-- Alpaca historical market-data integration
-- FastAPI application structure
-- SQLModel database models
-- Asynchronous PostgreSQL sessions
-- Summary, trade and log-event service routes
+- Aggregation and plotting layers
+- `backtest_run()` decomposed into unit-testable helpers, verified behaviour-preserving with a golden master test
+- Unit test suite over the engine (builders, accessors, log events, per-day helpers)
+- Backend API: FastAPI routers (backtest, summary, trades, log events), services layer, SQLModel tables, async sessions, working end-to-end `/run_backtest` route persisting to Postgres
 
 ### Current work
 
-- Complete the API wrapper around the updated engine
-- Align the request schema with symbol-based Alpaca data retrieval
-- Refactor and extend the test suite
-- Improve error handling and configuration loading
-- Add a pinned dependency file
+- Finish the remaining engine unit tests (performance metrics, `AggregationLayer`, `ExperimentRunner`)
+- API cleanup: batch the per-event commits, move the hardcoded date window into `BacktestConfig`, pinned `requirements.txt`
+- Learn and write API tests (`TestClient`, session-dependency override, throwaway test DB)
 
 ### Planned work
 
-- Final frontend/UI integration
-- End-to-end API tests
-- Deployment
-- Additional strategies and configurable parameters
-- Broader ticker and portfolio support
+- React dashboard built in vertical slices against the API
+- Dockerised deployment with CI
+- v2: live paper-trading via Alpaca websocket stream, more strategies, broader ticker support
 
 ## Disclaimer
 
