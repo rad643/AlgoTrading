@@ -55,7 +55,9 @@ def hist_data(tickers, timeframe= "15Min", start= '', end='' , limit= 1000)->dic
     return d 
         
 
-def read_ticker_dataframe(one_df: pd.DataFrame , cashValue: float, verbose_run: bool)-> Generator[tuple[ int, date, float, float | None, float | None ], None, None]: 
+def read_ticker_dataframe(one_df: pd.DataFrame , cashValue: float, verbose_run: bool)-> Generator[ tuple[ int, date, float, float | None, float | None ] , 
+                                                                                                  None, 
+                                                                                                  None ]: 
     """ Iterates through each row of a ticker's price DataFrame, yielding one tuple per day for the backtest loop.
     
     Args:

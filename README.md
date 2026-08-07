@@ -70,7 +70,7 @@ Its `reset()` method allows the same state object to be reused safely for anothe
 
 ### `TradingEngine`
 
-`TradingEngine` operates on an `ExecutionState` and a pandas DataFrame of market data. A completed run produces structured DataFrames for:
+`TradingEngine` operates on an `ExecutionState` and a pandas DataFrame of market data. `backtest_run()` is now a thin loop: `generator()` yields one day at a time, `process_one_day()` wraps the trade execution logic (passing the state object instead of 23 separate arguments), and a single `run_strategy_day()` handles each day's bookkeeping — recording prices, detecting whether a trade took place, updating the win/loss counters, and logging buy/sell events. The old duplicated Trend / Mean Reversion branch is gone: strategy dispatch is pushed down into accessors (`strategy`, `position`, `entry_price`, `exit_price`, `profit`) and small helpers (`update_portfolio_state`, the `increment_*` counters), so one code path serves both strategies. A completed run produces structured DataFrames for:
 
 - run summary
 - equity curve
@@ -301,17 +301,31 @@ python -m pytest tests/ -v
 
 Refactored `main.TradingEngine.backtest_run()` into small helper functions to make it unit-testable; used a golden master test to make sure the output after the refactoring stayed identical to the output before it.
 
-Ran the pre-refactor version from the last GitHub commit to generate results_old.txt, then used a diff command to compare it against the results.txt produced by the refactored code. Both files came back identical, which confirmed the refactoring hadn't changed any output; After that, every time I refactor something in main.py I just run the characterization test again. If it comes out green, the changes I made haven't changed the output. 
+Ran the pre-refactor version from the last GitHub commit to generate a baseline file, then used a diff command to compare it against the golden master file produced by the refactored code (`tests/golden_masters/backtest_run_old_results.txt`). Both files came back identical, which confirmed the refactoring hadn't changed any output. After that, every time I refactor something in `main.py` I just run the golden master test again. If it comes out green, the changes I made haven't changed the output.
 
-Once the refactoring is complete and the new unit tests for the helper functions are green, the characterization test can be deleted — the unit tests now cover the individual pieces, so the golden master isn't needed as a safety net anymore.
+Once the refactoring is complete and the new unit tests for the helper functions are green, the golden master test can be deleted — the unit tests now cover the individual pieces, so the golden master isn't needed as a safety net anymore.
 
-`test_main.py` currently covers the extracted wiring and accessor helpers, plus the golden master (characterization) test over the full backtest pipeline. Remaining work:
+`test_main.py` currently covers:
 
-- mock Alpaca HTTP responses so tests run without network access;
-- extend unit coverage to the log-event helpers and the remaining `backtest_run()` logic; and
-- add API/database integration tests.
+- `ExecutionState` construction and reset;
+- the wiring builders (`build_data_frames`, `build_run_df`, `build_drawdown_series`, `build_one_completed_trade_row`, `build_event_log_row`, `build_price_row`);
+- the strategy accessors (`strategy`, `labels`, `position`, `entry_price`, `exit_price`, `profit`) and the `increment_*` counters, on both the Trend and Mean Reversion branches;
+- the five log-event helpers, tested separately for Trend and Mean Reversion with distinct hand-set state values;
+- the dictionary builders for completed trades and prices;
+- `generator()` and `process_one_day()` with their dependencies mocked out (`patch.object` with `autospec=True`);
+- `update_portfolio_state()` on both branches with `process_one_day()` mocked;
+- `run_strategy_day()` across its four possible cases (buy only, sell with positive P&L, sell with negative P&L, nothing happened), asserting which helpers fired and which didn't;
+- `run_days_one_and_two()`; and
+- the golden master test over the full backtest pipeline.
 
-The existing suite passes; coverage of the remaining engine logic and the API layer is still to come.
+Remaining work:
+
+- unit tests for the performance metrics methods (`try_except_performance_metric`, `strategy_performance_metrics_stats`, `performance_metrics_data_frame`);
+- unit tests for `AggregationLayer` and `ExperimentRunner.build_results`;
+- mock Alpaca HTTP responses so the whole suite runs without network access; and
+- API/database integration tests.
+
+The existing suite passes; coverage of the aggregation layer and the API layer is still to come.
 
 ## Development Roadmap
 

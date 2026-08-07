@@ -1,12 +1,12 @@
 from unittest import TestCase
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 import main 
 from data_loading import data_loader as dl 
 import pandas as pd 
 from datetime import date 
 from pathlib import Path 
 import math 
-
+import numpy as np
 
 class TestExecutionState(TestCase):
 
@@ -291,7 +291,7 @@ class TestTradingEngineWiringFunctions(TestCase):
 
 
 class TestTradingEngineAccessors(TestCase):
-    """ class that only tests the 3 accessor methods from main for their branching behavior"""
+    """ class that only tests the 11 accessor methods from main for their branching behavior"""
 
     def setUp(self):
         """ using a fixture that runs before the creation of every new test so that each test 
@@ -367,8 +367,62 @@ class TestTradingEngineAccessors(TestCase):
         profit_mean_reversion = main.TradingEngine.profit(self.state_mean_reversion)
         self.assertEqual( profit_mean_reversion, self.state_mean_reversion.profitMeanReversion )
 
+    def test_increment_trade_count(self):
 
-class TestLogEvents(TestCase):
+        self.state_trend.numberTradesTrend = 234
+        main.TradingEngine.increment_trade_count(self.state_trend)
+        self.assertEqual( self.state_trend.numberTradesTrend , 235 )
+
+        self.state_mean_reversion.numberTradesMeanRev =  6
+        main.TradingEngine.increment_trade_count(self.state_mean_reversion)
+        self.assertEqual( self.state_mean_reversion.numberTradesMeanRev , 7 )
+
+    def test_increment_positive_profit(self):
+
+        self.state_trend.positiveProfitTrend = 58
+        main.TradingEngine.increment_positive_profit(self.state_trend)
+        self.assertEqual( self.state_trend.positiveProfitTrend , 59 )
+
+        self.state_mean_reversion.positiveProfitMeanRev = 645
+        main.TradingEngine.increment_positive_profit(self.state_mean_reversion)
+        self.assertEqual( self.state_mean_reversion.positiveProfitMeanRev , 646 )
+
+    def test_increment_total_profit_positive_trades(self):
+
+        self.state_trend.totalProfitPositiveTradesTrend = 9
+        self.state_trend.profitTrend = 8
+        main.TradingEngine.increment_total_profit_positive_trades(self.state_trend)
+        self.assertEqual( self.state_trend.totalProfitPositiveTradesTrend , 17 )
+
+        self.state_mean_reversion.totalProfitPositiveTradesMeanRev = 20
+        self.state_mean_reversion.profitMeanReversion = 10
+        main.TradingEngine.increment_total_profit_positive_trades(self.state_mean_reversion)
+        self.assertEqual( self.state_mean_reversion.totalProfitPositiveTradesMeanRev , 30 )
+
+    def test_increment_negative_profit(self):
+
+        self.state_trend.negativeProfitTrend = -30
+        main.TradingEngine.increment_negative_profit(self.state_trend)
+        self.assertEqual( self.state_trend.negativeProfitTrend , -29 )
+
+        self.state_mean_reversion.negativeProfitMeanRev = -123
+        main.TradingEngine.increment_negative_profit(self.state_mean_reversion)
+        self.assertEqual( self.state_mean_reversion.negativeProfitMeanRev , -122 )
+    
+    def test_increment_total_profit_negative_trades(self):
+    
+        self.state_trend.totalProfitNegativeTradesTrend = -234
+        self.state_trend.profitTrend = -50
+        main.TradingEngine.increment_total_profit_negative_trades(self.state_trend)
+        self.assertEqual( self.state_trend.totalProfitNegativeTradesTrend , -284 )
+
+        self.state_mean_reversion.totalProfitNegativeTradesMeanRev = -345
+        self.state_mean_reversion.profitMeanReversion = -10
+        main.TradingEngine.increment_total_profit_negative_trades(self.state_mean_reversion)
+        self.assertEqual( self.state_mean_reversion.totalProfitNegativeTradesMeanRev , -355 )
+
+
+class TestLogEventsTrend(TestCase):
 
     def setUp(self):
 
@@ -511,62 +565,863 @@ class TestLogEvents(TestCase):
 
         self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
 
-    def test_log_events_mean_reversion(self):
+
+class TestLogEventsMeanReversion(TestCase):
+
+    def setUp(self):
+
+        self.state = main.ExecutionState(
+                        
+            trendMethod = False, 
+            symbol = 'GOOGL', 
+            cashValue = 10000 , 
+            ticker_name = 'Google'
+
+        )
+
+    def test_backtest_start_logging_event(self):  
+
+        main.TradingEngine.backtest_start_logging_event(self.state)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], 1 )
+        self.assertTrue( math.isnan(row['day']) )
+        self.assertEqual( row['date'], None )
+        self.assertEqual( row['ticker'] , 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['event_type'], "BACKTEST_START" )
+        self.assertEqual( row['message'], "Backtest started" )
+        self.assertEqual( row['cash'], 10000 )
+        self.assertEqual( row['equity'], 10000 )
+        self.assertEqual( row['position'], 0 )
+        self.assertEqual( row['execution_price'], None)
+        self.assertEqual( row['pnl'], None)
+        self.assertEqual( row['labels'], None)
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1)
+
+    def test_buy_executed_log_event(self):
+
+        day = 4
+        my_date = date(2025, 1, 12)
+        self.state.cashValue = 8900.0
+        self.state.equity = 8967.0
+        self.state.positionMeanReversion = 8
+        self.state.entryPriceMeanReversion = 321.0
+
+        main.TradingEngine.buy_executed_log_event(self.state , day , my_date )
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        
+        self.assertEqual( row['run_number'], 1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['event_type'], "BUY_EXECUTED" )
+        self.assertEqual( row['message'], "A Buy has been executed" )
+        self.assertEqual( row['cash'], self.state.cashValue )
+        self.assertEqual( row['equity'], self.state.equity )
+        self.assertEqual( row['position'], self.state.positionMeanReversion )
+        self.assertEqual( row['execution_price'], self.state.entryPriceMeanReversion )
+        self.assertEqual( row['pnl'], None )
+        self.assertEqual( row['labels'], 'Google-Mean Reversion' )  
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1)
+
+    def test_sell_executed_log_event(self):
+
+        day = 5
+        my_date = date ( 2024 , 8 , 25 )
+        self.state.cashValue = 8700.0
+        self.state.equity = 8957.0
+        self.state.positionMeanReversion = 2
+        self.state.exitPriceMeanReversion = 345.95
+        self.state.profitMeanReversion = 123.654
+
+        main.TradingEngine.sell_executed_log_event(self.state, day , my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], 1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['event_type'], "SELL_EXECUTED" )
+        self.assertEqual( row['message'], "A Sell has been executed" )
+        self.assertEqual( row['cash'], self.state.cashValue )
+        self.assertEqual( row['equity'], self.state.equity )
+        self.assertEqual( row['position'], self.state.positionMeanReversion )
+        self.assertEqual( row['execution_price'], self.state.exitPriceMeanReversion )
+        self.assertEqual( row['pnl'], self.state.profitMeanReversion )
+        self.assertEqual( row['labels'], 'Google-Mean Reversion' )
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_trade_closed_log_event(self):
+    
+        day = 21
+        my_date = date( 2024 , 9 , 23 )
+        self.state.cashValue = 9814.12
+        self.state.equity = 9910.645
+        self.state.positionMeanReversion = 14
+        self.state.exitPriceMeanReversion = 510.54
+        self.state.profitMeanReversion = 132.6546
+
+        main.TradingEngine.trade_closed_log_event(self.state, day, my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], 1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['event_type'], "TRADE_CLOSED" )
+        self.assertEqual( row['message'], "A Trade has been executed" )
+        self.assertEqual( row['cash'], self.state.cashValue )
+        self.assertEqual( row['equity'], self.state.equity )
+        self.assertEqual( row['position'], self.state.positionMeanReversion )
+        self.assertEqual( row['execution_price'], self.state.exitPriceMeanReversion )
+        self.assertEqual( row['pnl'], self.state.profitMeanReversion )
+        self.assertEqual( row['labels'], 'Google-Mean Reversion' )
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+    def test_backtest_end_logging_event(self):
+    
+        day = 14
+        my_date = date ( 2028 , 5 , 21 )
+        self.state.cashValue = 8694.234
+        self.state.equity = 9234.123
+        self.state.positionMeanReversion = 21
+        self.state.totalProfit = 210.764
+
+        main.TradingEngine.backtest_end_logging_event(self.state, day, my_date)
+
+        row = self.state.list_dictionaries_event_logs[0]
+
+        self.assertEqual( row['run_number'], 1 )
+        self.assertEqual( row['day'] , day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'] , 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['event_type'], "BACKTEST_END" )
+        self.assertEqual( row['message'], "Backtest has ended" )
+        self.assertEqual( row['cash'], self.state.cashValue )
+        self.assertEqual( row['equity'], self.state.equity )
+        self.assertEqual( row['position'], self.state.positionMeanReversion )
+        self.assertEqual( row['execution_price'], None )
+        self.assertEqual( row['pnl'], self.state.totalProfit )
+        self.assertEqual( row['labels'], None )
+
+        self.assertEqual( len(self.state.list_dictionaries_event_logs), 1 )
+
+
+class TestBuildingDictionaries(TestCase):
+
+    def test_build_dictionary_prices(self):
+
+        state = main.ExecutionState(
+                        
+            trendMethod = False, 
+            symbol = 'GOOGL', 
+            cashValue = 10000 , 
+            ticker_name = 'Google'
+
+        )
+
+        day = 5
+        my_date = date(2024 ,12, 1)
+        closingPrice = 345.12
+        average = 432.1
+
+        main.TradingEngine.build_dictionary_prices(
+                                                        state, 
+                                                        day, 
+                                                        my_date, 
+                                                        closingPrice, 
+                                                        average 
+                                                    )
+
+        row = state.list_dictionaries_prices[0]
+
+        self.assertEqual( row['day'], day )
+        self.assertEqual( row['date'], my_date )
+        self.assertEqual( row['ticker'], 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['closing_price'], closingPrice )
+        self.assertEqual( row['average'], average )
+
+        self.assertEqual( len(state.list_dictionaries_prices), 1 )
+
+    def test_build_dictionary_trades(self):
+
+        state_trend = main.ExecutionState(
+                                
+                    trendMethod = True, 
+                    symbol = 'GOOGL', 
+                    cashValue = 10000 , 
+                    ticker_name = 'Google'
+        
+                )
+
+        state_mean_reversion = main.ExecutionState(
+                                        
+                    trendMethod = False, 
+                    symbol = 'GOOGL', 
+                    cashValue = 10000 , 
+                    ticker_name = 'Google'
+                
+                )
+        
+        state_trend.entry_day = 54
+        state_trend.entryPriceTrend = round (345.6 , 3)
+        state_trend.exit_day = 65
+        state_trend.exitPriceTrend = round( 543.0 , 3)
+        state_trend.profitTrend = round( 123.6 , 3)
+        state_trend.return_pct = round( ( (state_trend.exitPriceTrend-state_trend.entryPriceTrend) / state_trend.entryPriceTrend ) * 100 , 2 )
+
+        state_mean_reversion.entry_day = 34
+        state_mean_reversion.exit_day = 354
+        state_mean_reversion.entryPriceMeanReversion = 534.6
+        state_mean_reversion.exitPriceMeanReversion = 432.6
+        state_mean_reversion.profitMeanReversion = -432.4
+        state_mean_reversion.return_pct = round( ( (state_mean_reversion.exitPriceMeanReversion - state_mean_reversion.entryPriceMeanReversion ) / state_mean_reversion.entryPriceMeanReversion ) * 100 , 2 )
+        
+        
+        main.TradingEngine.build_dictionary_trades( state_trend )     
+
+        row = state_trend.list_dictionaries_completed_trades[0]
+
+        self.assertEqual( row['run_number'], 1 )
+        self.assertEqual( row['ticker'], 'Google' )
+        self.assertEqual( row['strategy'], 'Trend' )
+        self.assertEqual( row['entry_day'], state_trend.entry_day )
+        self.assertEqual( row['entry_price'], state_trend.entryPriceTrend )
+        self.assertEqual( row['exit_day'], state_trend.exit_day )
+        self.assertEqual( row['exit_price'], state_trend.exitPriceTrend )
+        self.assertEqual( row['profit'], state_trend.profitTrend )
+        self.assertEqual( row['return_pct'], state_trend.return_pct )
+        self.assertEqual( row['labels'], 'Google-Trend' )
+
+        self.assertEqual( len(state_trend.list_dictionaries_completed_trades) , 1 )
+
+        main.TradingEngine.build_dictionary_trades( state_mean_reversion )     
+        
+        row = state_mean_reversion.list_dictionaries_completed_trades[0]
+
+        self.assertEqual( row['run_number'], 1 )
+        self.assertEqual( row['ticker'], 'Google' )
+        self.assertEqual( row['strategy'], 'Mean Reversion' )
+        self.assertEqual( row['entry_day'], state_mean_reversion.entry_day )
+        self.assertEqual( row['entry_price'], state_mean_reversion.entryPriceMeanReversion )
+        self.assertEqual( row['exit_day'], state_mean_reversion.exit_day )
+        self.assertEqual( row['exit_price'], state_mean_reversion.exitPriceMeanReversion )
+        self.assertEqual( row['profit'], state_mean_reversion.profitMeanReversion )
+        self.assertEqual( row['return_pct'], state_mean_reversion.return_pct )
+        self.assertEqual( row['labels'], 'Google-Mean Reversion' )
+
+        self.assertEqual( len(state_mean_reversion.list_dictionaries_completed_trades) , 1 )
+
+
+
+class TestExternalFunctions(TestCase):
+
+    def test_generator(self):
+        """ 
+        After creating an ExecutionState object, it patches main's dl with a MagicMock object, 
+        and manually hard codes read_ticker_dataframe's return value.
+        It then calls the real TradingEngine.generator() and asserts its result 
+        against the magic mock's return value.
+        It also asserts that the magic mock has been called exactly once with the specified parameters.
+        The autospec parameter checks that the mock respects the original function's signature, 
+        so that the mock would reject calls that the real function would also reject.
+        """
 
         state = main.ExecutionState(
 
-            trendMethod = False ,
-            symbol = 'AAPL' ,
-            cashValue = 10000,
+            trendMethod=True,
+            symbol='AAPL',
+            cashValue= 10000,
             ticker_name = 'Apple'
 
         )
 
-        state.entryPriceMeanReversion = 71.1
-        state.exitPriceMeanReversion  = 74.4
-        state.profitMeanReversion     = 33.0
-        state.positionMeanReversion   = 7
+        with patch.object( main , 'dl' , autospec = True) as mock_dl:
 
-        main.TradingEngine.buy_executed_log_event(state, 4, date(2026, 1, 12))
-        main.TradingEngine.sell_executed_log_event(state, 5, date(2026, 1, 13))
-        main.TradingEngine.trade_closed_log_event(state, 5, date(2026, 1, 13))
+            mock_dl.read_ticker_dataframe.return_value = [ 
 
-        buy = state.list_dictionaries_event_logs[0]
-        sell = state.list_dictionaries_event_logs[1]
-        closed = state.list_dictionaries_event_logs[2]
+                                                        (1, date(2024, 1, 16), 185.92, None, None) , 
+                                                        (2, date(2024, 1, 17), 185.64, None, None) , 
+                                                        (3, date(2024, 1, 18), 188.63, np.float64(185.77999999999997), 185.59), 
+                                                        (4, date(2024, 1, 19), 187.68, np.float64(186.73), 189.33), 
+                                                        (5, date(2024, 1, 22), 191.56, np.float64(186.96749999999997), 188.04) 
 
-        self.assertEqual( buy['strategy'], 'Mean Reversion' )
-        self.assertEqual( buy['labels'], 'Apple-Mean Reversion' )
-        self.assertEqual( buy['position'], 7 )
-        self.assertEqual( buy['execution_price'], 71.1 )
-        self.assertEqual( buy['pnl'], None )
+                                                            ]
 
-        self.assertEqual( sell['execution_price'], 74.4 )
-        self.assertEqual( sell['pnl'], 33.0 )
-        self.assertEqual( sell['position'], 7 )
+            one_df = pd.DataFrame(
+                {
+                "open":  [186.06, 187.15, 185.59, 189.33, 188.04],
+                "close": [185.92, 185.64, 188.63, 187.68, 191.56],
+                } ,
+                index=pd.to_datetime(
+                    ["2024-01-16", "2024-01-17", "2024-01-18", "2024-01-19", "2024-01-22"]
+                ) ,
+            )
 
-        self.assertEqual( closed['execution_price'], 74.4 )
-        self.assertEqual( closed['pnl'], 33.0 )
+            generator = main.TradingEngine.generator(state , one_df )
+            generator_list = [
+                tupl for tupl in generator
+            ]
 
-        self.assertEqual( len(state.list_dictionaries_event_logs), 3 )
+            self.assertEqual( 
 
+                mock_dl.read_ticker_dataframe.return_value, generator_list
 
+            )
 
+            mock_dl.read_ticker_dataframe.assert_called_once_with(one_df, state.cashValue, state.verbose_run)
 
+    def test_process_one_day(self):
 
-
-
-
+        state = main.ExecutionState(
         
-
+                trendMethod=False,
+                symbol='MSFT',
+                cashValue= 10000,
+                ticker_name = 'Microsoft'
         
+                )
+
+        day = 20
+        my_date = date(2025 , 5 , 8)
+        closingPrice = 435.143
+        average = 444.4
+        nextDayOpeningPrice = 473.76
+
+        with patch.object( main , 'process_1_day' , autospec = True ) as mock_one_day:
+
+            mock_one_day.process_one_day.return_value = (
+
+                5,
+                341.5,
+                450.1,
+                420.7,
+                8930.0,
+                9100.5,
+                'BUY',
+                341,
+                400
+
+            )
+
+            tuple_results = main.TradingEngine.process_one_day(
+
+                state,
+                day,
+                my_date,
+                closingPrice, 
+                average,
+                nextDayOpeningPrice
+
+            )
+
+            self.assertEqual( 
+
+                mock_one_day.process_one_day.return_value , tuple_results
+
+            )
+
+            mock_one_day.process_one_day.assert_called_once_with(
+
+                state.verbose_run, 
+                day, 
+                my_date, 
+                closingPrice, 
+                average, 
+                nextDayOpeningPrice, 
+                state.cashValue, 
+                state.equity, 
+                state.pending_action, 
+                state.positionSizing, 
+                state.flat_fee_per_share, 
+                state.fixed_bps, 
+                state.trendMethod, 
+                state.positionTrend, 
+                state.entry_day, 
+                state.exit_day, 
+                state.entryPriceTrend, 
+                state.exitPriceTrend, 
+                state.profitTrend, 
+                state.positionMeanReversion, 
+                state.entryPriceMeanReversion, 
+                state.exitPriceMeanReversion, 
+                state.profitMeanReversion
+
+            )
+
+    def test_update_portfolio_state(self):
+
+        state = main.ExecutionState(
+        
+            trendMethod=True,
+            symbol='MSFT',
+            cashValue= 10000,
+            ticker_name = 'Microsoft'
+
+        )
+
+        day = 214
+        my_date = date( 2026 , 4 , 29 )
+        closingPrice = 543.123
+        average = 567.1
+        nextDayOpeningPrice = 532.6
+
+        with patch( 'main.TradingEngine.process_one_day' , autospec = True ) as mock : 
+
+            mock.return_value = (
+
+                20,
+                235.6,
+                396.78,
+                399.65,
+                9817.432,
+                9999.11,
+                'SELL',
+                235,
+                299
+
+            )
+
+            ( mock_positionTrend, 
+            mock_profitTrend, 
+            mock_entryPriceTrend, 
+            mock_exitPriceTrend, 
+            mock_cashValue, 
+            mock_equity, 
+            mock_pending_action, 
+            mock_entry_day, 
+            mock_exit_day ) = mock.return_value
+
+            main.TradingEngine.update_portfolio_state(
+
+                state,
+                day,
+                my_date,
+                closingPrice,
+                average,
+                nextDayOpeningPrice
+
+            )
+
+            self.assertEqual( mock_positionTrend , state.positionTrend )
+            self.assertEqual( mock_profitTrend , state.profitTrend )
+            self.assertEqual( mock_entryPriceTrend , state.entryPriceTrend )
+            self.assertEqual( mock_exitPriceTrend , state.exitPriceTrend )
+            self.assertEqual( mock_cashValue , state.cashValue )
+            self.assertEqual( mock_equity , state.equity ) 
+            self.assertEqual( mock_pending_action , state.pending_action )
+            self.assertEqual( mock_entry_day , state.entry_day )
+            self.assertEqual( mock_exit_day , state.exit_day )
+
+            mock.assert_called_once_with(
+
+                state, 
+                day, 
+                my_date, 
+                closingPrice, 
+                average, 
+                nextDayOpeningPrice
+
+            )
+
+        state = main.ExecutionState(
+                
+                    trendMethod=False,
+                    symbol='MSFT',
+                    cashValue= 10000,
+                    ticker_name = 'Microsoft'
+        
+                )
+        
+        day = 215
+        my_date = date( 2025 , 5 , 19 )
+        closingPrice = 523.123
+        average = 587.1
+        nextDayOpeningPrice = 592.6 
+
+        with patch( 'main.TradingEngine.process_one_day' , autospec = True ) as mock : 
+        
+            mock.return_value = (
+
+                25,
+                215.6,
+                496.78,
+                499.65,
+                7817.432,
+                5999.11,
+                'BUY',
+                335,
+                199
+
+            )
+
+            ( mock_positionMeanReversion, 
+            mock_profitMeanReversion, 
+            mock_entryPriceMeanReversion, 
+            mock_exitPriceMeanReversion, 
+            mock_cashValue, 
+            mock_equity, 
+            mock_pending_action, 
+            mock_entry_day, 
+            mock_exit_day ) = mock.return_value
+
+            main.TradingEngine.update_portfolio_state(
+
+                state,
+                day,
+                my_date,
+                closingPrice,
+                average,
+                nextDayOpeningPrice
+
+            )
+
+            self.assertEqual( mock_positionMeanReversion , state.positionMeanReversion )
+            self.assertEqual( mock_profitMeanReversion , state.profitMeanReversion )
+            self.assertEqual( mock_entryPriceMeanReversion , state.entryPriceMeanReversion )
+            self.assertEqual( mock_exitPriceMeanReversion , state.exitPriceMeanReversion )
+            self.assertEqual( mock_cashValue , state.cashValue )
+            self.assertEqual( mock_equity , state.equity ) 
+            self.assertEqual( mock_pending_action , state.pending_action )
+            self.assertEqual( mock_entry_day , state.entry_day )
+            self.assertEqual( mock_exit_day , state.exit_day )
+
+            mock.assert_called_once_with(
+
+                state, 
+                day, 
+                my_date, 
+                closingPrice, 
+                average, 
+                nextDayOpeningPrice
+
+            )   
+
+
+class TestRunStrategy(TestCase):
+
+    def test_run_strategy_day(self):
+        """
+        Tests the 4 possible cases that can happen inside run_strategy_day():
+
+            1. BUY only          — position went from 0 to something, no profit change yet
+            2. SELL with +P&L    — position went back to 0, profit went up
+            3. SELL with -P&L     — position went back to 0, profit went down
+            4. Nothing happened  — no position change, no profit change
+
+        Testing run_strategy_day() means testing its logic — what it decides to do
+        and which branch it goes down — not what values it returns, because it
+        doesn't return anything, it just calls other helpers I've already tested
+        separately.
+
+        So for each case I patch process_one_day() and hard code the position and
+        profit it hands back, which is what decides the branch. Then I patch the
+        helpers that each branch calls, and assert which ones fired and which ones
+        didn't.
+
+        Realised P&L only exists once the position closes, which is why BUY and
+        SELL can never happen on the same day.
+        """
+
+        # BUY Only Case 
+        
+        state = main.ExecutionState(
+                
+                trendMethod=True,
+                symbol='GOOGL',
+                cashValue= 10000,
+                ticker_name = 'Google'
+        
+                )
+
+        day = 10
+        my_date =date(2024,5,12)
+        closingPrice = 423.6
+        average = 543.6
+        nextDayOpeningPrice = 541.312
+
+        with (
+
+            patch.object(main.TradingEngine, 'process_one_day') as mock_1_day ,
+            patch.object(main.TradingEngine, 'buy_executed_log_event' , autospec = True) as mock_buy ,
+            patch.object(main.TradingEngine, 'sell_executed_log_event' ) as mock_sell 
+
+        ) :
+                    
+            mock_1_day.return_value = (
+                10, #state.positionTrend
+                0, #state.profitTrend
+                232.65, 
+                222.5, 
+                9235.6, 
+                9666.2, 
+                '', 
+                234, 
+                464
+            )
+
+            main.TradingEngine.run_strategy_day(state,
+                                day, 
+                                my_date ,
+                                closingPrice, 
+                                average ,
+                                nextDayOpeningPrice)
+
+            mock_buy.assert_called_once_with(state, day, my_date)
+            mock_sell.assert_not_called()
+            assert len(state.listStoreEquityValues) == 1
+
+        # SELL With Positive Profit Case
+
+        state = main.ExecutionState(
+                        
+                        trendMethod=True,
+                        symbol='GOOGL',
+                        cashValue= 10000,
+                        ticker_name = 'Google'
+                
+                        )
+
+        day = 10
+        my_date =date(2024,5,12)
+        closingPrice = 423.6
+        average = 543.6
+        nextDayOpeningPrice = 541.312
+
+        state.positionTrend = 35 # previous position
+
+        with (
+
+            patch.object( main.TradingEngine , 'process_one_day') as mock_1_day ,
+            patch.object( main.TradingEngine , 'sell_executed_log_event' ) as mock_sell ,
+            patch.object( main.TradingEngine , 'trade_closed_log_event' ) as mock_trade ,
+            patch.object( main.TradingEngine , 'buy_executed_log_event') as mock_buy ,
+            patch.object( main.TradingEngine , 'increment_positive_profit' ) as mock_increment_positive_profit ,
+            patch.object(main.TradingEngine , 'increment_total_profit_positive_trades') as mock_increment_total_profit_positive_trades ,
+            patch.object(main.TradingEngine , 'increment_negative_profit') as mock_increment_negative_profit ,
+            patch.object(main.TradingEngine , 'increment_total_profit_negative_trades') as mock_increment_total_profit_negative_trades 
+
+        ) :
+
+            mock_1_day.return_value = (
+
+                0, #state.positionTrend
+                234.564, #state.profitTrend
+                354.8, 
+                254.7, 
+                10234.6, 
+                12445.7, 
+                'BUY', 
+                65, 
+                67
+
+            )
+
+            main.TradingEngine.run_strategy_day(
+
+                state,
+                day,
+                my_date,
+                closingPrice,
+                average,
+                nextDayOpeningPrice
+
+            )
+
+            # this asserts that SELL case with a positive P&L was invoked
+            mock_increment_positive_profit.assert_called_once_with(state)
+            mock_increment_total_profit_positive_trades.assert_called_once_with(state)
+            mock_increment_negative_profit.assert_not_called()
+            mock_increment_total_profit_negative_trades.assert_not_called()
+
+            # this asserts that SELL case was invoked 
+            mock_sell.assert_called_once_with(state, day, my_date)
+            mock_trade.assert_called_once_with(state, day, my_date)
+            mock_buy.assert_not_called()
+            self.assertTrue ( len(state.listStoreEquityValues) == 1 )
+
+        # SELL With Negative Profit Case
+        
+        state = main.ExecutionState(
+                        
+                        trendMethod=True,
+                        symbol='GOOGL',
+                        cashValue= 10000,
+                        ticker_name = 'Google'
+                
+                        )
+
+        day = 10
+        my_date =date(2024,5,12)
+        closingPrice = 423.6
+        average = 543.6
+        nextDayOpeningPrice = 541.312
+
+        state.positionTrend = 38 # previous position
+
+        with (
+
+            patch.object( main.TradingEngine , 'process_one_day') as mock_1_day ,
+            patch.object( main.TradingEngine , 'sell_executed_log_event' ) as mock_sell ,
+            patch.object( main.TradingEngine , 'trade_closed_log_event' ) as mock_trade ,
+            patch.object( main.TradingEngine , 'buy_executed_log_event') as mock_buy ,
+            patch.object( main.TradingEngine , 'increment_negative_profit' ) as mock_increment_negative_profit ,
+            patch.object(main.TradingEngine , 'increment_total_profit_negative_trades') as mock_increment_total_profit_negative_trades ,
+            patch.object(main.TradingEngine , 'increment_positive_profit') as mock_increment_positive_profit ,
+            patch.object(main.TradingEngine , 'increment_total_profit_positive_trades') as mock_increment_total_profit_positive_trades 
+
+        ) :
+
+            mock_1_day.return_value = (
+
+                0, #state.positionTrend
+                -412.564, #state.profitTrend
+                354.8, 
+                254.7, 
+                10234.6, 
+                12445.7, 
+                'BUY', 
+                65, 
+                67
+
+            )
+
+            main.TradingEngine.run_strategy_day(
+
+                state,
+                day,
+                my_date,
+                closingPrice,
+                average,
+                nextDayOpeningPrice
+
+            )
+
+            # this asserts that SELL case with a negative P&L was invoked
+            mock_increment_negative_profit.assert_called_once_with(state)
+            mock_increment_total_profit_negative_trades.assert_called_once_with(state)
+            mock_increment_positive_profit.assert_not_called()
+            mock_increment_total_profit_positive_trades.assert_not_called()
+
+            # this asserts that SELL case was invoked 
+            mock_sell.assert_called_once_with(state, day, my_date)
+            mock_trade.assert_called_once_with(state, day, my_date)
+            mock_buy.assert_not_called()
+            self.assertTrue ( len(state.listStoreEquityValues) == 1 )
+
+        # Nothing has happened case 
+
+        state = main.ExecutionState(
+                        
+                        trendMethod=True,
+                        symbol='GOOGL',
+                        cashValue= 10000,
+                        ticker_name = 'Google'
+                
+                        )
+
+        day = 10
+        my_date =date(2024,5,12)
+        closingPrice = 423.6
+        average = 543.6
+        nextDayOpeningPrice = 541.312
+
+        with ( 
+
+            patch.object(main.TradingEngine , 'process_one_day') as mock_1_day,
+            patch.object(main.TradingEngine , 'buy_executed_log_event') as mock_buy , 
+            patch.object(main.TradingEngine , 'sell_executed_log_event') as mock_sell , 
+            patch.object(main.TradingEngine , 'trade_closed_log_event') as mock_trade
+
+        ) :
+
+            mock_1_day.return_value = ( 0, #state.positionTrend 
+                                        0, #state.profitTrend
+                                        state.entryPriceTrend, 
+                                        state.exitPriceTrend, 
+                                        state.cashValue, 
+                                        state.equity, 
+                                        state.pending_action, 
+                                        state.entry_day, 
+                                        state.exit_day )
+
+            main.TradingEngine.run_strategy_day(
+
+                state,
+                day,
+                my_date,
+                closingPrice,
+                average ,
+                nextDayOpeningPrice
+
+            )
+
+            mock_buy.assert_not_called()
+            mock_sell.assert_not_called()
+            mock_trade.assert_not_called()
+            self.assertTrue( len(state.listStoreEquityValues) == 1 )
+
+
+    def test_run_days_one_and_two(self):
+
+        state = main.ExecutionState(
+                        
+            trendMethod=True,
+            symbol='GOOGL',
+            cashValue= 10000,
+            ticker_name = 'Google'
+
+        )
+        
+        day = 10
+        my_date =date(2024,5,12)
+        closingPrice = 423.6
+
+        with patch('main.TradingEngine.build_dictionary_prices') as mock_dict :
+
+            main.TradingEngine.run_days_one_and_two(
+
+                state,
+                day,
+                my_date,
+                closingPrice
+
+            )
+
+            self.assertTrue( len(state.listStoreEquityValues) ==1 )
+            mock_dict.assert_called_once_with(  state, 
+                                                day, 
+                                                my_date,
+                                                closingPrice,
+                                                None )
+
+
+
+
+
+
 
 
 
 
 class TestTradingEngineBacktestRun(TestCase):
 
-    def test_characterization_run(self):
+    def test_golden_master_backtest_run(self):
         """
         Builds the path to results.txt so it lives next to test_main.py,
         no matter which folder I run pytest from.
@@ -580,17 +1435,21 @@ class TestTradingEngineBacktestRun(TestCase):
         If they stop matching, my refactoring changed something.
         Delete results.txt to save a new one.
         """
-        
-        golden = Path(__file__).parent / 'results.txt'
+
+        golden_file_path = Path( 'tests/golden_masters/backtest_run_old_results.txt' )
 
         experimentRunner = main.ExperimentRunner()
         d = experimentRunner.structured_data_outputs()
         results = "\n".join(f"=== {k} ===\n{v.to_csv(index=False)}" for k, v in d.items())
+        
+        if not golden_file_path.exists():
 
-        if not golden.exists():
-            golden.write_text(results)
-            return
+            golden_file_path.parent.mkdir( parents = True ,
+                                        exist_ok = True )
 
-        self.assertEqual(results, golden.read_text())
+            golden_file_path.write_text(results)
+            return 
+
+        self.assertEqual( results , golden_file_path.read_text() )
         
         

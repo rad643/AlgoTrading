@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Generator
 from datetime import date
 import data_loading.data_loader as dl
 import engine.process_1_day as process_1_day
@@ -109,6 +109,8 @@ class ExecutionState:
     flat_fee_per_share: float=0.005
     positionSizing: float=0
     list_dictionaries_event_logs: list = dataclasses.field(default_factory = list)
+    list_dictionaries_prices : list = dataclasses.field(default_factory= list)
+    list_dictionaries_completed_trades : list = dataclasses.field(default_factory= list)
     listStoreEquityValues: list=dataclasses.field(default_factory=list)
     equity: float =0
     positionTrend: int=0
@@ -352,7 +354,7 @@ class TradingEngine:
         Args:
             state (ExecutionState): current object on which the backtest is being performed 
         Returns:
-            int: 
+            int: number of shares held depending on strategy 
         """
         return state.positionTrend if TradingEngine.strategy(state)=="Trend" else state.positionMeanReversion
 
@@ -394,6 +396,148 @@ class TradingEngine:
         """
         return state.profitTrend if TradingEngine.strategy(state) == "Trend" else state.profitMeanReversion
 
+    @staticmethod
+    def increment_trade_count( state : ExecutionState ) -> None : 
+        """
+        Adds 1 to the trade counter for whichever strategy the state is running.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        if TradingEngine.strategy(state) == "Trend" : 
+
+            state.numberTradesTrend += 1
+
+        else:
+
+            state.numberTradesMeanRev += 1 
+
+    @staticmethod
+    def increment_positive_profit( state : ExecutionState ):
+        """
+        Adds 1 to the winning trades counter for whichever strategy the state is running.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        if TradingEngine.strategy(state) == "Trend" : 
+
+            state.positiveProfitTrend += 1
+
+        else:
+
+            state.positiveProfitMeanRev +=1
+
+    @staticmethod
+    def increment_total_profit_positive_trades( state : ExecutionState ): 
+        """
+        Adds the current trade's profit to the running total of profit from winning
+        trades, for whichever strategy the state is running.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        if TradingEngine.strategy(state) == "Trend" :
+
+            state.totalProfitPositiveTradesTrend += TradingEngine.profit(state)
+
+        else:
+
+            state.totalProfitPositiveTradesMeanRev += TradingEngine.profit(state)
+
+    @staticmethod
+    def increment_negative_profit( state : ExecutionState ):
+        """
+        Adds 1 to the losing trades counter for whichever strategy the state is running.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        if TradingEngine.strategy(state) == "Trend" :
+
+            state.negativeProfitTrend += 1
+
+        else:
+
+            state.negativeProfitMeanRev += 1         
+
+    @staticmethod
+    def increment_total_profit_negative_trades( state : ExecutionState ):
+        """
+        Adds the current trade's profit to the running total of profit from losing
+        trades, for whichever strategy the state is running.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        if TradingEngine.strategy(state) == "Trend" :
+           
+            state.totalProfitNegativeTradesTrend += TradingEngine.profit(state)
+
+        else:
+
+            state.totalProfitNegativeTradesMeanRev += TradingEngine.profit(state)  
+
+    @staticmethod
+    def update_portfolio_state( state : ExecutionState ,
+                                day : int ,
+                                my_date : date ,
+                                closingPrice : float ,
+                                average : float ,
+                                nextDayOpeningPrice : float ) -> None :
+        """
+        Runs one trading day through process_one_day() and writes the results back
+        onto the state, into whichever set of fields belongs to the strategy the
+        state is running.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+            day (int): which day of the backtest this is
+            my_date (date): the calendar date for that day
+            closingPrice (float): that day's closing price
+            average (float): the average of all closing prices up to the current day, current day excluded
+            nextDayOpeningPrice (float): the opening price used to execute the trade
+        """
+
+        if TradingEngine.strategy(state) == "Trend" :
+
+            (state.positionTrend, 
+            state.profitTrend, 
+            state.entryPriceTrend, 
+            state.exitPriceTrend, 
+            state.cashValue, 
+            state.equity, 
+            state.pending_action, 
+            state.entry_day, 
+            state.exit_day) = TradingEngine.process_one_day(state, 
+                                                            day, 
+                                                            my_date, 
+                                                            closingPrice, 
+                                                            average, 
+                                                            nextDayOpeningPrice)
+
+        else:
+
+            (state.positionMeanReversion, 
+            state.profitMeanReversion, 
+            state.entryPriceMeanReversion, 
+            state.exitPriceMeanReversion, 
+            state.cashValue, 
+            state.equity, 
+            state.pending_action, 
+            state.entry_day, 
+            state.exit_day) = TradingEngine.process_one_day(state, 
+                                                            day, 
+                                                            my_date, 
+                                                            closingPrice, 
+                                                            average, 
+                                                            nextDayOpeningPrice)
+
     @staticmethod 
     def backtest_start_logging_event(state:ExecutionState) -> None:
         """ The beginning of the backtest running engine is logged as the starting event in the form of a dictionary,
@@ -403,8 +547,10 @@ class TradingEngine:
             state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
         """
 
-        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1, float("nan"), 
-                                                        None, state.ticker_name, 
+        event_log_row=TradingEngine.build_event_log_row(ExecutionState.backtest_run_number+1, 
+                                                        float("nan"), 
+                                                        None, 
+                                                        state.ticker_name, 
                                                         TradingEngine.strategy(state), 
                                                         "BACKTEST_START",
                                                         "Backtest started",
@@ -511,6 +657,259 @@ class TradingEngine:
         state.list_dictionaries_event_logs.append(event_log_row)
 
     @staticmethod
+    def generator(state:ExecutionState, one_df:pd.DataFrame) -> Generator[ tuple[ int, date, float, float | None, float | None ] , 
+                                                                                                  None, 
+                                                                                                  None ] :
+        """ Stores the yielded tuple ( day, date, closingPrice, average, openingPrice ) for days >= 3 
+        from read_ticker_dataframe()'s generator into a variable , and returns it so that it can later be used for unpacking
+        in the main for loop. 
+        
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+            one_df (pd.DataFrame): OHLC price data for a single ticker, as consumed by dl.read_ticker_dataframe
+
+        Returns:
+            tuple[Any]: ( day,date,closingPrice,average, openingPrice )
+        """
+
+        generator = dl.read_ticker_dataframe(one_df, state.cashValue, state.verbose_run)
+        return generator
+
+    @staticmethod
+    def build_dictionary_prices(state: ExecutionState , 
+                                day : int, 
+                                my_date : date ,
+                                closingPrice : float ,
+                                average : float | None ) -> None : 
+        """Computes a dictionary which represents a single row in the 'price' data frame 
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+            day (int): the current day 
+            my_date (date): current date 
+            closingPrice (float): closing price for that day 
+            average (float | None): running average ( None on days 1 and 2 )
+        """
+
+        price_row=TradingEngine.build_price_row(day, 
+                                                my_date, 
+                                                state.ticker_name, 
+                                                TradingEngine.strategy(state), 
+                                                closingPrice, 
+                                                average )
+        # append to the list of dictionaries/rows for the price data frame 
+        state.list_dictionaries_prices.append(price_row)
+
+    @staticmethod 
+    def process_one_day(state : ExecutionState , 
+                        day , 
+                        my_date , 
+                        closingPrice , 
+                        average , 
+                        nextDayOpeningPrice ) -> tuple[Any] :
+        """
+        Wrapper around process_1_day.process_one_day(). Instead of passing 23 separate
+        arguments at the call site, it takes the state object plus the 5 values that
+        change each day, and pulls everything else off the state itself.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+            day (int): which day of the backtest this is
+            my_date (date): the calendar date for that day
+            closingPrice (float): that day's closing price
+            average (float): the average of all closing prices up to the current day, current day excluded
+            nextDayOpeningPrice (float): the opening price used to execute the trade
+
+        Returns:
+            tuple[Any]: ( position, profit, entryPrice, exitPrice, cashValue, equity, pending_action, entry_day, exit_day )
+        """
+
+        tuple_results = process_1_day.process_one_day(
+                                                        state.verbose_run, 
+                                                        day, 
+                                                        my_date, 
+                                                        closingPrice, 
+                                                        average, 
+                                                        nextDayOpeningPrice, 
+                                                        state.cashValue, 
+                                                        state.equity, 
+                                                        state.pending_action, 
+                                                        state.positionSizing, 
+                                                        state.flat_fee_per_share, 
+                                                        state.fixed_bps, 
+                                                        state.trendMethod, 
+                                                        state.positionTrend, 
+                                                        state.entry_day, 
+                                                        state.exit_day, 
+                                                        state.entryPriceTrend, 
+                                                        state.exitPriceTrend, 
+                                                        state.profitTrend, 
+                                                        state.positionMeanReversion, 
+                                                        state.entryPriceMeanReversion, 
+                                                        state.exitPriceMeanReversion, 
+                                                        state.profitMeanReversion
+                                                    )
+        return tuple_results
+
+    @staticmethod 
+    def build_dictionary_trades( state : ExecutionState ) -> None :
+        """
+        Builds one completed trade as a dictionary and adds it to the list of all
+        completed trades. Works for either strategy — the accessors pick the right
+        entry price, exit price and profit off the state.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+        """
+
+        one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
+                                                                            state.ticker_name,
+                                                                            TradingEngine.strategy(state),
+                                                                            state.entry_day,
+                                                                            round( TradingEngine.entry_price(state) , 3 ) ,
+                                                                            state.exit_day ,
+                                                                            round( TradingEngine.exit_price(state) , 3 ) ,
+                                                                            round( TradingEngine.profit(state) , 3 ) ,
+                                                                            round((( TradingEngine.exit_price(state) - TradingEngine.entry_price(state) ) / TradingEngine.entry_price(state) ) * 100 , 2 ) ,
+                                                                            TradingEngine.labels(state))
+        # add it to the list of all dictionaries 
+        state.list_dictionaries_completed_trades.append(one_completed_trade_row)
+
+    @staticmethod
+    def run_strategy_day( state: ExecutionState ,
+                       day:int , 
+                       my_date : date ,
+                       closingPrice : float , 
+                       average : float ,
+                       nextDayOpeningPrice : float ) -> None :
+        """
+        Runs one trading day for whichever strategy the state is running.
+
+        Records the day's price row, remembers the profit and position from before
+        the day is processed, then processes the day through update_portfolio_state().
+
+        If the profit changed, a trade took place: it records the completed trade,
+        adds the profit to the total, and increments the counters for winning or
+        losing trades.
+
+        It then compares the position from before the day against the position after,
+        to work out whether shares were bought or sold, and logs the matching events.
+
+        Finally, adds the day's equity to the equity curve.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+            day (int): which day of the backtest this is
+            my_date (date): the calendar date for that day
+            closingPrice (float): that day's closing price
+            average (float): the average of all closing prices up to the current day, current day excluded
+            nextDayOpeningPrice (float): the opening price used to execute the trade
+        """
+
+        TradingEngine.build_dictionary_prices(
+                                                state, 
+                                                day, 
+                                                my_date,
+                                                closingPrice,
+                                                average
+                                            )
+        
+        #we only compute when there's a change in the profit 
+        previousProfit = TradingEngine.profit(state)
+
+        # before "process_1_day()" we hold no shares
+        previous_position = TradingEngine.position(state)
+
+        # Process one trading day, update portfolio state, and print the day’s execution/output details
+        TradingEngine.update_portfolio_state(
+
+            state,
+            day,
+            my_date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice
+
+        )
+
+        # change in profit => SELL day
+        if( ( TradingEngine.profit(state) - previousProfit ) !=0 ):
+
+            TradingEngine.build_dictionary_trades(state)
+
+            state.totalProfit += TradingEngine.profit(state)
+
+            TradingEngine.increment_trade_count(state)
+
+            if( TradingEngine.profit(state) > 0 ):
+
+                TradingEngine.increment_positive_profit(state)
+
+                TradingEngine.increment_total_profit_positive_trades(state)
+
+            #P&L is negative
+            else:
+
+                TradingEngine.increment_negative_profit(state)
+
+                TradingEngine.increment_total_profit_negative_trades(state)
+
+        # after "process_1_day()" we might hold shares if we bought any 
+        current_position = TradingEngine.position(state)
+
+        # we check if after "process_1_day()" we hold any shares or not compared to before "process_1_day()"
+        # if after "process_1_day()" we do hold shares, but before it we didn't =>
+        # we bought => we compute BUY_EXECUTED logging event 
+        if ( previous_position == 0 and current_position > 0 ):
+
+            TradingEngine.buy_executed_log_event(state, day, my_date)
+
+        # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
+        # we sold => we compute SELL_EXECUTED logging event 
+        if ( previous_position > 0 and current_position == 0 ):
+
+            TradingEngine.sell_executed_log_event(state, day, my_date)
+
+            TradingEngine.trade_closed_log_event(state, day, my_date)
+
+        #add trading day's equity to the equity curve 
+        state.listStoreEquityValues.append(state.equity)
+        
+    @staticmethod 
+    def run_days_one_and_two( state: ExecutionState,
+                              day : int,
+                              my_date : date,
+                              closingPrice : float ) -> None :
+
+        state.listStoreEquityValues.append(state.equity)
+
+        TradingEngine.build_dictionary_prices(
+                                                state, 
+                                                day, 
+                                                my_date,
+                                                closingPrice,
+                                                None
+                                            )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+
+
+    @staticmethod
     def backtest_run(state: ExecutionState, one_df: pd.DataFrame)->dict: 
 
         """ Runs a full backtest for one ticker: iterates day-by-day over one_df, delegating each day's
@@ -530,173 +929,47 @@ class TradingEngine:
         # first, reset all variables back to 0 in case you are reusing the same ExecutionState instance twice 
         state.reset()
         
-        TradingEngine.backtest_start_logging_event(state)
-
-        list_dictionaries_prices=[]
-        list_dictionaries_completed_trades=[]
+        TradingEngine.backtest_start_logging_event(state)        
         
-        generatorAverageDayDateClosingPrice=dl.read_ticker_dataframe(one_df, state.cashValue, state.verbose_run)
         # 1 "for" loop iteration=1 day executed,  entire "for" loop iteration=1 full backtest run 
-        for extracted_tuple in generatorAverageDayDateClosingPrice:
+        for extracted_tuple in dl.read_ticker_dataframe(one_df, state.cashValue, state.verbose_run):
 
-            day=extracted_tuple[0]
-            my_date=extracted_tuple[1]
-            closingPrice=extracted_tuple[2]
-            average=extracted_tuple[3]
-            nextDayOpeningPrice=extracted_tuple[4]
+            day , my_date , closingPrice , average , nextDayOpeningPrice = extracted_tuple
 
             #Days starting from day 3 onwards 
             if(average!=None):
 
-                #TREND method
-                if state.trendMethod:
-                    
-                    # compute the dictionary row for the price data frame 
-                    price_row=TradingEngine.build_price_row(day, my_date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
-                    # append to the list of dictionaries/rows for the price data frame 
-                    list_dictionaries_prices.append(price_row)
-                    #we only compute when there's a change in the profit 
-                    previousProfitTrend=state.profitTrend
-                    # before "process_1_day()" we hold no shares
-                    previous_position=state.positionTrend 
-                    # Process one trading day, update portfolio state, and print the day’s execution/output details
-                    state.positionTrend, state.profitTrend, state.entryPriceTrend, state.exitPriceTrend, state.cashValue, state.equity, state.pending_action, state.entry_day, state.exit_day=process_1_day.process_one_day(state.verbose_run, day, my_date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
-                    # a trade took place
-                    if( (state.profitTrend-previousProfitTrend) !=0 ):
-                        one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
-                                                                                            state.ticker_name,
-                                                                                            TradingEngine.strategy(state),
-                                                                                            state.entry_day,
-                                                                                            round(state.entryPriceTrend,3),
-                                                                                            state.exit_day,
-                                                                                            round(state.exitPriceTrend,3),
-                                                                                            round(state.profitTrend,3),
-                                                                                            round(((state.exitPriceTrend-state.entryPriceTrend)/state.entryPriceTrend)*100,2),
-                                                                                            TradingEngine.labels(state))
-                        # add it to the list of all dictionaries 
-                        list_dictionaries_completed_trades.append(one_completed_trade_row)
-                        #add 1 trading day's profit to the total net profit 
-                        state.totalProfit+=state.profitTrend
-                        #nb of total trades executed during Trend (total nb of P&L's) increases 
-                        state.numberTradesTrend+=1
-                        #P&L is positive 
-                        if(state.profitTrend>0):
-                            #count the nb of positive P&L trades
-                            state.positiveProfitTrend+=1
-                            #calculate total profit made out of positive P&L's
-                            state.totalProfitPositiveTradesTrend+=state.profitTrend
-                        #P&L is negative
-                        else:
-                            #count the nb of negative P&L trades 
-                            state.negativeProfitTrend+=1
-                            #calculate total profit made out of negative P&L's
-                            state.totalProfitNegativeTradesTrend+=state.profitTrend
+                TradingEngine.run_strategy_day(
 
-                    # after "process_1_day()" we might hold shares if we bought any 
-                    current_position=state.positionTrend 
-                    # we check if after "process_1_day()" we hold any shares or not compared to before "process_1_day()"
-                    # if after "process_1_day()" we do hold shares, but before it we didn't =>
-                    # we bought => we compute BUY_EXECUTED logging event 
-                    if ( previous_position==0 and current_position>0 ):
+                    state,
+                    day,
+                    my_date,
+                    closingPrice,
+                    average,
+                    nextDayOpeningPrice
 
-                        TradingEngine.buy_executed_log_event(state, day, my_date)
-
-                    # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
-                    # we sold => we compute SELL_EXECUTED logging event 
-                    if ( previous_position>0 and current_position==0 ):
-
-                        TradingEngine.sell_executed_log_event(state, day, my_date)
-
-                        TradingEngine.trade_closed_log_event(state, day, my_date)
-
-
-
-
-                    #add trading day's equity to the equity curve 
-                    state.listStoreEquityValues.append(state.equity) 
-
-                #MEAN REVERSION method 
-                else:
-                    
-                    price_row=TradingEngine.build_price_row(day, my_date, state.ticker_name, TradingEngine.strategy(state), closingPrice, average)
-                    # append to the list of dictionaries/rows for the price data frame 
-                    list_dictionaries_prices.append(price_row)
-                    #we only compute when there's a change in the profit 
-                    previousProfitMeanReversion=state.profitMeanReversion
-                    # before "process_1_day()" we hold no shares
-                    previous_position=state.positionMeanReversion 
-                    # Process one trading day, update portfolio state, and print the day’s execution/output details
-                    state.positionMeanReversion, state.profitMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.cashValue, state.equity, state.pending_action,state.entry_day,state.exit_day=process_1_day.process_one_day(state.verbose_run, day, my_date, closingPrice, average, nextDayOpeningPrice, state.cashValue, state.equity, state.pending_action, state.positionSizing, state.flat_fee_per_share, state.fixed_bps, state.trendMethod, state.positionTrend, state.entry_day, state.exit_day, state.entryPriceTrend, state.exitPriceTrend, state.profitTrend, state.positionMeanReversion, state.entryPriceMeanReversion, state.exitPriceMeanReversion, state.profitMeanReversion)
-                    # a trade took place 
-                    if( (state.profitMeanReversion-previousProfitMeanReversion) !=0 ):
-                        one_completed_trade_row=TradingEngine.build_one_completed_trade_row(ExecutionState.backtest_run_number+1,
-                                                                                            state.ticker_name,
-                                                                                            TradingEngine.strategy(state),
-                                                                                            state.entry_day,
-                                                                                            round(state.entryPriceMeanReversion,3),
-                                                                                            state.exit_day,
-                                                                                            round(state.exitPriceMeanReversion,3),
-                                                                                            round(state.profitMeanReversion,3),
-                                                                                            round(((state.exitPriceMeanReversion-state.entryPriceMeanReversion)/state.entryPriceMeanReversion)*100,2),
-                                                                                            TradingEngine.labels(state))
-                        # add it to the list of all dictionaries 
-                        list_dictionaries_completed_trades.append(one_completed_trade_row)
-                        #add 1 trading day's profit to the total net profit 
-                        state.totalProfit+=state.profitMeanReversion
-                        #nb of total trades executed during Mean Rev (total nb of P&L's) increases 
-                        state.numberTradesMeanRev+=1
-                        #P&L is positive 
-                        if(state.profitMeanReversion>0):
-                            #count the nb of positive P&L trades 
-                            state.positiveProfitMeanRev+=1
-                            #calculate total profit made out of positive P&L's
-                            state.totalProfitPositiveTradesMeanRev+=state.profitMeanReversion
-                        #P&L is negative 
-                        else:
-                            #count the nb of negative P&L trades 
-                            state.negativeProfitMeanRev+=1
-                            #calculate total profit made out of negative P&L's
-                            state.totalProfitNegativeTradesMeanRev+=state.profitMeanReversion
-
-                    # after "process_1_day()" we might hold shares if we bought any 
-                    current_position=state.positionMeanReversion 
-                    # we check if after "process_1_day()" we hold any shares or not compared to before "process_1_day()"
-                    # if after "process_1_day()" we do hold shares, but before it we didn't =>
-                    # we bought => we compute BUY_EXECUTED logging event 
-                    if ( previous_position==0 and current_position>0 ):
-
-                        TradingEngine.buy_executed_log_event(state, day, my_date)
-
-                    # if after "process_1_day()" we don't hold any shares anymore, but before it we did =>
-                    # we sold => we compute SELL_EXECUTED logging event 
-                    if ( previous_position>0 and current_position==0 ):
-
-                        TradingEngine.sell_executed_log_event(state, day, my_date)
-
-                        TradingEngine.trade_closed_log_event(state, day, my_date)
-
-                        
-
-                    #add trading day's equity to the equity curve 
-                    state.listStoreEquityValues.append(state.equity) 
+                )
 
             # Days 1 and 2 
             else:
-                state.listStoreEquityValues.append(state.equity)
-                price_row=TradingEngine.build_price_row(day, my_date, state.ticker_name, TradingEngine.strategy(state), closingPrice, None)
-                # append to the list of dictionaries/rows for the price data frame 
-                list_dictionaries_prices.append(price_row)
+
+                TradingEngine.run_days_one_and_two(
+                                                    state, 
+                                                    day,
+                                                    my_date,
+                                                    closingPrice
+                                                )
                 
         TradingEngine.backtest_end_logging_event(state, day, my_date)
 
         # data frame for all the prices of the backtest used for the price markers plotting chart
-        price_data_frame=pd.DataFrame(data=list_dictionaries_prices)
+        price_data_frame=pd.DataFrame(data=state.list_dictionaries_prices)
         # data frame containing all of the 5 logging events (backtest_start,buy_executed,sell_executed,trade_closed,backtest_end) in the list converted into a pandas data frame
         loggingEventsDataFrame=pd.DataFrame(data=state.list_dictionaries_event_logs)
         # converts the day column to pandas nullable integer type — pd.Int64Dtype() — which supports NaN without forcing float promotion => "day" won't be printed with a .0 decimal anymore 
         loggingEventsDataFrame["day"] = loggingEventsDataFrame["day"].astype(pd.Int64Dtype())
         # final data frame containing all the completed trades in the list converted into a pandas data frame
-        tradesDataFrame = pd.DataFrame(data=list_dictionaries_completed_trades)
+        tradesDataFrame = pd.DataFrame(data=state.list_dictionaries_completed_trades)
         if tradesDataFrame.empty:
             tradesDataFrame = pd.DataFrame(columns=["run_number", "ticker", "strategy", "entry_day", "entry_price", "exit_day", "exit_price", "profit", "return_pct", "labels", "number_trades_took_place"])
         else:
