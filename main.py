@@ -874,7 +874,7 @@ class TradingEngine:
 
         #add trading day's equity to the equity curve 
         state.listStoreEquityValues.append(state.equity)
-        
+
     @staticmethod 
     def run_days_one_and_two( state: ExecutionState,
                               day : int,
@@ -891,26 +891,121 @@ class TradingEngine:
                                                 None
                                             )
 
+    @staticmethod
+    def build_prices_data_frame( state : ExecutionState ) -> pd.DataFrame :
+        """Turns the list of price dictionaries collected during the backtest into a data frame.
 
+        Args:
+            state (ExecutionState): holds list_dictionaries_prices, one dictionary per day.
 
+        Returns:
+            pd.DataFrame: one row per day, used for the price markers on the plotting chart.
+        """
 
+        # data frame for all the prices of the backtest used for the price markers plotting chart
+        price_data_frame = pd.DataFrame(data=state.list_dictionaries_prices)
 
-
-
-
-
-
-
-
-
-
-
-
-        
-
+        return price_data_frame
 
     @staticmethod
-    def backtest_run(state: ExecutionState, one_df: pd.DataFrame)->dict: 
+    def build_log_events_data_frame( state : ExecutionState ) -> pd.DataFrame :
+        """Turns the list of log event dictionaries collected during the backtest into a data frame.
+
+        Args:
+            state (ExecutionState): holds list_dictionaries_event_logs, one dictionary per logged event.
+
+        Returns:
+            pd.DataFrame: one row per event, with the day column as a nullable integer so it prints without a decimal.
+        """
+
+        # data frame containing all of the 5 logging events (backtest_start,buy_executed,sell_executed,trade_closed,backtest_end) in the list converted into a pandas data frame
+        loggingEventsDataFrame=pd.DataFrame(data=state.list_dictionaries_event_logs)
+        # converts the day column to pandas nullable integer type — pd.Int64Dtype() — which supports NaN without forcing float promotion => "day" won't be printed with a .0 decimal anymore 
+        loggingEventsDataFrame["day"] = loggingEventsDataFrame["day"].astype(pd.Int64Dtype())
+
+        return loggingEventsDataFrame
+
+    @staticmethod
+    def build_trades_data_frame( state : ExecutionState ) -> pd.DataFrame :
+        """Turns the list of completed trade dictionaries collected during the backtest into a data frame.
+
+        Args:
+            state (ExecutionState): holds list_dictionaries_completed_trades, one dictionary per closed trade.
+
+        Returns:
+            pd.DataFrame: one row per trade, with a number_trades_took_place column counting the trades within each run. If no trades were made, returns an empty frame with those same columns.
+        """
+
+        # final data frame containing all the completed trades in the list converted into a pandas data frame
+        tradesDataFrame = pd.DataFrame(data=state.list_dictionaries_completed_trades)
+        if tradesDataFrame.empty:
+            tradesDataFrame = pd.DataFrame(columns=["run_number", "ticker", "strategy", "entry_day", "entry_price", "exit_day", "exit_price", "profit", "return_pct", "labels", "number_trades_took_place"])
+        else:
+            tradesDataFrame["number_trades_took_place"] = tradesDataFrame.groupby(by="run_number").cumcount() + 1
+
+        return tradesDataFrame
+
+    @staticmethod
+    def build_drawdown_series_data_frame( state : ExecutionState ) -> pd.DataFrame :
+        """Builds the drawdown series data frame from the daily equity values collected during the backtest.
+
+        For each day it works out the running peak equity so far, how far below that peak the equity is (the drawdown), and that drop as a percentage.
+
+        Args:
+            state (ExecutionState): holds listStoreEquityValues, one equity value per day.
+
+        Returns:
+            pd.DataFrame: one row per day, with a labels column that uniquely identifies each line.
+        """
+
+        # 1 dimensional array representing all the raw daily equities 
+        daily_equities=pd.Series(state.listStoreEquityValues)
+        # equity peak so far for drawdown series computation 
+        running_max=daily_equities.cummax()
+        # compute drawdown values 
+        drawdown=round(daily_equities-running_max,3)
+        # compute drawdown values expressed as percentages 
+        drawdown_pct=round( (drawdown/running_max)*100 , 2)
+        # list of dictionaries holding all the drawdown series 
+        list_dictionaries_rows_per_equity_drawdown_series=[]
+        # create list of dictionaries for drawdown series (1 dictionary= 1 day)
+        for i in range(len(state.listStoreEquityValues)): 
+            row_drawdown_series=TradingEngine.build_drawdown_series(i+1,
+                                                                    ExecutionState.backtest_run_number,
+                                                                    state.ticker_name,
+                                                                    TradingEngine.strategy(state),
+                                                                    state.listStoreEquityValues[i],
+                                                                    running_max.iloc[i],
+                                                                    drawdown.iloc[i],
+                                                                    drawdown_pct.iloc[i])
+            list_dictionaries_rows_per_equity_drawdown_series.append(row_drawdown_series)
+        # drawdown series final computed data frame from all dictionary rows 
+        drawdown_series=pd.DataFrame(data=list_dictionaries_rows_per_equity_drawdown_series)
+        # add another extra column in the drawdown series data frame called 'labels' that uniquely identifies each line
+        drawdown_series["labels"]=drawdown_series["ticker"]+"-"+drawdown_series["strategy"]
+
+        return drawdown_series
+
+    @staticmethod
+    def build_equity_curve_data_frame( state : ExecutionState ) -> pd.DataFrame :
+        """Builds the equity curve data frame by taking only the columns needed for plotting out of the drawdown series.
+
+        Args:
+            state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy.
+
+        Returns:
+            pd.DataFrame: one row per day, holding just the day, run number, ticker, strategy, equity and labels.
+        """
+
+        drawdown_series = TradingEngine.build_drawdown_series_data_frame(state)
+
+        # equity curve final computed data frame from all dictionary rows 
+        equity_curve_data_frame = drawdown_series[ ["day", "run_number", "ticker", "strategy", "equity","labels"] ]
+
+        return equity_curve_data_frame
+
+    @staticmethod
+    def backtest_run( state: ExecutionState, one_df: pd.DataFrame ) -> dict[ str , pd.DataFrame ] : 
 
         """ Runs a full backtest for one ticker: iterates day-by-day over one_df, delegating each day's
         buy/sell decision to process_1_day (Trend or Mean Reversion, per state.trendMethod), and logs
@@ -962,54 +1057,26 @@ class TradingEngine:
                 
         TradingEngine.backtest_end_logging_event(state, day, my_date)
 
-        # data frame for all the prices of the backtest used for the price markers plotting chart
-        price_data_frame=pd.DataFrame(data=state.list_dictionaries_prices)
-        # data frame containing all of the 5 logging events (backtest_start,buy_executed,sell_executed,trade_closed,backtest_end) in the list converted into a pandas data frame
-        loggingEventsDataFrame=pd.DataFrame(data=state.list_dictionaries_event_logs)
-        # converts the day column to pandas nullable integer type — pd.Int64Dtype() — which supports NaN without forcing float promotion => "day" won't be printed with a .0 decimal anymore 
-        loggingEventsDataFrame["day"] = loggingEventsDataFrame["day"].astype(pd.Int64Dtype())
-        # final data frame containing all the completed trades in the list converted into a pandas data frame
-        tradesDataFrame = pd.DataFrame(data=state.list_dictionaries_completed_trades)
-        if tradesDataFrame.empty:
-            tradesDataFrame = pd.DataFrame(columns=["run_number", "ticker", "strategy", "entry_day", "entry_price", "exit_day", "exit_price", "profit", "return_pct", "labels", "number_trades_took_place"])
-        else:
-            tradesDataFrame["number_trades_took_place"] = tradesDataFrame.groupby(by="run_number").cumcount() + 1
         # count the number of backtest runs at Class level (not per engine instance)
         ExecutionState.backtest_run_number+=1
-        # 1 dimensional array representing all the raw daily equities 
-        daily_equities=pd.Series(state.listStoreEquityValues)
-        # equity peak so far for drawdown series computation 
-        running_max=daily_equities.cummax()
-        # compute drawdown values 
-        drawdown=round(daily_equities-running_max,3)
-        # compute drawdown values expressed as percentages 
-        drawdown_pct=round( (drawdown/running_max)*100 , 2)
-        # list of dictionaries holding all the drawdown series 
-        list_dictionaries_rows_per_equity_drawdown_series=[]
-        # create list of dictionaries for drawdown series (1 dictionary= 1 day)
-        for i in range(len(state.listStoreEquityValues)): 
-            row_drawdown_series=TradingEngine.build_drawdown_series(i+1,
-                                                                    ExecutionState.backtest_run_number,
-                                                                    state.ticker_name,
-                                                                    TradingEngine.strategy(state),
-                                                                    state.listStoreEquityValues[i],
-                                                                    running_max.iloc[i],
-                                                                    drawdown.iloc[i],
-                                                                    drawdown_pct.iloc[i])
-            list_dictionaries_rows_per_equity_drawdown_series.append(row_drawdown_series)
-        # drawdown series final computed data frame from all dictionary rows 
-        drawdown_series=pd.DataFrame(data=list_dictionaries_rows_per_equity_drawdown_series)
-        # add another extra column in the drawdown series data frame called 'labels' that uniquely identifies each line
-        drawdown_series["labels"]=drawdown_series["ticker"]+"-"+drawdown_series["strategy"]
-        # equity curve final computed data frame from all dictionary rows 
-        equityCurveDataFrame=drawdown_series[ ["day", "run_number", "ticker", "strategy", "equity","labels"] ]
-        # single dictionary containing all structured data outputs's (run data frame, equity curve, trades, drawdown series, log events) final computed data frames 
-        dictionary_data_frames=TradingEngine.build_data_frames(loggingEventsDataFrame,
-                                                               equityCurveDataFrame,
-                                                               drawdown_series,
-                                                               tradesDataFrame,
-                                                               price_data_frame)
 
+        price_data_frame = TradingEngine.build_prices_data_frame(state)
+
+        log_events_data_frame = TradingEngine.build_log_events_data_frame(state)
+        
+        trades_data_frame = TradingEngine.build_trades_data_frame(state)
+        
+        drawdown_series = TradingEngine.build_drawdown_series_data_frame(state)
+
+        equity_curve_data_frame = TradingEngine.build_equity_curve_data_frame(state)
+
+        # single dictionary containing all structured data outputs's (run data frame, equity curve, trades, drawdown series, log events) final computed data frames 
+        dictionary_data_frames=TradingEngine.build_data_frames(log_events_data_frame,
+                                                               equity_curve_data_frame,
+                                                               drawdown_series,
+                                                               trades_data_frame,
+                                                               price_data_frame)
+        
         return dictionary_data_frames
     
     @staticmethod
@@ -1029,7 +1096,7 @@ class TradingEngine:
             return float("nan")
 
     @staticmethod
-    def strategy_performance_metrics_stats(state: ExecutionState)->dict:
+    def strategy_performance_metrics_stats(state: ExecutionState)-> dict[str,Any] :
         """Selects the correct set of trade statistics from state based on the active strategy.
 
         Args:
@@ -1038,7 +1105,8 @@ class TradingEngine:
         Returns:
             dict: trade statistics keyed by positive_count, negative_count, trade_count, positive_total, negative_total
         """
-        if state.trendMethod:
+        if TradingEngine.strategy(state) == 'Trend' :
+
             return {
                     "positive_count": state.positiveProfitTrend,
                     "negative_count": state.negativeProfitTrend,
@@ -1046,13 +1114,13 @@ class TradingEngine:
                     "positive_total": state.totalProfitPositiveTradesTrend,
                     "negative_total": state.totalProfitNegativeTradesTrend }
         else:
+             
              return {
                     "positive_count": state.positiveProfitMeanRev,
                     "negative_count": state.negativeProfitMeanRev,
                     "trade_count": state.numberTradesMeanRev,
                     "positive_total": state.totalProfitPositiveTradesMeanRev,
                     "negative_total": state.totalProfitNegativeTradesMeanRev }   
-
 
     @staticmethod
     def performance_metrics_data_frame(state: ExecutionState)->pd.DataFrame:
@@ -1407,9 +1475,12 @@ class ExperimentRunner:
 
 
 if __name__=="__main__":
+
     experimentRunner=ExperimentRunner()
     results=experimentRunner.structured_data_outputs()
+
     plottedChart=PlottingLayer(results)
+    
     aggregationLayerSummary=AggregationLayer(results)
 
     plottedChart.user_interface_oriented_plotting_equity_curve()

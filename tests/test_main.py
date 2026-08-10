@@ -1,5 +1,6 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch
+import pytest
 import main 
 from data_loading import data_loader as dl 
 import pandas as pd 
@@ -1409,6 +1410,283 @@ class TestRunStrategy(TestCase):
                                                 my_date,
                                                 closingPrice,
                                                 None )
+
+
+
+
+
+
+# The rest of the tests following up are written with Pytest , and not Unittest anymore.
+# This is solely for educational and learning purposes 
+
+
+
+class TestBuildDataFrames:
+
+    def test_build_prices_data_frame(self , state):
+
+        expected = pd.DataFrame({
+                'day': [1, 2, 3],
+                'date': [date(2024,1,1), date(2024,1,2), date(2024,1,3)],
+                'ticker': ['Google', 'Google', 'Google'],
+                'strategy': ['Trend', 'Trend', 'Trend'],
+                'closing_price': [101.18, 106.40, 101.43],
+                'average': [float('nan'), float('nan'), 103.0],
+            })
+
+        pd.testing.assert_frame_equal( main.TradingEngine.build_prices_data_frame(state) , expected )
+
+    def test_build_log_events_data_frame(self , state ) :
+
+        expected = pd.DataFrame( {
+
+            'day' : [56,57,58] , 
+            'date' : [ date(2025,3,25) , date(2025,3,26) , date(2025,3,27) ] ,
+            'ticker' : [ 'Google' , 'Google' , 'Google' ] , 
+            'strategy' : ['Trend' , 'Trend' , 'Trend'] ,
+            'closing_price' : [234.18 , 267.40 , 262.65] , 
+            'average' : [254.65 , 236.12 , 298.00]
+
+        })
+
+        expected['day'] = expected['day'].astype(pd.Int64Dtype())
+
+        pd.testing.assert_frame_equal( main.TradingEngine.build_log_events_data_frame(state) , expected )
+
+    def test_build_trades_data_frame( self , state):
+
+        expected = pd.DataFrame({
+            'run_number': [1, 1],
+            'ticker': ['Google', 'Google'],
+            'strategy': ['Trend', 'Trend'],
+            'entry_day': [12, 31],
+            'entry_price': [98.400, 110.050],
+            'exit_day': [19, 38],
+            'exit_price': [105.720, 103.900],
+            'profit': [73.200, -61.500],
+            'return_pct': [7.44, -5.59],
+            'labels': ['Google-Trend', 'Google-Trend'],
+            'number_trades_took_place': [1, 2],
+        })
+
+        pd.testing.assert_frame_equal( main.TradingEngine.build_trades_data_frame(state) , expected )
+
+        state.list_dictionaries_completed_trades = []
+
+        expected = pd.DataFrame(columns=[
+            'run_number', 'ticker', 'strategy', 'entry_day', 'entry_price',
+            'exit_day', 'exit_price', 'profit', 'return_pct', 'labels',
+            'number_trades_took_place',
+        ])
+
+        pd.testing.assert_frame_equal( main.TradingEngine.build_trades_data_frame(state) , expected )
+        
+    def test_build_drawdown_series_data_frame(self, state):
+
+        expected = pd.DataFrame({
+            'day': [1, 2, 3, 4, 5, 6, 7, 8],
+            'run_number': [0, 0, 0, 0, 0, 0, 0, 0],
+            'ticker': ['Google'] * 8,
+            'strategy': ['Trend'] * 8,
+            'equity': [10000.0, 10240.5, 10105.2, 9870.8, 10310.4, 10520.9, 10180.3, 9950.6],
+            'peak_so_far': [10000.0, 10240.5, 10240.5, 10240.5, 10310.4, 10520.9, 10520.9, 10520.9],
+            'drawdown': [0.0, 0.0, -135.3, -369.7, 0.0, 0.0, -340.6, -570.3],
+            'drawdown_pct': [0.00, 0.00, -1.32, -3.61, 0.00, 0.00, -3.24, -5.42],
+            'labels': ['Google-Trend'] * 8,
+        })
+
+        pd.testing.assert_frame_equal( main.TradingEngine.build_drawdown_series_data_frame(state) , expected )
+
+    def test_build_equity_curve_data_frame(self , state ) :
+
+        expected = pd.DataFrame({
+            'day': [1, 2, 3, 4, 5, 6, 7, 8],
+            'run_number': [0, 0, 0, 0, 0, 0, 0, 0],
+            'ticker': ['Google'] * 8,
+            'strategy': ['Trend'] * 8,
+            'equity': [10000.0, 10240.5, 10105.2, 9870.8, 10310.4, 10520.9, 10180.3, 9950.6],
+            'labels': ['Google-Trend'] * 8,
+        }) 
+
+        pd.testing.assert_frame_equal( main.TradingEngine.build_equity_curve_data_frame(state) , expected )        
+
+
+
+class TestBacktestRun:
+
+    def test_backtest_run(self, state_backtest_run ):
+
+        one_df = pd.DataFrame({
+
+            'close':  [101.20, 103.10, 102.40, 103.90, 105.60, 107.00],
+            'high':   [102.40, 103.80, 104.90, 104.00, 106.10, 107.50],
+            'low':    [ 99.10, 100.70, 101.80, 100.90, 103.40, 105.20],
+            'open':   [100.00, 101.50, 103.20, 102.10, 104.80, 106.30],
+            'volume': [  2100,   2450,   1980,   2600,   3010,   2780],
+        }, index=pd.to_datetime([
+            '2024-01-16 09:30:00', '2024-01-17 09:30:00', '2024-01-18 09:30:00',
+            '2024-01-19 09:30:00', '2024-01-22 09:30:00', '2024-01-23 09:30:00',
+        ], utc=True).tz_convert('America/New_York'))
+        
+        one_df.index.name = 'time'
+
+        expected_log_events_df = pd.DataFrame({
+
+            'run_number': [1, 1, 1],
+            'day': pd.array([None, 4, 6], dtype=pd.Int64Dtype()),
+            'date': [None, date(2024,1,19), date(2024,1,23)],
+            'ticker': ['Google', 'Google', 'Google'],
+            'strategy': ['Trend', 'Trend', 'Trend'],
+            'event_type': ['BACKTEST_START', 'BUY_EXECUTED', 'BACKTEST_END'],
+            'message': ['Backtest started', 'A Buy has been executed', 'Backtest has ended'],
+            'cash': [10000.000, 8059.036, 8059.036],
+            'equity': [10000.000, 10033.136, 10092.036],
+            'position': [0.0, 19.0, 19.0],
+            'execution_price': [float('nan'), 102.151, float('nan')],
+            'pnl': [float('nan'), float('nan'), 0.0],
+            'labels': [None, 'Google-Trend', None],
+            
+        }) 
+
+        expected_equity_curve_df = pd.DataFrame({
+
+            'day': [1, 2, 3, 4, 5, 6],
+            'run_number': [1, 1, 1, 1, 1, 1],
+            'ticker': ['Google'] * 6,
+            'strategy': ['Trend'] * 6,
+            'equity': [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
+            'labels': ['Google-Trend'] * 6,
+            
+        })
+
+        expected_drawdown_series_df = pd.DataFrame({
+
+            'day': [1, 2, 3, 4, 5, 6],
+            'run_number': [1, 1, 1, 1, 1, 1],
+            'ticker': ['Google'] * 6,
+            'strategy': ['Trend'] * 6,
+            'equity': [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
+            'peak_so_far': [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
+            'drawdown': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            'drawdown_pct': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            'labels': ['Google-Trend'] * 6,
+            
+        })
+
+        expected_trades_df = pd.DataFrame(
+
+            columns = [ 'run_number' , 'ticker' , 'strategy' , 'entry_day' ,
+                       'entry_price' , 'exit_day' , 'exit_price' , 'profit' ,
+                        'return_pct' , 'labels' , 'number_trades_took_place' ]
+
+        )
+
+        expected_prices_df = pd.DataFrame({
+
+            'day': [1, 2, 3, 4, 5, 6],
+            'date': [date(2024,1,16), date(2024,1,17), date(2024,1,18),
+                    date(2024,1,19), date(2024,1,22), date(2024,1,23)],
+            'ticker': ['Google'] * 6,
+            'strategy': ['Trend'] * 6,
+            'closing_price': [101.2, 103.1, 102.4, 103.9, 105.6, 107.0],
+            'average': [float('nan'), float('nan'), 102.150000, 102.233333, 102.650000, 103.240000],
+            
+        })
+
+        dict_dfs = main.TradingEngine.backtest_run( state_backtest_run , one_df )
+
+        pd.testing.assert_frame_equal( 
+
+            dict_dfs['log_events'] , expected_log_events_df
+
+        )
+
+        pd.testing.assert_frame_equal( 
+        
+            dict_dfs['equity_curve'] , expected_equity_curve_df
+
+        )
+
+        pd.testing.assert_frame_equal( 
+        
+            dict_dfs['drawdown_series'] , expected_drawdown_series_df
+
+        )
+
+        pd.testing.assert_frame_equal( 
+        
+            dict_dfs['trades'] , expected_trades_df
+
+        )
+
+        pd.testing.assert_frame_equal( 
+        
+            dict_dfs['prices'] , expected_prices_df
+
+        )
+
+
+
+class TestPerformanceMetricsHelpers:
+
+    def test_try_except_performance_metric(self):
+
+        function = lambda *args , **kwargs : 5/0
+
+        assert math.isnan( 
+
+            main.TradingEngine.try_except_performance_metric( function )
+
+        ) == True
+
+        function = lambda *args , **kwargs : 5/5
+
+        assert main.TradingEngine.try_except_performance_metric( function ) == 1
+
+    def test_strategy_performance_metrics_stats(self, state_backtest_run ):
+
+        state_backtest_run.positiveProfitTrend = 523.35
+        state_backtest_run.negativeProfitTrend = -234.65
+        state_backtest_run.numberTradesTrend = 56
+        state_backtest_run.totalProfitPositiveTradesTrend = 600.234
+        state_backtest_run.totalProfitNegativeTradesTrend = -534.6
+
+        d = main.TradingEngine.strategy_performance_metrics_stats(state_backtest_run)
+
+        assert d['positive_count'] == state_backtest_run.positiveProfitTrend
+        assert d['negative_count'] == state_backtest_run.negativeProfitTrend 
+        assert d['trade_count'] == state_backtest_run.numberTradesTrend
+        assert d["positive_total"] == state_backtest_run.totalProfitPositiveTradesTrend
+        assert d['negative_total'] == state_backtest_run.totalProfitNegativeTradesTrend
+
+        state = main.ExecutionState(
+                                
+            trendMethod=False,
+            symbol='GOOGL',
+            cashValue= 10000,
+            ticker_name = 'Google'
+            
+        )
+
+        state.positiveProfitMeanRev = 543.35
+        state.negativeProfitMeanRev = -274.65
+        state.numberTradesMeanRev = 59
+        state.totalProfitPositiveTradesMeanRev = 700.234
+        state.totalProfitNegativeTradesMeanRev = -234.6
+
+        d = main.TradingEngine.strategy_performance_metrics_stats(state)
+        
+        assert d['positive_count'] == state.positiveProfitMeanRev
+        assert d['negative_count'] == state.negativeProfitMeanRev
+        assert d['trade_count'] == state.numberTradesMeanRev
+        assert d["positive_total"] == state.totalProfitPositiveTradesMeanRev
+        assert d['negative_total'] == state.totalProfitNegativeTradesMeanRev
+        
+
+        
+        
+
+
 
 
 

@@ -2,8 +2,7 @@ from datetime import date
 import json
 from typing import Generator
 import pandas as pd
-import requests
-import time  
+import requests  
 import data_loading.compute_average as ca 
 
 url_path="https://data.alpaca.markets/v2/stocks/bars"
@@ -74,9 +73,11 @@ def read_ticker_dataframe(one_df: pd.DataFrame , cashValue: float, verbose_run: 
     listStorePreviousClosingPrices=[]
     
     for day, row in enumerate(one_df.itertuples(), 1):
+
         date = row.Index.date()
         closingPrice = row.close
         openingPrice = row.open
+
         if(day==1):
             listStorePreviousClosingPrices.append(closingPrice)
             if verbose_run:
@@ -85,14 +86,21 @@ def read_ticker_dataframe(one_df: pd.DataFrame , cashValue: float, verbose_run: 
                 print("Commission model: $0.005 per share (flat)\n")
                 print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: N/A | Action: NONE | Position: 0 | Cash: {cashValue} | Equity: {cashValue}")
                 print("\n")
+
             yield(day,date,closingPrice,None,None)
+
         elif(day==2):
+
             listStorePreviousClosingPrices.append(closingPrice)
             if verbose_run:
+
                 print(f"Day {day} | Date: {date} | Close: {closingPrice} | Avg: N/A | Action: NONE | Position: 0 | Cash: {cashValue} | Equity: {cashValue}")
                 print("\n")
+
             yield(day,date,closingPrice,None,None)
+
         else:
+            
             average=ca.averageUpToDay(listStorePreviousClosingPrices)
             listStorePreviousClosingPrices.append(closingPrice)
             yield(day,date,closingPrice,average, openingPrice)
