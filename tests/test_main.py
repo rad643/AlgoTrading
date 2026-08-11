@@ -9,6 +9,8 @@ from pathlib import Path
 import math 
 import numpy as np
 
+from metrics import performanceMetrics
+
 class TestExecutionState(TestCase):
 
     def setUp(self):
@@ -1423,7 +1425,7 @@ class TestRunStrategy(TestCase):
 
 class TestBuildDataFrames:
 
-    def test_build_prices_data_frame(self , state):
+    def test_build_prices_data_frame(self , state_backtest_run):
 
         expected = pd.DataFrame({
                 'day': [1, 2, 3],
@@ -1434,9 +1436,9 @@ class TestBuildDataFrames:
                 'average': [float('nan'), float('nan'), 103.0],
             })
 
-        pd.testing.assert_frame_equal( main.TradingEngine.build_prices_data_frame(state) , expected )
+        pd.testing.assert_frame_equal( main.TradingEngine.build_prices_data_frame(state_backtest_run) , expected )
 
-    def test_build_log_events_data_frame(self , state ) :
+    def test_build_log_events_data_frame(self , state_backtest_run ) :
 
         expected = pd.DataFrame( {
 
@@ -1451,9 +1453,9 @@ class TestBuildDataFrames:
 
         expected['day'] = expected['day'].astype(pd.Int64Dtype())
 
-        pd.testing.assert_frame_equal( main.TradingEngine.build_log_events_data_frame(state) , expected )
+        pd.testing.assert_frame_equal( main.TradingEngine.build_log_events_data_frame(state_backtest_run) , expected )
 
-    def test_build_trades_data_frame( self , state):
+    def test_build_trades_data_frame( self , state_backtest_run):
 
         expected = pd.DataFrame({
             'run_number': [1, 1],
@@ -1469,9 +1471,9 @@ class TestBuildDataFrames:
             'number_trades_took_place': [1, 2],
         })
 
-        pd.testing.assert_frame_equal( main.TradingEngine.build_trades_data_frame(state) , expected )
+        pd.testing.assert_frame_equal( main.TradingEngine.build_trades_data_frame(state_backtest_run) , expected )
 
-        state.list_dictionaries_completed_trades = []
+        state_backtest_run.list_dictionaries_completed_trades = []
 
         expected = pd.DataFrame(columns=[
             'run_number', 'ticker', 'strategy', 'entry_day', 'entry_price',
@@ -1479,9 +1481,9 @@ class TestBuildDataFrames:
             'number_trades_took_place',
         ])
 
-        pd.testing.assert_frame_equal( main.TradingEngine.build_trades_data_frame(state) , expected )
+        pd.testing.assert_frame_equal( main.TradingEngine.build_trades_data_frame(state_backtest_run) , expected )
         
-    def test_build_drawdown_series_data_frame(self, state):
+    def test_build_drawdown_series_data_frame(self, state_backtest_run):
 
         expected = pd.DataFrame({
             'day': [1, 2, 3, 4, 5, 6, 7, 8],
@@ -1495,9 +1497,9 @@ class TestBuildDataFrames:
             'labels': ['Google-Trend'] * 8,
         })
 
-        pd.testing.assert_frame_equal( main.TradingEngine.build_drawdown_series_data_frame(state) , expected )
+        pd.testing.assert_frame_equal( main.TradingEngine.build_drawdown_series_data_frame(state_backtest_run) , expected )
 
-    def test_build_equity_curve_data_frame(self , state ) :
+    def test_build_equity_curve_data_frame(self , state_backtest_run ) :
 
         expected = pd.DataFrame({
             'day': [1, 2, 3, 4, 5, 6, 7, 8],
@@ -1508,7 +1510,7 @@ class TestBuildDataFrames:
             'labels': ['Google-Trend'] * 8,
         }) 
 
-        pd.testing.assert_frame_equal( main.TradingEngine.build_equity_curve_data_frame(state) , expected )        
+        pd.testing.assert_frame_equal( main.TradingEngine.build_equity_curve_data_frame(state_backtest_run) , expected )        
 
 
 
@@ -1683,8 +1685,351 @@ class TestPerformanceMetricsHelpers:
         assert d['negative_total'] == state.totalProfitNegativeTradesMeanRev
         
 
+
+class TestPerformanceMetrics:
+
+    def test_performance_metrics_data_frame(self,state_backtest_run, monkeypatch):
+
+        main.ExecutionState.backtest_run_number = 1
+        state_backtest_run.startingCashValue = 9832.65
+        state_backtest_run.totalProfit = 234.726
+
+        def patch_mdd(*args, **kwargs):
+
+            return 4.76
+
+        def patch_expectancy(*args , **kwargs):
+
+            return 5.21
+
+        def patch_payoff_ratio(*args , **kwargs):
+
+            return 7.123
+
+        def patch_profit_factor(*args , **kwargs):
+
+            return 8.12
+
+        def patch_sharpe_ratio(*args , **kwargs):
         
+            return 3.765
+
+        monkeypatch.setattr( performanceMetrics , 'mdd' , patch_mdd )
+        monkeypatch.setattr( performanceMetrics , 'expectancy' , patch_expectancy )
+        monkeypatch.setattr( performanceMetrics , 'payoff_ratio' , patch_payoff_ratio )
+        monkeypatch.setattr( performanceMetrics , 'profit_factor' , patch_profit_factor )
+        monkeypatch.setattr( performanceMetrics , 'sharpe_ratio' , patch_sharpe_ratio )
+
+        d = {
+
+            'run_number' : 1 ,
+            'ticker' : 'Google' ,
+            'strategy': 'Trend',
+            'starting_cash' : 9832.65 ,
+            'total_net_profit': 234.726 ,
+            'mdd' : 4.76 ,
+            'expectancy' : 5.21 ,
+            'payoff_ratio' : 7.123 ,
+            'profit_factor' : 8.12 ,
+            'sharpe_ratio' : 3.765 ,
+            'labels' : 'Google-Trend'
+
+        }
+
+        expected = pd.DataFrame( data = d , index = [0] )
+
+        pd.testing.assert_frame_equal( 
+
+            main.TradingEngine.performance_metrics_data_frame(state_backtest_run) , expected 
+
+        )
+
+
+
+class TestAggregationLayer:
+
+    def test_init(self , results_data_frames ):
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        pd.testing.assert_frame_equal( aggregationLayer.results_data_frames['Final Data Frame Run'] , pd.DataFrame({ 'col1': [21,22], 'col2': [23,24] }) )
+        pd.testing.assert_frame_equal( aggregationLayer.results_data_frames['Equity Curve'] , pd.DataFrame( { 'col1': [5,6], 'col2': [7,8] } ) )
+        pd.testing.assert_frame_equal( aggregationLayer.results_data_frames['Drawdown Series'] , pd.DataFrame({ 'col1': [9,10], 'col2': [11,12] }) )
+        pd.testing.assert_frame_equal( aggregationLayer.results_data_frames['Completed Trades'] , pd.DataFrame({ 'col1': [13,14], 'col2': [15,16] }) )
+        pd.testing.assert_frame_equal( aggregationLayer.results_data_frames['Log Events'] , pd.DataFrame( { 'col1': [1,2], 'col2': [3,4] } ) )
+        pd.testing.assert_frame_equal( aggregationLayer.results_data_frames['Prices'] , pd.DataFrame({ 'col1': [17,18], 'col2': [19,20] }) )
+
+        results_data_frames = [ 1,2,3,4,5,6 ]
         
+        with pytest.raises(TypeError) :
+
+            aggregationLayer(results_data_frames)
+
+    def test_build_average_performance_summary(self, results_data_frames) : 
+
+        average_total_net_profit = 45.2
+        average_mdd = 23.6
+        average_expectancy = 22.6
+        average_payoff_ratio = 65.7 
+        average_profit_factor = 2.1
+        average_sharpe_ratio = 44.0
+
+        expected = {
+
+            "average total net profit" : average_total_net_profit ,
+            "average mdd" : average_mdd ,
+            "average expectancy": average_expectancy ,
+            "average payoff ratio":  average_payoff_ratio ,
+            "average profit factor": average_profit_factor ,
+            "average sharpe ratio": average_sharpe_ratio
+
+        }
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        result = aggregationLayer.build_average_performance_summary(
+
+            average_total_net_profit ,
+            average_mdd ,
+            average_expectancy ,
+            average_payoff_ratio , 
+            average_profit_factor ,
+            average_sharpe_ratio
+
+        )
+
+        assert result == expected
+
+    def test_build_aggregation_outputs(self, results_data_frames):
+
+        total_runs = 3
+        best_run_summary = { 'col1' : [1,2] , 'col2' : [3,4] }
+        worst_run_summary = { 'col1' : [5,6] , 'col2' : [7,8] }
+        average_performance_summary = { 'col1' : [9,10] , 'col2': [11,12] }
+        selected_run_summary = { 'col1' : [13,14] , 'col2' : [15,16] }
+        selected_run_trade_list = pd.DataFrame( { 'col1' : [17,18] , 'col2' : [19,20] } )
+
+        expected = {
+
+            "total_runs": total_runs,
+            "best_run_summary":best_run_summary,
+            "worst_run_summary":worst_run_summary,
+            "average_performance_summary":average_performance_summary,
+            "selected_run_summary":selected_run_summary,
+            "selected_run_trade_list":selected_run_trade_list
+
+        }
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        result = aggregationLayer.build_aggregation_outputs(
+
+            total_runs , 
+            best_run_summary , 
+            worst_run_summary , 
+            average_performance_summary , 
+            selected_run_summary , 
+            selected_run_trade_list
+
+        )
+
+        assert result == expected
+
+    def test_total_runs_summary( self , results_data_frames ):
+
+        results_data_frames['Final Data Frame Run'] = pd.DataFrame(
+
+            { 'col1': [0,1,2,3], 'col2': [4,5,6,7] , 'col3' : [12,13,14,15] }
+
+        )
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        assert aggregationLayer.total_runs_summary() == 4
+
+    def test_run_summary(self, results_data_frames): 
+
+        final_run_df = pd.DataFrame({
+
+            'run_number': [1, 2, 3],
+            'ticker': ['Google', 'Apple', 'Amazon'],
+            'strategy': ['Trend', 'Trend', 'Mean Reversion'],
+            'starting_cash': [10000.0, 10000.0, 10000.0],
+            'total_net_profit': [234.726, -50.016, 812.940],
+            'mdd': [4.76, 9.32, 2.15],
+            'expectancy': [5.21, -1.87, 12.60],
+            'payoff_ratio': [7.123, 0.845, 3.410],
+            'profit_factor': [8.12, 0.63, 4.27],
+            'sharpe_ratio': [3.765, -0.912, 5.038],
+            'labels': ['Google-Trend', 'Apple-Trend', 'Amazon-Mean Reversion'],
+
+        })
+
+        results_data_frames['Final Data Frame Run'] = final_run_df
+
+        expected = { 
+
+            'run_number': 3, 
+            'ticker': 'Amazon', 
+            'strategy': 'Mean Reversion', 
+            'starting_cash': 10000.0, 
+            'total_net_profit': 812.94, 
+            'mdd': 2.15, 
+            'expectancy': 12.6, 
+            'payoff_ratio': 3.41, 
+            'profit_factor': 4.27, 
+            'sharpe_ratio': 5.038, 
+            'labels': 'Amazon-Mean Reversion'
+
+        }
+
+        aggregationLayer = main.AggregationLayer( results_data_frames )
+
+        result = aggregationLayer.run_summary( use_max = True )
+
+        assert result == expected
+
+        expected = {
+
+            'run_number': 2, 
+            'ticker': 'Apple', 
+            'strategy': 'Trend', 
+            'starting_cash': 10000.0, 
+            'total_net_profit': -50.016, 
+            'mdd': 9.32, 
+            'expectancy': -1.87, 
+            'payoff_ratio': 0.845, 
+            'profit_factor': 0.63, 
+            'sharpe_ratio': -0.912, 
+            'labels': 'Apple-Trend'
+
+        }
+
+        result = aggregationLayer.run_summary( use_max = False )
+
+        assert result == expected
+
+    def test_best_run_summary(self, results_data_frames):
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        with patch.object( aggregationLayer , 'run_summary' , autospec = True ) as mock_run_summary : 
+
+            aggregationLayer.best_run_summary()
+
+            mock_run_summary.assert_called_once_with(use_max=True)
+
+    def test_worst_run_summary(self, results_data_frames) :
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        with patch.object( aggregationLayer , 'run_summary' , autospec=True ) as mock_run_summary :
+
+            aggregationLayer.worst_run_summary()
+
+            mock_run_summary.assert_called_once_with(use_max=False)
+
+    def test_average_performance_summary(self, results_data_frames):
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        final_run_df = pd.DataFrame({
+
+            'run_number': [1, 2],
+            'ticker': ['Google', 'Apple'],
+            'strategy': ['Trend', 'Mean Reversion'],
+            'starting_cash': [10000.0, 10000.0],
+            'total_net_profit': [234.726, -50.016],
+            'mdd': [4.76, 9.32],
+            'expectancy': [5.21, -1.87],
+            'payoff_ratio': [7.123, 0.845],
+            'profit_factor': [8.12, 0.63],
+            'sharpe_ratio': [3.765, -0.912],
+            'labels': ['Google-Trend', 'Apple-Mean Reversion'],
+
+        })
+
+        aggregationLayer.results_data_frames['Final Data Frame Run'] = final_run_df
+
+        expected_total_net_profit = 92.36
+        expected_mdd = 7.04
+        expected_expectancy = 1.67
+        expected_payoff_ratio = 3.98
+        expected_profit_factor = 4.38
+        expected_sharpe_ratio = 1.43
+
+        expected = {
+
+            "average total net profit": expected_total_net_profit,
+            "average mdd": expected_mdd,
+            "average expectancy": expected_expectancy,
+            "average payoff ratio": expected_payoff_ratio,
+            "average profit factor": expected_profit_factor,
+            "average sharpe ratio": expected_sharpe_ratio
+
+        }
+
+        result = aggregationLayer.average_performance_summary()
+
+        assert result == expected
+
+    def test_selected_run_summary(self ,results_data_frames):
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        final_run_df = pd.DataFrame({
+        
+            'run_number': [1, 2],
+            'ticker': ['Google', 'Apple'],
+            'strategy': ['Trend', 'Mean Reversion'],
+            'starting_cash': [10000.0, 10000.0],
+            'total_net_profit': [234.726, -50.016],
+            'mdd': [4.76, 9.32],
+            'expectancy': [5.21, -1.87],
+            'payoff_ratio': [7.123, 0.845],
+            'profit_factor': [8.12, 0.63],
+            'sharpe_ratio': [3.765, -0.912],
+            'labels': ['Google-Trend', 'Apple-Mean Reversion'],
+
+        })
+
+        aggregationLayer.results_data_frames['Final Data Frame Run'] = final_run_df
+
+        expected = {
+
+            'run_number': 1, 
+            'ticker': 'Google', 
+            'strategy': 'Trend', 
+            'starting_cash': 10000.0, 
+            'total_net_profit': 234.726, 
+            'mdd': 4.76, 
+            'expectancy': 5.21, 
+            'payoff_ratio': 7.123, 
+            'profit_factor': 8.12, 
+            'sharpe_ratio': 3.765, 
+            'labels': 'Google-Trend'
+
+        }
+
+        ticker = 'Google'
+
+        strategy = 'Trend'
+
+        result = aggregationLayer.selected_run_summary(ticker , strategy)
+
+        assert result == expected
+
+        ticker = 'Microsoft'
+
+        strategy = 'Mean Reversion'
+
+        with pytest.raises(ValueError) : 
+
+            aggregationLayer.selected_run_summary(ticker , strategy)
+
+
+
+
 
 
 

@@ -146,6 +146,8 @@ class ExecutionState:
 
     def reset(self):
         self.list_dictionaries_event_logs = []
+        self.list_dictionaries_completed_trades = []
+        self.list_dictionaries_prices = []
         self.listStoreEquityValues=[]
         self.cashValue=self.startingCashValue
         self.positionSizing=self.cashValue*0.2
@@ -213,6 +215,7 @@ class TradingEngine:
                      labels:str)-> dict[str, Any]:
         """ Wiring function that puts together the final summary 'run' data frame
         into a dictionary with values computed from the performance_metrics_data_frame() method"""
+
         return{
             "run_number":run_number,
             "ticker":ticker,
@@ -1080,7 +1083,7 @@ class TradingEngine:
         return dictionary_data_frames
     
     @staticmethod
-    def try_except_performance_metric(fn):
+    def try_except_performance_metric(fn) -> float : 
         """Calls a performance metric function and returns nan if it raises ZeroDivisionError.
         Used to guard metrics that require at least one winning and one losing trade to be defined.
 
@@ -1134,19 +1137,25 @@ class TradingEngine:
             pd.DataFrame: one-row DataFrame containing run_number, ticker, strategy, starting cash, 
                         total net profit, mdd, expectancy, payoff ratio, profit factor, sharpe ratio, labels
         """
+
         stats_dictionary=TradingEngine.strategy_performance_metrics_stats(state)
+
         mddMetric=performanceMetrics.mdd(state.listStoreEquityValues)
+
         expectancy=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.expectancy(stats_dictionary["positive_count"],
                                                                                                      stats_dictionary["trade_count"],
                                                                                                      stats_dictionary["positive_total"],
                                                                                                      stats_dictionary["negative_count"],
                                                                                                      stats_dictionary["negative_total"]))
+        
         payoffRatio=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.payoff_ratio(stats_dictionary["positive_total"],
                                                                                                         stats_dictionary["negative_total"],
                                                                                                         stats_dictionary["positive_count"],
                                                                                                         stats_dictionary["negative_count"]))
+        
         profitFactor=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.profit_factor(stats_dictionary["positive_total"],
                                                                                                           stats_dictionary["negative_total"]))
+        
         sharpeRatio=TradingEngine.try_except_performance_metric(lambda: performanceMetrics.sharpe_ratio(state.listStoreEquityValues))
 
         run_data_frame=TradingEngine.build_run_df(ExecutionState.backtest_run_number,
@@ -1265,85 +1274,201 @@ class PlottingLayer:
 
 class AggregationLayer:
 
-    def __init__(self,results_data_frames: dict):
+    def __init__( self , results_data_frames : dict[str, pd.DataFrame] ) -> None :
+        """Stores the structured data frames so the summaries can be computed from them.
+
+        Args:
+            results_data_frames (dict): the dictionary of final data frames coming out of ExperimentRunner.
+
+        Raises:
+            TypeError: if what gets passed in isn't a dictionary.
+        """
+
         if not isinstance(results_data_frames,dict):
+
             raise TypeError("The resulting data frames need to be stored inside a dictionary")
-        self.results_data_frames=results_data_frames
+        
+        self.results_data_frames = results_data_frames
 
     @staticmethod
-    def build_average_performance_summary(average_total_net_profit,average_mdd,average_expectancy,average_payoff_ratio,average_profit_factor,average_sharpe_ratio):
-        return{
+    def build_average_performance_summary(average_total_net_profit : float ,
+                                          average_mdd : float ,
+                                          average_expectancy : float ,
+                                          average_payoff_ratio : float , 
+                                          average_profit_factor : float ,
+                                          average_sharpe_ratio : float) -> dict[str, float] :
+        """Puts the six averages into one dictionary so they can be printed as a summary.
+
+        Args:
+            average_total_net_profit (float): average total net profit across all the runs.
+            average_mdd (float): average maximum drawdown across all the runs.
+            average_expectancy (float): average expectancy across all the runs.
+            average_payoff_ratio (float): average payoff ratio across all the runs.
+            average_profit_factor (float): average profit factor across all the runs.
+            average_sharpe_ratio (float): average sharpe ratio across all the runs.
+
+        Returns:
+            dict[str, float]: the six averages keyed by their names.
+        """
+        
+        return {
+
             "average total net profit":average_total_net_profit,
             "average mdd":average_mdd,
             "average expectancy":average_expectancy,
             "average payoff ratio":average_payoff_ratio,
             "average profit factor":average_profit_factor,
             "average sharpe ratio": average_sharpe_ratio
+
         }
     
     @staticmethod
-    def build_aggregation_outputs(total_runs,best_run_summary,worst_run_summary,average_performance_summary,selected_run_summary,selected_run_trade_list):
-        return{
-            "total_runs":total_runs,
+    def build_aggregation_outputs(total_runs : int ,
+                                  best_run_summary : dict ,
+                                  worst_run_summary : dict ,
+                                  average_performance_summary : dict ,
+                                  selected_run_summary : dict ,
+                                  selected_run_trade_list : pd.DataFrame ) -> dict[ str , Any ] :
+        """Puts all the aggregation results into one dictionary so they can be returned together.
+
+        Args:
+            total_runs (int): how many backtest runs were made.
+            best_run_summary (dict): the summary of the best performing run.
+            worst_run_summary (dict): the summary of the worst performing run.
+            average_performance_summary (dict): the six averages across all the runs.
+            selected_run_summary (dict): the summary of the run that was picked.
+            selected_run_trade_list (pd.DataFrame): all the completed trades belonging to the picked run.
+
+        Returns:
+            dict[str, Any]: the six aggregation outputs keyed by their names.
+        """
+
+        return {
+
+            "total_runs": total_runs,
             "best_run_summary":best_run_summary,
             "worst_run_summary":worst_run_summary,
             "average_performance_summary":average_performance_summary,
             "selected_run_summary":selected_run_summary,
             "selected_run_trade_list":selected_run_trade_list
+
         }
 
-    # total backtest runs by the Trading Engine
-    def total_runs_summary(self)->int:
+    def total_runs_summary( self ) -> int : 
+        """Counts how many backtest runs were made.
+
+        Returns:
+            int: the number of rows in the final run data frame, one row per backtest run
+        """
 
         return len(self.results_data_frames["Final Data Frame Run"])
     
-    def run_summary(self,max):
+    def run_summary( self , use_max : bool ) -> dict[ str , Any ] :
+        """Finds the best or the worst run and returns it as a dictionary.
 
-        if max:
-            total_net_profit=self.results_data_frames["Final Data Frame Run"]["total net profit"].max()
+        Args:
+            use_max (bool) : True picks the run with the highest total net profit, False picks the lowest.
+
+        Returns:
+            dict[str, Any] : that run's row from the final run data frame, keyed by column name. If more than one run tied on that value, only the first one is taken.
+        """
+
+        if use_max:
+
+            total_net_profit = ( self.results_data_frames["Final Data Frame Run"] ["total_net_profit"] ).max()
+
         else:
-            total_net_profit=self.results_data_frames["Final Data Frame Run"]["total net profit"].min()
-        run_summary=self.results_data_frames["Final Data Frame Run"] [self.results_data_frames["Final Data Frame Run"]["total net profit"]==total_net_profit] # select the row/rows from the data frame matching the value for 'total net profit'
-        run_summary=run_summary.iloc[0] # select only the first row matching that value
-        run_summary=run_summary.to_dict() # convert the Series into a dictionary
+
+            total_net_profit = ( self.results_data_frames["Final Data Frame Run"] ["total_net_profit"] ).min()
+
+        boolean_mask_total_net_profit = ( self.results_data_frames["Final Data Frame Run"] ["total_net_profit"] ) == total_net_profit
+
+        boolean_indexing = self.results_data_frames["Final Data Frame Run"] [ boolean_mask_total_net_profit ] 
+
+        first_row = boolean_indexing.iloc[0] # select only the first row matching that value
+
+        run_summary = first_row.to_dict() # convert the Series into a dictionary
+
         return run_summary
-    
-    # best run summary from the run data frame based on the total net profit 
-    def best_run_summary(self)->dict:
+     
+    def best_run_summary(self) -> dict[ str , Any ] :
+        """ best run summary from the run data frame, the one with the highest total net profit
 
-        return self.run_summary(max=True)
-    
-    # worst run summary from the run data frame based on the total net profit 
-    def worst_run_summary(self)->dict:
+        Returns:
+            dict[ str , Any ]: best run's row from the final run data frame, keyed by column name
+        """
 
-        return self.run_summary(max=False)
+        return self.run_summary( use_max=True )
     
-    # average performance summary of each metric from all the backtest runs 
-    def average_performance_summary(self)->dict:
+    def worst_run_summary(self)-> dict[ str , Any ] : 
+        """ worst run summary from the run data frame, the one with the lowest total net profit
 
-        average_total_net_profit=round(self.results_data_frames["Final Data Frame Run"]["total net profit"].mean(),2) 
+        Returns:
+            dict[ str , Any ]: worst run's row from the final run data frame, keyed by column name
+        """
+
+        return self.run_summary(use_max=False)
+     
+    def average_performance_summary(self)-> dict[ str , float ] :
+        """Works out the average of each performance metric across all the backtest runs.
+
+        Returns:
+            dict[str, float]: the six averages, each rounded to 2 decimals, keyed by their names.
+        """
+
+        average_total_net_profit=round(self.results_data_frames["Final Data Frame Run"]["total_net_profit"].mean(),2) 
+
         average_mdd=round(self.results_data_frames["Final Data Frame Run"]["mdd"].mean(),2)
+
         average_expectancy=round(self.results_data_frames["Final Data Frame Run"]["expectancy"].mean(),2)
-        average_payoff_ratio=round(self.results_data_frames["Final Data Frame Run"]["payoff ratio"].mean(),2)
-        average_profit_factor=round(self.results_data_frames["Final Data Frame Run"]["profit factor"].mean(),2)
-        average_sharpe_ratio=round(self.results_data_frames["Final Data Frame Run"]["sharpe ratio"].mean(),2)
+
+        average_payoff_ratio=round(self.results_data_frames["Final Data Frame Run"]["payoff_ratio"].mean(),2)
+
+        average_profit_factor=round(self.results_data_frames["Final Data Frame Run"]["profit_factor"].mean(),2)
+
+        average_sharpe_ratio=round(self.results_data_frames["Final Data Frame Run"]["sharpe_ratio"].mean(),2)
+
         average_performance_summary=AggregationLayer.build_average_performance_summary(float(average_total_net_profit),
                                                                                        float(average_mdd),
                                                                                        float(average_expectancy),
                                                                                        float(average_payoff_ratio),
                                                                                        float(average_profit_factor),
                                                                                        float(average_sharpe_ratio))
+        
         return average_performance_summary
     
-    # user input selected run summary (ticker-strategy) from the run data frame 
-    def selected_run_summary(self,ticker,strategy)->dict:
+    def selected_run_summary(self , ticker : str , strategy : str ) -> dict[ str , Any ] :
+        """Picks out the run matching the ticker and strategy the user selected and returns it as a dictionary.
+
+        Args:
+            ticker (str): Apple, Google or Microsoft.
+            strategy (str): Trend or Mean Reversion.
+
+        Returns:
+            dict[str, Any]: that run's row from the final run data frame, keyed by column name. If more than one run has the same ticker and strategy, only the first one is taken.
+
+        Raises:
+            ValueError: if the ticker or the strategy doesn't exist, or if no run matches that pair that the user selected.
+        """
 
         AggregationLayer.ticker_strategy_validation(ticker,strategy)
-        selected_run_summary=(self.results_data_frames["Final Data Frame Run"] [self.results_data_frames["Final Data Frame Run"]["labels"]==f"{ticker}-{strategy}"])
-        selected_run_summary=selected_run_summary.iloc[0] # if multiple identical ticker/strategy pairs, pick the first pair only
-        if selected_run_summary.empty:
+
+        selected_label = f"{ticker}-{strategy}"
+
+        labels_column = self.results_data_frames["Final Data Frame Run"] ["labels"]
+
+        boolean_mask = ( labels_column == selected_label )
+
+        boolean_index = ( self.results_data_frames["Final Data Frame Run"] [ boolean_mask ] )
+
+        if boolean_index.empty : 
+
             raise ValueError("The selected run summary data frame is empty")
-        selected_run_summary=selected_run_summary.to_dict()
+
+        selected_run_summary = boolean_index.iloc[0] # if multiple identical ticker/strategy pairs, pick the first pair only
+
+        selected_run_summary = selected_run_summary.to_dict()
+
         return selected_run_summary
 
     # user input selection for a complete trade run based on ticker and strategy from the Completed Trades data frame 
@@ -1357,9 +1482,13 @@ class AggregationLayer:
     
     @staticmethod
     def ticker_strategy_validation(ticker,strategy):
+
         if ticker not in ["Apple", "Google", "Microsoft"]:
+
             raise ValueError("This selected ticker does not exist")
+        
         if strategy not in ["Trend", "Mean Reversion"]:
+
             raise ValueError("This selected strategy does not exist")
         
     def aggregation_outputs(self,ticker:str,strategy:str)->dict:
@@ -1400,12 +1529,14 @@ class ExperimentRunner:
     def build_results(run_data_frame,equity_curves_df,drawdown_series_df,trades_df,log_events_df,prices_df):
 
         return{
+
             "Final Data Frame Run":run_data_frame,
             "Equity Curve":equity_curves_df,
             "Drawdown Series":drawdown_series_df,
             "Completed Trades":trades_df,
             "Log Events":log_events_df,
             "Prices":prices_df
+
         }
 
     # method running 5 different outputs: run data frame, trades data frame, equity curves, drawdown series, logs
