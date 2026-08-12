@@ -2023,15 +2023,144 @@ class TestAggregationLayer:
 
         strategy = 'Mean Reversion'
 
-        with pytest.raises(ValueError) : 
+        with pytest.raises(ValueError) as excinfo :
 
             aggregationLayer.selected_run_summary(ticker , strategy)
 
+        assert str( excinfo.value ) == "The selected run summary data frame is empty"
+
+    def test_selected_run_trade_list(self, results_data_frames) :
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        trades_df = pd.DataFrame({
+
+            'run_number': [1, 1, 1, 2, 2, 3],
+            'ticker': ['Google', 'Google', 'Google', 'Apple', 'Apple', 'Microsoft'],
+            'strategy': ['Trend', 'Trend', 'Trend', 'Mean Reversion', 'Mean Reversion', 'Trend'],
+            'entry_day': [12, 31, 44, 8, 27, 15],
+            'entry_price': [98.400, 110.050, 101.200, 172.300, 165.900, 310.400],
+            'exit_day': [19, 38, 52, 14, 35, 22],
+            'exit_price': [105.720, 103.900, 112.360, 168.750, 179.200, 298.100],
+            'profit': [73.200, -61.500, 111.600, -35.500, 133.000, -123.000],
+            'return_pct': [7.44, -5.59, 11.03, -2.06, 8.02, -3.96],
+            'labels': ['Google-Trend', 'Google-Trend', 'Google-Trend',
+                    'Apple-Mean Reversion', 'Apple-Mean Reversion', 'Microsoft-Trend'],
+            'number_trades_took_place': [1, 2, 3, 1, 2, 1],
+            
+        })
+
+        aggregationLayer.results_data_frames['Completed Trades'] = trades_df
+
+        expected = pd.DataFrame({
+
+            'run_number': [1, 1, 1],
+            'ticker': ['Google', 'Google', 'Google'],
+            'strategy': ['Trend', 'Trend', 'Trend'],
+            'entry_day': [12, 31, 44],
+            'entry_price': [98.400, 110.050, 101.200],
+            'exit_day': [19, 38, 52],
+            'exit_price': [105.720, 103.900, 112.360],
+            'profit': [73.200, -61.500, 111.600],
+            'return_pct': [7.44, -5.59, 11.03],
+            'labels': ['Google-Trend', 'Google-Trend', 'Google-Trend'],
+            'number_trades_took_place': [1, 2, 3],
+
+        })
+
+        ticker = 'Google'
+        
+        strategy = 'Trend'
+
+        result = aggregationLayer.selected_run_trade_list(ticker, strategy)
+
+        pd.testing.assert_frame_equal( result , expected )
+
+        ticker = 'Microsoft'
+
+        strategy = 'Mean Reversion'
+
+        with pytest.raises(ValueError) as excinfo : 
+
+            aggregationLayer.selected_run_trade_list(ticker, strategy)
+
+        assert str( excinfo.value ) == "The selected run trade list is empty"
+
+    def test_ticker_strategy_validation(self) :
+
+        ticker = 'Tesla' 
+
+        strategy = 'Trend'
+
+        with pytest.raises(ValueError) as excinfo : 
+
+            main.AggregationLayer.ticker_strategy_validation(ticker, strategy)
+
+        assert str( excinfo.value ) == 'This selected ticker does not exist'
+
+        ticker = 'Apple' 
+
+        strategy = 'Momentum'
+
+        with pytest.raises(ValueError) as excinfo : 
+
+            main.AggregationLayer.ticker_strategy_validation(ticker, strategy)
+
+        assert str( excinfo.value ) == "This selected strategy does not exist"
+
+    def test_aggregation_outputs(self,results_data_frames) :
+
+        aggregationLayer = main.AggregationLayer(results_data_frames)
+
+        ticker = 'Apple'
+
+        strategy = 'Trend'
+
+        total_runs_summary = 3
+        best_run_summary = {'run': 'best'}
+        worst_run_summary = {'run': 'worst'}
+        average_performance_summary = {'run': 'average'}
+        selected_run_summary = {'run': 'selected'}
+        selected_run_trade_list = pd.DataFrame({'col1': [1, 2]})
+
+        with ( 
+
+            patch.object( aggregationLayer , 'total_runs_summary' , return_value = total_runs_summary , autospec = True )  as mock_total , 
+            patch.object( aggregationLayer , 'best_run_summary' , return_value = best_run_summary , autospec = True )  as  mock_best ,
+            patch.object( aggregationLayer , 'worst_run_summary' , return_value = worst_run_summary , autospec = True )  as  mock_worst , 
+            patch.object( aggregationLayer , 'average_performance_summary' , return_value = average_performance_summary , autospec = True )  as  mock_average , 
+            patch.object( aggregationLayer , 'selected_run_summary' , return_value = selected_run_summary , autospec = True )  as  mock_selected_summary , 
+            patch.object( aggregationLayer , 'selected_run_trade_list' , return_value = selected_run_trade_list , autospec = True )  as  mock_selected_trade , 
+
+        ) :
+
+            result = aggregationLayer.aggregation_outputs(ticker , strategy)
+
+            assert result['total_runs'] == mock_total.return_value
+            assert result['best_run_summary'] == mock_best.return_value
+            assert result['worst_run_summary'] == mock_worst.return_value
+            assert result['average_performance_summary'] == mock_average.return_value
+            assert result['selected_run_summary'] == mock_selected_summary.return_value
+            pd.testing.assert_frame_equal( result['selected_run_trade_list'] , mock_selected_trade.return_value )
+
+            mock_selected_summary.assert_called_once_with(ticker , strategy)
+            mock_selected_trade.assert_called_once_with(ticker , strategy)
+
+            assert len(result) == 6
 
 
 
 
 
+
+
+
+
+
+
+
+
+        
 
 
 

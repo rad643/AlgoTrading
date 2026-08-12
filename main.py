@@ -1471,17 +1471,47 @@ class AggregationLayer:
 
         return selected_run_summary
 
-    # user input selection for a complete trade run based on ticker and strategy from the Completed Trades data frame 
-    def selected_run_trade_list(self,ticker,strategy)->pd.DataFrame:
+    def selected_run_trade_list(self, ticker :str , strategy : str )-> pd.DataFrame :
+        """Picks out all the completed trades belonging to the ticker and strategy the user selected.
+
+        Args:
+            ticker (str): Apple, Google or Microsoft.
+            strategy (str): Trend or Mean Reversion.
+
+        Returns:
+            pd.DataFrame: every trade row matching that ticker and strategy pair.
+
+        Raises:
+            ValueError: if the ticker or the strategy doesn't exist, or if no trades match that pair.
+        """
 
         AggregationLayer.ticker_strategy_validation(ticker,strategy)
-        selected_run_trade=(self.results_data_frames["Completed Trades"] [self.results_data_frames["Completed Trades"]["labels"]==f"{ticker}-{strategy}"])
-        if selected_run_trade.empty:
+
+        selected_label = f"{ticker}-{strategy}"
+
+        labels_column = self.results_data_frames["Completed Trades"] ["labels"]
+
+        boolean_mask = ( labels_column == selected_label )
+
+        boolean_index = ( self.results_data_frames["Completed Trades"] [ boolean_mask ] )
+
+        if boolean_index.empty:
+
             raise ValueError("The selected run trade list is empty")
-        return selected_run_trade
+        
+        return boolean_index
     
     @staticmethod
-    def ticker_strategy_validation(ticker,strategy):
+    def ticker_strategy_validation(ticker:str , strategy:str) -> None : 
+        """Checks that the ticker and the strategy the user selected are ones the backtest actually ran.
+
+        Args:
+            ticker (str): Apple, Google or Microsoft.
+            strategy (str): Trend or Mean Reversion.
+
+        Raises:
+            ValueError: if the ticker isn't one of the three, or if the strategy isn't one of the two.
+        """
 
         if ticker not in ["Apple", "Google", "Microsoft"]:
 
@@ -1491,28 +1521,27 @@ class AggregationLayer:
 
             raise ValueError("This selected strategy does not exist")
         
-    def aggregation_outputs(self,ticker:str,strategy:str)->dict:
+    def aggregation_outputs(self , ticker:str , strategy:str) -> dict[ str, Any ] :
+        """Collects the already-working pieces into one dictionary.
 
-        """collect the already-working pieces into one dictionary.
-           calls/reuses: total runs, best run summary, worst run summary, average performance summary, 
-           selected run summary and selected run trade list   
-
+        Calls/reuses: total runs, best run summary, worst run summary, average performance summary,
+        selected run summary and selected run trade list.
 
         Args:
-            ticker (str): Apple, Google, Microsoft
-            strategy (str): strategy method
+            ticker (str): Apple, Google or Microsoft.
+            strategy (str): Trend or Mean Reversion.
 
         Returns:
-            dict: final dictionary ready for Step 15 "UI-ready package"
+            dict[str, Any]: the six aggregation outputs, ready to be handed to the UI.
         """
-        aggregation_outputs=AggregationLayer.build_aggregation_outputs(self.total_runs_summary(),
+        
+        aggregation_outputs=AggregationLayer.build_aggregation_outputs(self.total_runs_summary() ,
                                                                        self.best_run_summary(),
                                                                        self.worst_run_summary(),
                                                                        self.average_performance_summary(),
-                                                                       self.selected_run_summary(ticker,strategy),
-                                                                       self.selected_run_trade_list(ticker,strategy))
+                                                                       self.selected_run_summary(ticker , strategy),
+                                                                       self.selected_run_trade_list(ticker , strategy) )
         return aggregation_outputs
-
 
 
 
