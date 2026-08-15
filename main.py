@@ -8,6 +8,11 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+
+COMPANY_NAMES = {"AAPL": "Apple", "GOOGL": "Google", "MSFT": "Microsoft"}
+
+selected_tickers = "AAPL,GOOGL,MSFT"
+
 @dataclasses.dataclass
 class ExecutionState:
     """
@@ -1534,7 +1539,7 @@ class AggregationLayer:
         Returns:
             dict[str, Any]: the six aggregation outputs, ready to be handed to the UI.
         """
-        
+
         aggregation_outputs=AggregationLayer.build_aggregation_outputs(self.total_runs_summary() ,
                                                                        self.best_run_summary(),
                                                                        self.worst_run_summary(),
@@ -1555,7 +1560,27 @@ class ExperimentRunner:
     """
 
     @staticmethod
-    def build_results(run_data_frame,equity_curves_df,drawdown_series_df,trades_df,log_events_df,prices_df):
+    def build_results(run_data_frame : pd.DataFrame,
+                      equity_curves_df : pd.DataFrame,
+                      drawdown_series_df : pd.DataFrame,
+                      trades_df : pd.DataFrame,
+                      log_events_df : pd.DataFrame,
+                      prices_df : pd.DataFrame) -> dict[ str, pd.DataFrame ] :
+        """Bundle the six per-run DataFrames into a single labelled dict.
+
+        Args:
+            run_data_frame: Per-bar state for the completed run.
+            equity_curves_df: Equity value over time.
+            drawdown_series_df: Drawdown over time.
+            trades_df: One row per completed trade.
+            log_events_df: Events emitted during the run.
+            prices_df: Price bars used by the run.
+
+        Returns:
+            dict[str, pd.DataFrame]: The same frames keyed by display name
+            ("Final Data Frame Run", "Equity Curve", "Drawdown Series",
+            "Completed Trades", "Log Events", "Prices").
+        """
 
         return{
 
@@ -1568,76 +1593,130 @@ class ExperimentRunner:
 
         }
 
-    # method running 5 different outputs: run data frame, trades data frame, equity curves, drawdown series, logs
-    def structured_data_outputs(self):
+    @staticmethod
+    def state( symbol : str , trendMethod : bool , cashValue = 10000 ) -> ExecutionState : 
+        """Build one ExecutionState from the passed in arguments.
+
+        Args:
+            symbol (str): ticker symbol the state runs on (e.g. "AAPL")
+            trendMethod (bool): True = Trend strategy, False = Mean Reversion strategy
+            cashValue (float, optional): starting cash for the run. Defaults to 10000.
+
+        Raises:
+            KeyError: if the symbol is not in the COMPANY_NAMES dictionary
+
+        Returns:
+            ExecutionState: 1 state object corresponding to 1 backtest run,
+            with ticker_name looked up from the COMPANY_NAMES dictionary
+        """
+
+        if symbol not in COMPANY_NAMES : 
         
-        tickers= "AAPL,GOOGL,MSFT"
+            raise ValueError( f"The selected ticker {symbol} is not in the dictionary of selected companies" )
+    
+        return ExecutionState(
+            
+                    trendMethod = trendMethod ,
+                    symbol = symbol ,
+                    cashValue = cashValue ,
+                    ticker_name = COMPANY_NAMES[symbol] ,
+                    
+            )
+        
+    @staticmethod
+    def fetch_bars_by_symbol( selected_tickers : str ) -> dict[ str , pd.DataFrame ] : 
+        """Extract the historical bars for all the selected tickers through dl.hist_data().
 
-        # multiple ExecutionState objects representing multiple experiments with different configurated parameters 
-        states=[    ExecutionState(trendMethod=True, symbol="AAPL", cashValue=10000, ticker_name="Apple"), 
-                    ExecutionState(trendMethod=False, symbol="AAPL", cashValue=10000, ticker_name="Apple"),
-                    ExecutionState(trendMethod=True, symbol="GOOGL", cashValue=10000, ticker_name="Google"),
-                    ExecutionState(trendMethod=False, symbol="GOOGL", cashValue=10000, ticker_name="Google"),
-                    ExecutionState(trendMethod=True, symbol="MSFT", cashValue=10000, ticker_name="Microsoft"),
-                    ExecutionState(trendMethod=False, symbol="MSFT", cashValue=10000, ticker_name="Microsoft") ]
+        Args:
+            selected_tickers (str): comma-separated string of all the tickers you wanna request data from (e.g. "AAPL,GOOGL,MSFT")
 
-        tickers_dfs = dl.hist_data(tickers, timeframe='1Day', start="2024-01-16", end="2026-01-13", limit=1000)
+        Returns:
+            dict[str,pd.DataFrame]: dictionary consisting of all the tickers as keys,
+            and their corresponding OHLCV bars data frames as the values
+            (timeframe, start, end and limit are fixed inside this method)
+        """
+    
+        bars_by_symbol = dl.hist_data( selected_tickers , timeframe='1Day', start="2024-01-16", end="2026-01-13", limit=1000)
 
-        # list of all the prices data frames , 1 prices data frame corresponding to 1 ExecutionState object 
-        prices=[]
-        # list containing each 1 run data frame per ExecutionState object with corresponding parameters 
-        data_frames_run=[]
-        # list of all the equity curve data frames , 1 equity curve data frame corresponding to 1 ExecutionState object 
+        return bars_by_symbol
+
+    @staticmethod
+    def structured_data_outputs( selected_tickers : str ) -> dict[ str , pd.DataFrame ] : 
+        """Run the full experiment: 1 backtest run per (ticker, strategy) combination, and collect all the outputs.
+
+        Fetches the bars for all the selected tickers, then for each ticker runs
+        backtest_run() twice (once Trend, once Mean Reversion). Each run's output
+        data frames get appended to their corresponding list, then each list gets
+        concatenated into 1 final data frame across all the runs.
+
+        Args:
+            selected_tickers (str): comma-separated string of all the tickers you wanna run the experiment on (e.g. "AAPL,GOOGL,MSFT")
+
+        Returns:
+            dict[str,pd.DataFrame]: the final results dictionary built by build_results(),
+            containing the 6 structured data outputs (final run data frame, equity curve,
+            drawdown series, completed trades, log events, prices), each one key-accessible
+        """
+
         equity_curves_logs=[]
-        # list of all the drawdown series data frames , 1 drawdown serie data frame corresponding to 1 ExecutionState object 
         drawdown_series=[]
-        # list of all the completed trades data frames , 1 trade data frame corresponding to 1 ExecutionState object
         trades=[]
-        # list of all the log events data frames , 1 log event data frame corresponding to 1 ExecutionState object
         log_events=[]
-        # 1 single final dictionary containing all 5 structured data outputs
+        prices=[]
+        data_frames_run=[]
+        
         results={}
 
-        # add each ExecutionState object to its corresponding structured data output 
-        for state in states: 
-            # call Trading Engine's backtest_run() method once per ExecutionState object, and store its returned dictionary
-            dictionary_data_frames=TradingEngine.backtest_run(state, tickers_dfs[state.symbol])
-            # extract all 4 outputs from that same "backtest_run(state)" result 
-            equity_curves_logs.append(dictionary_data_frames["equity_curve"])
-            drawdown_series.append(dictionary_data_frames["drawdown_series"])
-            trades.append(dictionary_data_frames["trades"])
-            log_events.append(dictionary_data_frames["log_events"])
-            prices.append(dictionary_data_frames["prices"])
-            # run data frame computed using the performance metrics method 
-            data_frames_run.append(TradingEngine.performance_metrics_data_frame(state))
+        bars_by_symbol = ExperimentRunner.fetch_bars_by_symbol( selected_tickers )
 
-        # run data frame made out of all the different Execution State objects's run data frames concatenated together
-        final_data_frame_run=pd.concat( data_frames_run )
-        # trades data frame made out of all the different Execution State objects's trade data frames concatenated together
-        trades_df=pd.concat(trades)
-        # equity curve data frame made out of all the different Execution State objects's equity curve data frames concatenated together
-        equity_curves_df=pd.concat(equity_curves_logs)
-        # drawdown series data frame made out of all the different Execution State objects's drawdown data frames concatenated together
-        drawdown_series_df=pd.concat(drawdown_series)
-        # log events data frame made out of all the different Execution State objects's log events data frames concatenated together
-        log_events_df=pd.concat(log_events)
-        # prices data frame made out of all the different Execution State objects's log events data frames concatenated together
-        prices_df=pd.concat(prices)
+        for symbol in bars_by_symbol : 
 
-        # add all the final structured outputs to a single final returned dictionary, and make each structured output key-accessible
-        results=ExperimentRunner.build_results(final_data_frame_run,
-                                               equity_curves_df,
-                                               drawdown_series_df,
-                                               trades_df,
-                                               log_events_df,
-                                               prices_df)       
+            bars_df = bars_by_symbol[symbol]
+
+            for trendMethod in ( True , False ) : 
+
+                state = ExperimentRunner.state( symbol , trendMethod ) 
+
+                dictionary_data_frames = TradingEngine.backtest_run( state , bars_df )
+
+                equity_curves_logs.append(dictionary_data_frames["equity_curve"])
+                drawdown_series.append(dictionary_data_frames["drawdown_series"])
+                trades.append(dictionary_data_frames["trades"])
+                log_events.append(dictionary_data_frames["log_events"])
+                prices.append(dictionary_data_frames["prices"])
+
+                data_frames_run.append(TradingEngine.performance_metrics_data_frame(state))
+
+        equity_curves_df = pd.concat(equity_curves_logs)  
+        drawdown_series_df = pd.concat(drawdown_series)
+        trades_df = pd.concat(trades)
+        log_events_df = pd.concat(log_events)
+        prices_df = pd.concat(prices)
+
+        final_data_frame_run = pd.concat( data_frames_run )
+
+        results = ExperimentRunner.build_results(
+
+            final_data_frame_run,
+            equity_curves_df,
+            drawdown_series_df,
+            trades_df,
+            log_events_df,
+            prices_df
+
+        )       
+
         return results
 
+        
+        
 
-if __name__=="__main__":
 
-    experimentRunner=ExperimentRunner()
-    results=experimentRunner.structured_data_outputs()
+if __name__ == "__main__" :
+
+    # selected_tickers = input( "Enter the desired selected tickers: " )
+
+    results = ExperimentRunner.structured_data_outputs( selected_tickers )
 
     plottedChart=PlottingLayer(results)
     

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 import pytest
 import main 
 from data_loading import data_loader as dl 
@@ -8,6 +8,7 @@ from datetime import date
 from pathlib import Path 
 import math 
 import numpy as np
+from main import selected_tickers
 
 from metrics import performanceMetrics
 
@@ -2150,6 +2151,391 @@ class TestAggregationLayer:
 
 
 
+class TestExperimentRunner : 
+
+    def test_build_results(self,results_data_frames):
+
+        run_data_frame = results_data_frames['Final Data Frame Run']
+        equity_curves_df = results_data_frames['Equity Curve']
+        drawdown_series_df = results_data_frames["Drawdown Series"]
+        trades_df = results_data_frames["Completed Trades"]
+        log_events_df = results_data_frames["Log Events"]
+        prices_df = results_data_frames['Prices']
+
+        expected = {
+
+            "Final Data Frame Run":run_data_frame,
+            "Equity Curve":equity_curves_df,
+            "Drawdown Series":drawdown_series_df,
+            "Completed Trades":trades_df,
+            "Log Events":log_events_df,
+            "Prices":prices_df
+
+        }
+
+        result = main.ExperimentRunner.build_results( 
+
+            run_data_frame , 
+            equity_curves_df , 
+            drawdown_series_df , 
+            trades_df , 
+            log_events_df , 
+            prices_df 
+
+        )
+
+        assert result == expected
+
+    def test_state(self) : 
+
+        symbol = 'TSLA' 
+        trendMethod = True
+
+        with pytest.raises(ValueError) as excinfo : 
+
+            main.ExperimentRunner.state(symbol,trendMethod)
+
+        assert str(excinfo.value) == f"The selected ticker {symbol} is not in the dictionary of selected companies" 
+
+        symbol = 'AAPL'
+        cashValue = 9875.67
+        ticker_name = 'Apple'
+
+        expected = main.ExecutionState(trendMethod , symbol, cashValue, ticker_name )
+
+        result = main.ExperimentRunner.state(symbol , trendMethod , cashValue)
+
+        assert result == expected
+
+        cashValue = 10000
+
+        expected = main.ExecutionState(trendMethod , symbol, cashValue, ticker_name )
+
+        result = main.ExperimentRunner.state(symbol , trendMethod)
+
+        assert result == expected
+
+    def test_fetch_bars_by_symbol(self): 
+
+        bars_by_symbol = {
+
+            "AAA": pd.DataFrame(
+                {"open": [10.0, 11.0, 12.0],
+                "high": [10.5, 11.5, 12.5],
+                "low":  [9.5, 10.5, 11.5],
+                "close": [10.2, 11.2, 12.2],
+                "volume": [100, 200, 300]},
+                index=pd.to_datetime(["2024-01-02", "2024-01-03", "2024-01-04"], utc=True),
+            ),
+            "BBB": pd.DataFrame(
+                {"open": [50.0, 49.0, 48.0],
+                "high": [51.0, 50.0, 49.0],
+                "low":  [49.0, 48.0, 47.0],
+                "close": [49.5, 48.5, 47.5],
+                "volume": [400, 500, 600]},
+                index=pd.to_datetime(["2024-01-02", "2024-01-03", "2024-01-04"], utc=True),
+            ),
+        }
+
+        with patch.object( dl , 'hist_data' , autospec = True , return_value = bars_by_symbol ) as mock : 
+
+            result = main.ExperimentRunner.fetch_bars_by_symbol(selected_tickers)
+
+            assert result is bars_by_symbol 
+            mock.assert_called_once_with(selected_tickers , timeframe='1Day', start="2024-01-16", end="2026-01-13", limit=1000)
+
+
+
+
+
+    def test_structured_data_outputs(self):
+
+        apple_ohlcv = pd.DataFrame(
+                {"open": [10.0, 11.0, 12.0, 13.0],
+                "high": [10.5, 11.5, 12.5, 13.5],
+                "low":  [9.5, 10.5, 11.5, 12.5],
+                "close": [10.2, 11.2, 12.2, 13.2],
+                "volume": [100, 200, 300, 400]},
+                index=pd.to_datetime(["2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"], utc=True),
+        )
+
+        google_ohlcv = pd.DataFrame(
+                {"open": [50.0, 49.0, 48.0, 47.0],
+                "high": [51.0, 50.0, 49.0, 48.0],
+                "low":  [49.0, 48.0, 47.0, 46.0],
+                "close": [49.5, 48.5, 47.5, 46.5],
+                "volume": [400, 500, 600, 700]},
+                index=pd.to_datetime(["2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"], utc=True),
+        )
+
+        bars_by_symbol = {
+        
+            "AAPL": apple_ohlcv,
+            "GOOGL": google_ohlcv,
+
+        }
+
+        state_trend_apple = main.ExecutionState(
+
+            trendMethod=True,
+            symbol="AAPL",
+            cashValue=10000,
+            ticker_name="Apple",
+            
+        )
+
+        state_mean_reversion_apple = main.ExecutionState(
+
+            trendMethod=False,
+            symbol="AAPL",
+            cashValue=10000,
+            ticker_name="Apple",
+            
+        )
+
+        state_trend_google = main.ExecutionState(
+
+            trendMethod=True,
+            symbol="GOOGL",
+            cashValue=10000,
+            ticker_name="Google",
+            
+        )
+
+        state_mean_reversion_google = main.ExecutionState(
+
+            trendMethod=False,
+            symbol="GOOGL",
+            cashValue=10000,
+            ticker_name="Google",
+            
+        )
+
+        dictionary_data_frames_trend_apple = {
+
+            "equity_curve":     pd.DataFrame({"run": [1, 1], "equity": [10000.0, 10100.0]}),
+            "drawdown_series":  pd.DataFrame({"run": [1, 1], "drawdown": [0.0, -1.5]}),
+            "trades":           pd.DataFrame({"run": [1], "profit": [100.0]}),
+            "log_events":       pd.DataFrame({"run": [1], "event": ["BUY"]}),
+            "prices":           pd.DataFrame({"run": [1, 1], "close": [10.2, 11.2]}),
+            
+        }
+
+        dictionary_data_frames_mean_reversion_apple = {
+
+            "equity_curve":     pd.DataFrame({"run": [2, 2], "equity": [10000.0, 9900.0]}),
+            "drawdown_series":  pd.DataFrame({"run": [2, 2], "drawdown": [0.0, -2.5]}),
+            "trades":           pd.DataFrame({"run": [2], "profit": [-100.0]}),
+            "log_events":       pd.DataFrame({"run": [2], "event": ["SELL"]}),
+            "prices":           pd.DataFrame({"run": [2, 2], "close": [10.2, 11.2]}),
+            
+        }
+
+        dictionary_data_frames_trend_google = {
+
+            "equity_curve":     pd.DataFrame({"run": [3, 3], "equity": [10000.0, 10100.0]}),
+            "drawdown_series":  pd.DataFrame({"run": [3, 3], "drawdown": [0.0, -1.5]}),
+            "trades":           pd.DataFrame({"run": [3], "profit": [100.0]}),
+            "log_events":       pd.DataFrame({"run": [3], "event": ["BUY"]}),
+            "prices":           pd.DataFrame({"run": [3, 3], "close": [10.2, 11.2]}),
+            
+        }
+
+        dictionary_data_frames_mean_reversion_google = {
+
+            "equity_curve":     pd.DataFrame({"run": [4, 4], "equity": [10000.0, 9900.0]}),
+            "drawdown_series":  pd.DataFrame({"run": [4, 4], "drawdown": [0.0, -2.5]}),
+            "trades":           pd.DataFrame({"run": [4], "profit": [-100.0]}),
+            "log_events":       pd.DataFrame({"run": [4], "event": ["SELL"]}),
+            "prices":           pd.DataFrame({"run": [4, 4], "close": [10.2, 11.2]}),
+            
+        }
+        
+        run_df_trend_apple = pd.DataFrame(
+            {
+                "run_number": 1,
+                "ticker": "Apple",
+                "strategy": "Trend",
+                "starting_cash": 10000,
+                "total_net_profit": 250.5,
+                "mdd": -3.2,
+                "expectancy": 1.4,
+                "payoff_ratio": 2.1,
+                "profit_factor": 1.8,
+                "sharpe_ratio": 0.6,
+                "labels": "Apple-Trend",
+            },
+            index=[0],
+        )
+
+
+        run_df_mean_reversion_apple = pd.DataFrame(
+            {
+                "run_number": 2,
+                "ticker": "Apple",
+                "strategy": "Mean Reversion",
+                "starting_cash": 10000,
+                "total_net_profit": -120.0,
+                "mdd": -5.7,
+                "expectancy": -0.8,
+                "payoff_ratio": 0.7,
+                "profit_factor": 0.6,
+                "sharpe_ratio": -0.3,
+                "labels": "Apple-Mean Reversion",
+            },
+            index=[0],
+        )
+
+        run_df_trend_google = pd.DataFrame(
+            {
+                "run_number": 3,
+                "ticker": "Google",
+                "strategy": "Trend",
+                "starting_cash": 10000,
+                "total_net_profit": 250.5,
+                "mdd": -3.2,
+                "expectancy": 1.4,
+                "payoff_ratio": 2.1,
+                "profit_factor": 1.8,
+                "sharpe_ratio": 0.6,
+                "labels": "Google-Trend",
+            },
+            index=[0],
+        )
+
+        run_df_mean_reversion_google = pd.DataFrame(
+            {
+                "run_number": 4,
+                "ticker": "Google",
+                "strategy": "Mean Reversion",
+                "starting_cash": 10000,
+                "total_net_profit": -120.0,
+                "mdd": -5.7,
+                "expectancy": -0.8,
+                "payoff_ratio": 0.7,
+                "profit_factor": 0.6,
+                "sharpe_ratio": -0.3,
+                "labels": "Google-Mean Reversion",
+            },
+            index=[0],
+        )
+
+        with (
+
+            patch.object( main.ExperimentRunner , 
+                        'fetch_bars_by_symbol',
+                        return_value = bars_by_symbol ) as mock_bars , 
+
+            patch.object( main.ExperimentRunner , 
+                        'state' , 
+                        side_effect = [state_trend_apple,
+                                        state_mean_reversion_apple,
+                                        state_trend_google,
+                                        state_mean_reversion_google] ) as mock_state ,
+
+            patch.object( main.TradingEngine , 
+                        'backtest_run' ,
+                        side_effect = [dictionary_data_frames_trend_apple,
+                                        dictionary_data_frames_mean_reversion_apple,
+                                        dictionary_data_frames_trend_google,
+                                        dictionary_data_frames_mean_reversion_google] ) as mock_dictionary ,
+
+            patch.object( main.TradingEngine , 
+                        'performance_metrics_data_frame',
+                        side_effect = [run_df_trend_apple,
+                                        run_df_mean_reversion_apple,
+                                        run_df_trend_google,
+                                        run_df_mean_reversion_google]) as mock_data_frames_run , 
+
+        ) : 
+
+            result = main.ExperimentRunner.structured_data_outputs(selected_tickers)
+
+            pd.testing.assert_frame_equal( result['Equity Curve'] , pd.DataFrame(
+
+                {"run": [1, 1, 2, 2, 3, 3, 4, 4],
+                "equity": [10000.0, 10100.0, 10000.0, 9900.0, 10000.0, 10100.0, 10000.0, 9900.0]},
+                index=[0, 1, 0, 1, 0, 1, 0, 1],
+
+            ) ) 
+
+            pd.testing.assert_frame_equal( result['Drawdown Series'] , pd.DataFrame(
+
+                {"run": [1, 1, 2, 2, 3, 3, 4, 4],
+                "drawdown": [0.0, -1.5, 0.0, -2.5, 0.0, -1.5, 0.0, -2.5]},
+                index=[0, 1, 0, 1, 0, 1, 0, 1],
+                
+            ) ) 
+
+            pd.testing.assert_frame_equal( result['Completed Trades'] , pd.DataFrame(
+
+                {"run": [1, 2, 3, 4],
+                "profit": [100.0, -100.0, 100.0, -100.0]},
+                index=[0, 0, 0, 0],
+                
+            ) ) 
+
+            pd.testing.assert_frame_equal( result['Log Events'] , pd.DataFrame(
+            
+                {"run": [1, 2, 3, 4],
+                "event": ["BUY", "SELL", "BUY", "SELL"]},
+                index=[0, 0, 0, 0],
+                
+            ) ) 
+
+            pd.testing.assert_frame_equal( result['Prices'] , pd.DataFrame(
+                    
+                {"run": [1, 1, 2, 2, 3, 3, 4, 4],
+                "close": [10.2, 11.2, 10.2, 11.2, 10.2, 11.2, 10.2, 11.2]},
+                index=[0, 1, 0, 1, 0, 1, 0, 1],
+                
+            ) ) 
+
+            pd.testing.assert_frame_equal( result['Final Data Frame Run'] , pd.DataFrame(
+                            
+                {
+                    "run_number": [1, 2, 3, 4],
+                    "ticker": ["Apple", "Apple", "Google", "Google"],
+                    "strategy": ["Trend", "Mean Reversion", "Trend", "Mean Reversion"],
+                    "starting_cash": [10000, 10000, 10000, 10000],
+                    "total_net_profit": [250.5, -120.0, 250.5, -120.0],
+                    "mdd": [-3.2, -5.7, -3.2, -5.7],
+                    "expectancy": [1.4, -0.8, 1.4, -0.8],
+                    "payoff_ratio": [2.1, 0.7, 2.1, 0.7],
+                    "profit_factor": [1.8, 0.6, 1.8, 0.6],
+                    "sharpe_ratio": [0.6, -0.3, 0.6, -0.3],
+                    "labels": ["Apple-Trend", "Apple-Mean Reversion", "Google-Trend", "Google-Mean Reversion"],
+                },
+                index=[0, 0, 0, 0],
+                
+            ) ) 
+
+            assert mock_bars.call_args_list == [call('AAPL,GOOGL,MSFT')]
+
+            assert mock_state.call_args_list == [call('AAPL', True),
+                                                call('AAPL', False),
+                                                call('GOOGL', True),
+                                                call('GOOGL', False)]
+
+            assert mock_dictionary.call_args_list == [
+                                                        call(state_trend_apple,apple_ohlcv) ,
+                                                        call(state_mean_reversion_apple,apple_ohlcv),
+                                                        call(state_trend_google,google_ohlcv),
+                                                        call(state_mean_reversion_google,google_ohlcv)
+                                                    ]
+
+            assert mock_data_frames_run.call_args_list == [
+                                                            call(state_trend_apple) , 
+                                                            call(state_mean_reversion_apple),
+                                                            call(state_trend_google),
+                                                            call(state_mean_reversion_google)
+                                                        ]
+
+        
+        
+
+
+
 
 
 
@@ -2190,8 +2576,7 @@ class TestTradingEngineBacktestRun(TestCase):
 
         golden_file_path = Path( 'tests/golden_masters/backtest_run_old_results.txt' )
 
-        experimentRunner = main.ExperimentRunner()
-        d = experimentRunner.structured_data_outputs()
+        d = main.ExperimentRunner.structured_data_outputs(selected_tickers)
         results = "\n".join(f"=== {k} ===\n{v.to_csv(index=False)}" for k, v in d.items())
         
         if not golden_file_path.exists():
