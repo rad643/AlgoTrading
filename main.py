@@ -9,6 +9,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
+
 COMPANY_NAMES = {"AAPL": "Apple", "GOOGL": "Google", "MSFT": "Microsoft"}
 
 selected_tickers = "AAPL,GOOGL,MSFT"
@@ -76,7 +77,10 @@ class ExecutionState:
 
     Performance counters:
         totalProfit:
-            Total realized profit accumulated during the run.
+            Final net profit/loss for the completed backtest run.
+            During the run it accumulates realised P&L from closed trades.
+            At the end of the backtest it is overwritten as:
+                final equity - starting cash.
 
         positiveProfitTrend / negativeProfitTrend:
             Number of winning/losing Trend trades.
@@ -1062,6 +1066,8 @@ class TradingEngine:
                                                     my_date,
                                                     closingPrice
                                                 )
+
+        state.totalProfit = state.equity - state.startingCashValue
                 
         TradingEngine.backtest_end_logging_event(state, day, my_date)
 

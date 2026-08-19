@@ -1535,64 +1535,71 @@ class TestBacktestRun:
 
         expected_log_events_df = pd.DataFrame({
 
-            'run_number': [1, 1, 1],
-            'day': pd.array([None, 4, 6], dtype=pd.Int64Dtype()),
-            'date': [None, date(2024,1,19), date(2024,1,23)],
-            'ticker': ['Google', 'Google', 'Google'],
-            'strategy': ['Trend', 'Trend', 'Trend'],
-            'event_type': ['BACKTEST_START', 'BUY_EXECUTED', 'BACKTEST_END'],
-            'message': ['Backtest started', 'A Buy has been executed', 'Backtest has ended'],
-            'cash': [10000.000, 8059.036, 8059.036],
-            'equity': [10000.000, 10033.136, 10092.036],
-            'position': [0.0, 19.0, 19.0],
-            'execution_price': [float('nan'), 102.151, float('nan')],
-            'pnl': [float('nan'), float('nan'), 0.0],
-            'labels': [None, 'Google-Trend', None],
+            "run_number": [1, 1, 1],
+            "day": pd.array([pd.NA, 4, 6], dtype="Int64"),
+            "date": [None, date(2024, 1, 19), date(2024, 1, 23)],
+            "ticker": ["Google", "Google", "Google"],
+            "strategy": ["Trend", "Trend", "Trend"],
+            "event_type": ["BACKTEST_START", "BUY_EXECUTED", "BACKTEST_END"],
+            "message": ["Backtest started", "A Buy has been executed", "Backtest has ended"],
+            "cash": [10000.000, 8059.036, 8059.036],
+            "equity": [10000.000, 10033.136, 10092.036],
+            "position": [0.0, 19.0, 19.0],
+            "execution_price": [np.nan, 102.151, np.nan],
+            "pnl": [np.nan, np.nan, 92.036],
+            "labels": [np.nan, "Google-Trend", np.nan],
             
-        }) 
+        })
 
         expected_equity_curve_df = pd.DataFrame({
 
-            'day': [1, 2, 3, 4, 5, 6],
-            'run_number': [1, 1, 1, 1, 1, 1],
-            'ticker': ['Google'] * 6,
-            'strategy': ['Trend'] * 6,
-            'equity': [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
-            'labels': ['Google-Trend'] * 6,
+            "day": [1, 2, 3, 4, 5, 6],
+            "run_number": [1, 1, 1, 1, 1, 1],
+            "ticker": ["Google"] * 6,
+            "strategy": ["Trend"] * 6,
+            "equity": [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
+            "labels": ["Google-Trend"] * 6,
             
         })
 
         expected_drawdown_series_df = pd.DataFrame({
 
-            'day': [1, 2, 3, 4, 5, 6],
-            'run_number': [1, 1, 1, 1, 1, 1],
-            'ticker': ['Google'] * 6,
-            'strategy': ['Trend'] * 6,
-            'equity': [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
-            'peak_so_far': [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
-            'drawdown': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            'drawdown_pct': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            'labels': ['Google-Trend'] * 6,
+            "day": [1, 2, 3, 4, 5, 6],
+            "run_number": [1, 1, 1, 1, 1, 1],
+            "ticker": ["Google"] * 6,
+            "strategy": ["Trend"] * 6,
+            "equity": [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
+            "peak_so_far": [10000.000, 10000.000, 10000.000, 10033.136, 10065.436, 10092.036],
+            "drawdown": [0.0] * 6,
+            "drawdown_pct": [0.0] * 6,
+            "labels": ["Google-Trend"] * 6,
             
         })
 
-        expected_trades_df = pd.DataFrame(
+        expected_trades_df = pd.DataFrame(columns=[
 
-            columns = [ 'run_number' , 'ticker' , 'strategy' , 'entry_day' ,
-                       'entry_price' , 'exit_day' , 'exit_price' , 'profit' ,
-                        'return_pct' , 'labels' , 'number_trades_took_place' ]
-
-        )
+            "run_number",
+            "ticker",
+            "strategy",
+            "entry_day",
+            "entry_price",
+            "exit_day",
+            "exit_price",
+            "profit",
+            "return_pct",
+            "labels",
+            "number_trades_took_place",
+            
+        ])
 
         expected_prices_df = pd.DataFrame({
 
-            'day': [1, 2, 3, 4, 5, 6],
-            'date': [date(2024,1,16), date(2024,1,17), date(2024,1,18),
-                    date(2024,1,19), date(2024,1,22), date(2024,1,23)],
-            'ticker': ['Google'] * 6,
-            'strategy': ['Trend'] * 6,
-            'closing_price': [101.2, 103.1, 102.4, 103.9, 105.6, 107.0],
-            'average': [float('nan'), float('nan'), 102.150000, 102.233333, 102.650000, 103.240000],
+            "day": [1, 2, 3, 4, 5, 6],
+            "date": [date(2024, 1, 16), date(2024, 1, 17), date(2024, 1, 18), date(2024, 1, 19), date(2024, 1, 22), date(2024, 1, 23)],
+            "ticker": ["Google"] * 6,
+            "strategy": ["Trend"] * 6,
+            "closing_price": [101.2, 103.1, 102.4, 103.9, 105.6, 107.0],
+            "average": [float("nan"), float("nan"), 102.150000, 102.233333, 102.650000, 103.240000],
             
         })
 
@@ -2574,7 +2581,7 @@ class TestTradingEngineBacktestRun(TestCase):
         Delete results.txt to save a new one.
         """
 
-        golden_file_path = Path( 'tests/golden_masters/backtest_run_old_results.txt' )
+        golden_file_path = Path( 'tests/golden_masters/results.txt' )
 
         d = main.ExperimentRunner.structured_data_outputs(selected_tickers)
         results = "\n".join(f"=== {k} ===\n{v.to_csv(index=False)}" for k, v in d.items())
