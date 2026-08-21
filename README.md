@@ -118,7 +118,7 @@ The engine currently calculates:
 
 | Metric | Description |
 |---|---|
-| Total net profit | Sum of realised trade profits after the modelled execution process |
+| Total net profit | Final marked-to-market portfolio equity minus starting cash, including realised and unrealised P&L after commissions and slippage
 | Maximum drawdown | Largest percentage decline from a previous equity peak |
 | Expectancy | Expected profit or loss per completed trade |
 | Payoff ratio | Average winning trade divided by average losing trade |

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def averageUpToDay(list_store_closing_prices_up_to_day):
     """
 
@@ -8,11 +9,9 @@ def averageUpToDay(list_store_closing_prices_up_to_day):
 
     :param list_store_closing_prices_up_to_day: Description
     """
-    #verify that the parameter is a list 
+    # verify that the parameter is a list
     if not isinstance(list_store_closing_prices_up_to_day, list):
         raise TypeError
-    # compute the average with numpy vectorization 
-    arr=np.array(list_store_closing_prices_up_to_day)
+    # compute the average with numpy vectorization
+    arr = np.array(list_store_closing_prices_up_to_day)
     return np.mean(arr)
-
-    

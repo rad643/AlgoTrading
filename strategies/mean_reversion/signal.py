@@ -1,56 +1,142 @@
 from strategies.mean_reversion.utils import buy, hold, sell, validation
 
-def mean_rev_step(verbose_run: bool, day:int, date:str, closingPrice:float, average:float, nextDayOpeningPrice: float, cashValue:float, equity:float, pending_action: str, positionSizing: float, flat_fee_per_share: float, fixed_bps:float, positionMeanReversion:int, entry_day: int, exit_day: int, entryPriceMeanReversion:float, exitPriceMeanReversion:float, profitMeanReversion:float)->tuple:
+
+def mean_rev_step(
+    verbose_run: bool,
+    day: int,
+    date: str,
+    closingPrice: float,
+    average: float,
+    nextDayOpeningPrice: float,
+    cashValue: float,
+    equity: float,
+    pending_action: str,
+    positionSizing: float,
+    flat_fee_per_share: float,
+    fixed_bps: float,
+    positionMeanReversion: int,
+    entry_day: int,
+    exit_day: int,
+    entryPriceMeanReversion: float,
+    exitPriceMeanReversion: float,
+    profitMeanReversion: float,
+) -> tuple:
     """
-    Description: Executes any pending trading action from the previous day (buy or sell) 
+    Description: Executes any pending trading action from the previous day (buy or sell)
     at the current days market opening price, updates portfolio variables (position, cash, equity, and realized profit),
     and determines the next pending trading signal based on the comparison between the current days closing price and the moving average.
 
     Args:
         verbose_run (bool): flag variable deciding whether or not to print the 500 daily lines to the console
-        day (int): current day 
-        date (str): current date 
-        closingPrice (float): closing price of the current day 
+        day (int): current day
+        date (str): current date
+        closingPrice (float): closing price of the current day
         average (float): average of all the closing prices up until the current day (current day's closing price excluded)
         nextDayOpeningPrice (float): execution price at which the trade takes place (sell/buy)
-        cashValue (float): current amount of cash 
+        cashValue (float): current amount of cash
         equity (float): cash+assets (unrealized profit-value of the shares you currently hold changes based on the latest market price (e.g., the days closing price), without you actually selling them yet)
         pending_action (str): the trading signal determined from the current days prices, whose execution (buy/sell) occurs on the next day at the markets opening price.
         positionSizing (float): maximum amount of money allowed to spend
         flat_fee_per_share (float): the brokers commission charged for each individual share traded (both when buying and when selling).
         fixed_bps (float): a small percentage adjustment applied to the execution price to simulate slippage caused by market frictions and volatility.
         positionMeanReversion (int): number of shares that you currently own (assets)
-        entryPriceMeanReversion (float): price at which you buy 
-        exitPriceMeanReversion (float): price at which you sell 
+        entryPriceMeanReversion (float): price at which you buy
+        exitPriceMeanReversion (float): price at which you sell
         profitMeanReversion (float): realized profit=(exitPriceMeanReversion-entryPriceMeanReversion) * number_of_shares.
 
     Returns:
-        tuple: Updated portfolio state after processing the current day, including the 
+        tuple: Updated portfolio state after processing the current day, including the
         current position (shares held), realized profit, entry and exit prices, remaining cash, current equity (cash + unrealized value of held shares),
         and the pending action signal that will be executed at the next days market opening.
     """
 
-    validation(pending_action,cashValue)
+    validation(pending_action, cashValue)
 
-    if(pending_action=="BUY"):
+    if pending_action == "BUY":
+        if positionMeanReversion == 0:
+            (
+                entryPriceMeanReversion,
+                positionMeanReversion,
+                cashValue,
+                equity,
+                entry_day,
+                pending_action,
+            ) = buy(
+                day,
+                cashValue,
+                nextDayOpeningPrice,
+                fixed_bps,
+                positionSizing,
+                flat_fee_per_share,
+                closingPrice,
+                verbose_run,
+                date,
+                average,
+            )
+        else:
+            positionMeanReversion, cashValue, equity, pending_action = hold(
+                cashValue,
+                positionMeanReversion,
+                closingPrice,
+                verbose_run,
+                day,
+                date,
+                average,
+            )
 
-        if(positionMeanReversion==0): 
-            entryPriceMeanReversion,positionMeanReversion,cashValue,equity,entry_day,pending_action=buy(day, cashValue,nextDayOpeningPrice, fixed_bps, positionSizing,flat_fee_per_share,closingPrice, verbose_run, date,average)
-        else: 
-            positionMeanReversion,cashValue,equity,pending_action=hold(cashValue,positionMeanReversion,closingPrice,verbose_run,day,date,average)
+    elif pending_action == "SELL":
+        if positionMeanReversion != 0:
+            (
+                exitPriceMeanReversion,
+                positionMeanReversion,
+                cashValue,
+                equity,
+                profitMeanReversion,
+                exit_day,
+                pending_action,
+            ) = sell(
+                day,
+                cashValue,
+                nextDayOpeningPrice,
+                fixed_bps,
+                entryPriceMeanReversion,
+                closingPrice,
+                flat_fee_per_share,
+                verbose_run,
+                date,
+                average,
+                positionMeanReversion,
+            )
+        else:
+            positionMeanReversion, cashValue, equity, pending_action = hold(
+                cashValue,
+                positionMeanReversion,
+                closingPrice,
+                verbose_run,
+                day,
+                date,
+                average,
+            )
 
-    elif(pending_action=="SELL"):
+    elif (pending_action == "HOLD") or (pending_action == ""):
+        positionMeanReversion, cashValue, equity, pending_action = hold(
+            cashValue,
+            positionMeanReversion,
+            closingPrice,
+            verbose_run,
+            day,
+            date,
+            average,
+        )
 
-        if(positionMeanReversion!=0):            
-            exitPriceMeanReversion,positionMeanReversion,cashValue,equity,profitMeanReversion,exit_day,pending_action=sell(day,cashValue,nextDayOpeningPrice,fixed_bps, entryPriceMeanReversion,closingPrice,flat_fee_per_share,verbose_run,date,average,positionMeanReversion)
-        else: 
-            positionMeanReversion,cashValue,equity,pending_action=hold(cashValue,positionMeanReversion,closingPrice,verbose_run,day,date,average)
-
-    elif(pending_action=="HOLD"):
-        positionMeanReversion,cashValue,equity,pending_action=hold(cashValue,positionMeanReversion,closingPrice,verbose_run,day,date,average)
-    
-    elif(pending_action==""):
-        
-        positionMeanReversion,cashValue,equity,pending_action=hold(cashValue,positionMeanReversion,closingPrice,verbose_run,day,date,average)    
-     
-    return (positionMeanReversion, profitMeanReversion, entryPriceMeanReversion, exitPriceMeanReversion, cashValue, equity, pending_action, entry_day, exit_day)
+    return (
+        positionMeanReversion,
+        profitMeanReversion,
+        entryPriceMeanReversion,
+        exitPriceMeanReversion,
+        cashValue,
+        equity,
+        pending_action,
+        entry_day,
+        exit_day,
+    )
