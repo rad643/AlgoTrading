@@ -1823,7 +1823,7 @@ class ExperimentRunner:
 
         bars_by_symbol = ExperimentRunner.fetch_bars_by_symbol(selected_tickers)
 
-        for symbol in bars_by_symbol:
+        for symbol in sorted(bars_by_symbol):
             bars_df = bars_by_symbol[symbol]
 
             for trendMethod in (True, False):
