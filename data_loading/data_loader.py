@@ -1,19 +1,22 @@
-import json
+import os
 from collections.abc import Generator
 from datetime import date
 from typing import cast
 
 import pandas as pd
 import requests
+from dotenv import load_dotenv
 
 import data_loading.compute_average as ca
 
 url_path = "https://data.alpaca.markets/v2/stocks/bars"
 
-with open(".env", "r") as file:
-    credentials = file.read()
+load_dotenv()
 
-headers = json.loads(credentials)
+headers = {
+    "APCA-API-KEY-ID": os.environ["APCA-API-KEY-ID"],
+    "APCA-API-SECRET-KEY": os.environ["APCA-API-SECRET-KEY"],
+}
 
 
 def hist_data(
