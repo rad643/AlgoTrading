@@ -17,8 +17,8 @@ load_dotenv()
 def get_headers() -> dict[str, str]:
     """Read Alpaca credentials from the environment at call time."""
     return {
-        "APCA-API-KEY-ID": os.environ["APCA-API-KEY-ID"],
-        "APCA-API-SECRET-KEY": os.environ["APCA-API-SECRET-KEY"],
+        "APCA-API-KEY-ID": os.environ["APCA_API_KEY_ID"],
+        "APCA-API-SECRET-KEY": os.environ["APCA_API_SECRET_KEY"],
     }
 
 
