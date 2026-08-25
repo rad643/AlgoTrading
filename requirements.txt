@@ -48,7 +48,8 @@ narwhals==2.20.0
 nodeenv==1.10.0
 numpy==2.4.4
 packaging==26.0
-pps==3.0.5.260730
+pandas==3.0.2
+pandas-stubs==3.0.5.260730
 pathspec==1.1.1
 peewee==4.0.4
 platformdirs==4.9.6
