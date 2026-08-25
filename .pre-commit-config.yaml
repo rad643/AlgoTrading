@@ -6,15 +6,18 @@ repos:
         entry: .venv/bin/ruff check .
         language: system
         pass_filenames: false
+        verbose: true 
 
       - id: ruff-format
         name: Ruff format
         entry: .venv/bin/ruff format --check .
         language: system
         pass_filenames: false
+        verbose: true 
 
       - id: mypy
         name: Mypy
         entry: .venv/bin/mypy .
         language: system
         pass_filenames: false
+        verbose: true 
