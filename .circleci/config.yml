@@ -1,5 +1,5 @@
 version: 2.1
-josb:
+jobs:
     build:
         docker:
             - image: cimg/python:3.12.7
@@ -25,9 +25,14 @@ josb:
                 name: Type Hinting
                 command: | 
                     source .venv/bin/activate
-                    mypy . --exclude=.venv
+                    mypy . --exclude=.venv  
             - run:
                 name: Run Tests
                 command: |
                     source .venv/bin/activate
                     python -m pytest -v tests/test_main.py
+
+workflows:
+    build:
+        jobs:
+            - build
