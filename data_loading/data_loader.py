@@ -13,10 +13,13 @@ url_path = "https://data.alpaca.markets/v2/stocks/bars"
 
 load_dotenv()
 
-headers = {
-    "APCA-API-KEY-ID": os.environ["APCA_API_KEY_ID"],
-    "APCA-API-SECRET-KEY": os.environ["APCA_API_SECRET_KEY"],
-}
+
+def get_headers() -> dict[str, str]:
+    """Read Alpaca credentials from the environment at call time."""
+    return {
+        "APCA-API-KEY-ID": os.environ["APCA-API-KEY-ID"],
+        "APCA-API-SECRET-KEY": os.environ["APCA-API-SECRET-KEY"],
+    }
 
 
 def hist_data(
@@ -43,6 +46,7 @@ def hist_data(
         "limit": limit,
     }
     bars = {}  # type: ignore [var-annotated]
+    headers = get_headers()
     while True:
         r = requests.get(url=url_path, headers=headers, params=params)
         data = r.json()
