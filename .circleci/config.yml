@@ -36,6 +36,8 @@ jobs:
                 command: |
                     source .venv/bin/activate
                     python -m pytest -v tests/test_main.py
+                environment: 
+                    Alpaca_API_keys: .env
 
 workflows:
     build:
