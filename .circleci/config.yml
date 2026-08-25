@@ -26,7 +26,11 @@ jobs:
                 command: | 
                     source .venv/bin/activate
                     mypy . --exclude=.venv  
-
+            - run:
+                name: Define Environment Variable at Runtime
+                command: | 
+                    echo ' export "APCA-API-KEY-ID" = os.environ["APCA_API_KEY_ID"] ' >> '$BASH_ENV'
+                    echo ' export "APCA-API-SECRET-KEY" = os.environ["APCA-API-SECRET-KEY"] ' >> '$BASH_ENV'
             - run:
                 name: Run Tests
                 command: |
