@@ -9,3 +9,5 @@ api/.env
 .vscode/launch.json
 data/*.db
 results_old.txt
+CLAUDE.local.md
+legacy/

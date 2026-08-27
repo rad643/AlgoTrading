@@ -3,21 +3,21 @@ repos:
     hooks:
       - id: ruff-check
         name: Ruff lint
-        entry: .venv/bin/ruff check .
+        entry: .venv/bin/ruff check . --exclude=.venv 
         language: system
         pass_filenames: false
         verbose: true 
 
       - id: ruff-format
         name: Ruff format
-        entry: .venv/bin/ruff format --check .
+        entry: .venv/bin/ruff format --check . --exclude=.venv
         language: system
         pass_filenames: false
         verbose: true 
 
       - id: mypy
         name: Mypy
-        entry: .venv/bin/mypy .
+        entry: .venv/bin/mypy . --exclude=.venv
         language: system
         pass_filenames: false
         verbose: true 
