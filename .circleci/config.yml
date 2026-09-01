@@ -30,7 +30,7 @@ jobs:
                 name: Run Tests
                 command: |
                     source .venv/bin/activate
-                    pytest -v tests/test_main.py
+                    pytest -v --cov=main tests/test_main.py
 
 workflows:
     build:

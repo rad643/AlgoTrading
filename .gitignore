@@ -11,3 +11,4 @@ data/*.db
 results_old.txt
 CLAUDE.local.md
 legacy/
+.coverage
