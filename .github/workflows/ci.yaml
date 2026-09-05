@@ -1,0 +1,29 @@
+name: CI
+
+on: 
+  push: 
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Lint, type-check & test (Python 3.13)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: 3.13
+      - run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install -r requirements.txt
+          ruff check . --exclude=.venv
+          ruff format --check . --exclude=.venv
+          mypy . --exclude=.venv
+          pytest -v --cov=main tests/test_main.py
+
+
+  
+        
+
