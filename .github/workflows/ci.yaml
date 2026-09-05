@@ -9,6 +9,9 @@ jobs:
   build-and-test:
     name: Lint, type-check & test (Python 3.13)
     runs-on: ubuntu-latest
+    env:
+      APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
+      APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
