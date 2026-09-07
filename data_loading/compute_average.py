@@ -11,7 +11,7 @@ def averageUpToDay(list_store_closing_prices_up_to_day):
     """
     # verify that the parameter is a list
     if not isinstance(list_store_closing_prices_up_to_day, list):
-        raise TypeError
+        raise TypeError("Prices need to be stored inside a list")
     # compute the average with numpy vectorization
     arr = np.array(list_store_closing_prices_up_to_day)
     return np.mean(arr)
