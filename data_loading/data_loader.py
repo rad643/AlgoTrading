@@ -49,6 +49,7 @@ def hist_data(
     headers = get_headers()
     while True:
         r = requests.get(url=url_path, headers=headers, params=params)
+        r.raise_for_status()
         data = r.json()
         for ticker in data["bars"]:
             if ticker not in bars:

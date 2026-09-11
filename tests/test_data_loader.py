@@ -1,7 +1,9 @@
-from unittest.mock import call, patch
+from unittest.mock import Mock, call, patch
 
+import numpy as np
 import pandas as pd
 import pytest
+import requests
 
 from data_loading import data_loader as dl
 from main import selected_tickers
@@ -326,3 +328,171 @@ def test_hist_data_multiple_pages():
             "limit": limit,
             "page_token": "TOKEN_PAGE_2",
         }
+
+
+def test_hist_data_mocked_error_body():
+
+    with patch.object(dl, "requests", autospec=True) as mock_requests:
+        mock_response = Mock()
+        mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+            "400 Bad Request"
+        )
+        mock_response.status_code = 400
+        mock_requests.get.return_value = mock_response
+
+        with pytest.raises(requests.exceptions.HTTPError):
+            dl.hist_data(
+                selected_tickers, timeframe="15Min", start="", end="", limit=1000
+            )
+
+
+def test_read_ticker_dataframe_correct_output():
+
+    apple_price_df = pd.DataFrame(
+        {
+            "close": [183.20, 182.87, 182.90, 183.00],
+            "high": [184.38, 183.22, 183.11, 183.00],
+            "low": [183.19, 182.83, 182.87, 182.76],
+            "n": [989, 303, 552, 390],
+            "open": [183.53, 183.22, 182.87, 182.88],
+            "volume": [28293, 10950, 26616, 14111],
+            "vw": [183.533394, 183.102701, 182.996462, 182.864072],
+        },
+        index=pd.DatetimeIndex(
+            [
+                "2024-01-16T09:00:00Z",
+                "2024-01-16T09:15:00Z",
+                "2024-01-16T09:30:00Z",
+                "2024-01-16T09:45:00Z",
+            ],
+            name="time",
+        ).tz_convert("America/New_York"),
+    )
+
+    expected = [
+        (1, (pd.Timestamp(2024, 1, 16)).date(), 183.2, None, None),
+        (2, (pd.Timestamp(2024, 1, 16)).date(), 182.87, None, None),
+        (3, (pd.Timestamp(2024, 1, 16)).date(), 182.9, np.float64(183.035), 182.87),
+        (4, (pd.Timestamp(2024, 1, 16)).date(), 183.0, np.float64(182.99), 182.88),
+    ]
+
+    cashValue = 10000
+    verbose_run = False
+
+    actual = list(dl.read_ticker_dataframe(apple_price_df, cashValue, verbose_run))
+
+    assert expected[0] == actual[0]
+    assert expected[1] == actual[1]
+    assert expected[2] == actual[2]
+    assert expected[3] == actual[3]
+
+
+def test_read_ticker_dataframe_capsys(capsys):
+
+    cashValue = 10000
+    verbose_run = True
+
+    apple_price_df = pd.DataFrame(
+        {
+            "close": [183.20, 182.87, 182.90, 183.00],
+            "high": [184.38, 183.22, 183.11, 183.00],
+            "low": [183.19, 182.83, 182.87, 182.76],
+            "n": [989, 303, 552, 390],
+            "open": [183.53, 183.22, 182.87, 182.88],
+            "volume": [28293, 10950, 26616, 14111],
+            "vw": [183.533394, 183.102701, 182.996462, 182.864072],
+        },
+        index=pd.DatetimeIndex(
+            [
+                "2024-01-16T09:00:00Z",
+                "2024-01-16T09:15:00Z",
+                "2024-01-16T09:30:00Z",
+                "2024-01-16T09:45:00Z",
+            ],
+            name="time",
+        ).tz_convert("America/New_York"),
+    )
+
+    list(dl.read_ticker_dataframe(apple_price_df, cashValue, verbose_run))
+
+    captured = capsys.readouterr()
+
+    output = captured.out
+
+    expected = (
+        "Position sizing rule: 20% of available cash\n"
+        "Fixed bias points model: 0.05% of the execution price\n"
+        "Commission model: $0.005 per share (flat)\n"
+        "\n"
+        "Day 1 | Date: 2024-01-16 | Close: 183.2 | Avg: N/A | Action: NONE | Position: 0 | Cash: 10000 | Equity: 10000\n"
+        "\n"
+        "\n"
+        "Day 2 | Date: 2024-01-16 | Close: 182.87 | Avg: N/A | Action: NONE | Position: 0 | Cash: 10000 | Equity: 10000\n"
+        "\n"
+        "\n"
+    )
+
+    assert output == expected
+
+    verbose_run = False
+
+    list(dl.read_ticker_dataframe(apple_price_df, cashValue, verbose_run))
+
+    output = capsys.readouterr().out
+
+    assert output == ""
+
+
+def test_read_ticker_dataframe_first_2_days():
+
+    apple_price_df = pd.DataFrame(
+        {
+            "close": [183.20, 182.87],
+            "high": [184.38, 183.22],
+            "low": [183.19, 182.83],
+            "n": [989, 303],
+            "open": [183.53, 183.22],
+            "volume": [28293, 10950],
+            "vw": [183.533394, 183.102701],
+        },
+        index=pd.DatetimeIndex(
+            [
+                "2024-01-16T09:00:00Z",
+                "2024-01-16T09:15:00Z",
+            ],
+            name="time",
+        ).tz_convert("America/New_York"),
+    )
+
+    cashValue = 10000
+    verbose_run = False
+
+    actual = list(dl.read_ticker_dataframe(apple_price_df, cashValue, verbose_run))
+
+    expected = [
+        (1, pd.Timestamp(2024, 1, 16).date(), 183.2, None, None),
+        (2, pd.Timestamp(2024, 1, 16).date(), 182.87, None, None),
+    ]
+
+    assert expected == actual
+
+
+def test_read_ticker_dataframe_empty_df():
+
+    apple_price_df = pd.DataFrame(
+        {
+            "close": [],
+            "high": [],
+            "low": [],
+            "n": [],
+            "open": [],
+            "volume": [],
+            "vw": [],
+        },
+        index=pd.DatetimeIndex([], name="time", tz="America/New_York"),
+    )
+
+    cashValue = 10000
+    verbose_run = False
+
+    assert list(dl.read_ticker_dataframe(apple_price_df, cashValue, verbose_run)) == []
