@@ -28,26 +28,45 @@ def process_one_day(
     profitMeanReversion,
 ):
     """
-    Decides which signaling method is used on the current day.
-    Redirects towards trend_signal if trendMethod is true, mean_rev_signal otherwise.
-    Passes in local variables as arguments.
-    Unloads returned tuple into variables.
-    Returns tuple back into the main engine for unloading.
+    Description: Routes the current day to one of the two signalling strategies and
+    normalises its output. Calls trend_signal.trend_step when trendMethod is True and
+    mean_reversion_signal.mean_rev_step otherwise, passing that strategy's own position,
+    entry/exit price and profit variables, then rounds the numeric fields of the returned
+    tuple to 3 decimals before handing it back to the engine.
 
-    :param verbose_run: flag variable deciding whether or not to print the 500 daily lines to the console
-    :param day: current day
-    :param date: current date
-    :param closingPrice: closingPriceOfTheCurrentDay
-    :param average: AverageAllClosingPricesUpToCurrentDay
-    :param trendMethod: boolean flag deciding which algorithm you wanna use on current day->True for Trend, False for Mean Reversion
-    :param positionTrend: 1/0 flag variable; if 1->HOLD/SELL    if 0->BUY/OUT
-    :param entryPriceTrend: closingPrice on the current day at which you bought 1 share based on Trend method
-    :param exitPriceTrend: closingPrice on the current day at which you sold 1 share based on Trend method
-    :param profitTrend: profit=exitPriceTrend-entryPriceTrend
-    :param positionMeanReversion: 1/0 flag variable; if 1->SELL/HOLD    if 0->BUY/OUT
-    :param entryPriceMeanReversion: closingPrice on the current day at which you bought 1 share based on Mean Rev method
-    :param exitPriceMeanReversion: closingPrice on the current day at which you sold 1 share based on Mean Rev method
-    :param profitMeanReversion: profit=exitPriceMeanReversion-entryPriceMeanReversion
+    Args:
+        verbose_run (bool): flag variable deciding whether or not to print the 500 daily lines to the console
+        day (int): current day
+        date (str): current date
+        closingPrice (float): closing price of the current day
+        average (float): average of all the closing prices up until the current day (current day's closing price excluded)
+        nextDayOpeningPrice (float): execution price at which the trade takes place (sell/buy)
+        cashValue (float): current amount of cash
+        equity (float): cash + assets (unrealized value of the shares currently held, marked at the day's closing price)
+        pending_action (str): trading signal produced on the previous day, executed today at the market's opening price; one of "BUY", "SELL", "HOLD" or ""
+        positionSizing (float): maximum amount of money allowed to spend
+        flat_fee_per_share (float): the broker's commission charged for each individual share traded (both when buying and when selling)
+        fixed_bps (float): a small percentage adjustment applied to the execution price to simulate slippage caused by market frictions and volatility
+        trendMethod (bool): boolean flag deciding which algorithm is used on the current day -> True for Trend, False for Mean Reversion
+        positionTrend (int): number of shares currently owned under the Trend method
+        entry_day (int): day on which the currently open position was bought
+        exit_day (int): day on which the last position was sold
+        entryPriceTrend (float): price at which you buy under the Trend method
+        exitPriceTrend (float): price at which you sell under the Tre
+        profitTrend (float): realized profit = (exitPriceTrend - entryPriceTrend) * number_of_shares
+        positionMeanReversion (int): number of shares currently owned under the Mean Reversion method
+        entryPriceMeanReversion (float): price at which you buy under
+        exitPriceMeanReversion (float): price at which you sell under the Mean Reversion method
+        profitMeanReversion (float): realized profit = (exitPriceMeanReversion - entryPriceMeanReversion) * number_of_shares
+
+    Raises:
+        TypeError: if pending_action is not a str, or trendMethod is not a bool.
+        ValueError: if pending_action is a str outside {"BUY", "SELL", "HOLD", ""}.
+
+    Returns:
+        tuple: the selected strategy's 9-tuple - (position, profit, e
+        cash, equity, pending_action, entry_day, exit_day) - with the seven numeric fields
+        rounded to 3 decimals.
     """
 
     # pending_action needs to be a string
@@ -60,10 +79,6 @@ def process_one_day(
 
     # trendMethod needs to be a bool
     if not isinstance(trendMethod, bool):
-        raise TypeError
-
-    # average needs to be of float or integer data type
-    if not isinstance(average, (float, int)):
         raise TypeError
 
     # we need to see towards which investment method we branch out
