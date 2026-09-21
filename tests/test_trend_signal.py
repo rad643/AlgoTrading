@@ -1,402 +1,313 @@
-# we need redirect_stdout() to capture the printed stdout
-import contextlib
+import datetime
+from unittest.mock import call, patch
 
-# we need StringIO as an in-memory buffer
-import io
-import unittest
-
-import strategies.trend.signal as ts
+from strategies.trend import signal
 
 
-class TestTrendSignal(unittest.TestCase):
-    # first we test the main logic behaviour (the returned values in the tuple)
-    def test_main_logic_behavior(self):
+def test_trend_step_buy_branch():
 
-        # no pending action
-        self.assertEqual(
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                100,
-                100,
-                "",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            ),
-            (0, 0, 10, 11, 100, 100, "BUY"),
-        )
-        # pending action is BUY when you have no shares
-        self.assertEqual(
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10.5,
-                10,
-                100,
-                100,
-                "BUY",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            ),
-            (1.0, 0, 10.005, 11, 89.99, 99.99, "SELL"),
-        )
-        # pending action is BUY when you've already got shares
-        self.assertEqual(
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10.5,
-                10,
-                100,
-                100,
-                "BUY",
-                20,
-                0.005,
-                0.0005,
-                2,
-                10,
-                11,
-                0,
-            ),
-            (2, 0, 10, 11, 100, 120, "SELL"),
-        )
-        # pending action is SELL and you've got shares
-        self.assertEqual(
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10,
-                11,
-                100,
-                100,
-                "SELL",
-                20,
-                0.005,
-                0.0005,
-                2,
-                10,
-                11,
-                0,
-            ),
-            (0, 1.99, 10, 10.995, 121.98, 121.98, "HOLD"),
-        )
-        # pending action is SELL and you don't have any shares
-        self.assertEqual(
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10,
-                11,
-                100,
-                100,
-                "SELL",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            ),
-            (0, 0, 10, 11, 100, 100, "HOLD"),
-        )
-        # pending action is HOLD
-        self.assertEqual(
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                100,
-                100,
-                "HOLD",
-                20,
-                0.005,
-                0.0005,
-                1,
-                10,
-                11,
-                0,
-            ),
-            (1, 0, 10, 11, 100, 110, "BUY"),
+    verbose_run = False
+    day = 34
+    date = datetime.date(2025, 6, 21)
+    closingPrice = 344.6
+    average = 357.7
+    nextDayOpeningPrice = 359.76
+    cashValue = 9500
+    equity = 11500
+    pending_action = "BUY"
+    positionSizing = 2000
+    flat_fee_per_share = 0.005
+    fixed_bps = 0.0005
+    positionTrend = 0
+    entry_day = 431
+    exit_day = 454
+    entryPriceTrend = 444.6
+    exitPriceTrend = 465.12
+    profitTrend = 300.43
+
+    with (
+        patch.object(signal, "buy", autospec=True) as mock_buy,
+        patch.object(signal, "sell", autospec=True) as mock_sell,
+        patch.object(signal, "hold", autospec=True) as mock_hold,
+    ):
+        mock_buy.return_value = (188.25, 8.0, 5310.44, 6890.12, 27, "BUY")
+
+        expected = (8.0, 300.43, 188.25, 465.12, 5310.44, 6890.12, "BUY", 27, 454)
+
+        actual = signal.trend_step(
+            verbose_run,
+            day,
+            date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice,
+            cashValue,
+            equity,
+            pending_action,
+            positionSizing,
+            flat_fee_per_share,
+            fixed_bps,
+            positionTrend,
+            entry_day,
+            exit_day,
+            entryPriceTrend,
+            exitPriceTrend,
+            profitTrend,
         )
 
-    # then we can test for the correct printing to the screen (correct formatted output)
-    def test_correct_printed_text(self):
-
-        # capture printed stdout in an in-memory buffer, then compare it to the expected formatted output
-        # no pending action case
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                100,
-                100,
-                "",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
-        self.assertEqual(
-            buffer.getvalue(),
-            "Day 1 | Date: 2026-05-01 | Close: 10 | Avg: 5.500 | Trend: BUY | Position: 0 | Cash: 100 | Equity: 100\n\n\n",
+        mock_buy.assert_called_once_with(
+            day,
+            cashValue,
+            nextDayOpeningPrice,
+            fixed_bps,
+            positionSizing,
+            flat_fee_per_share,
+            closingPrice,
+            verbose_run,
+            date,
+            average,
         )
 
-        # capture printed stdout in an in-memory buffer, then compare it to the expected formatted output
-        # pending action is BUY when you have no shares case
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10.5,
-                10,
-                100,
-                100,
-                "BUY",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
-        self.assertEqual(
-            buffer.getvalue(),
-            "Day 1 | Date: 2026-05-01 | Close: 10 | Execution price: 10.005 | Avg: 10.500 | Trend: SELL | Position: 1.0 | Cash: 89.99 | Equity: 99.99\n\n\n",
+        mock_sell.assert_not_called()
+        mock_hold.assert_not_called()
+
+        assert expected == actual
+
+
+def test_trend_step_sell_branch():
+
+    verbose_run = False
+    day = 34
+    date = datetime.date(2025, 6, 21)
+    closingPrice = 344.6
+    average = 357.7
+    nextDayOpeningPrice = 359.76
+    cashValue = 9500
+    equity = 11500
+    pending_action = "SELL"
+    positionSizing = 2000
+    flat_fee_per_share = 0.005
+    fixed_bps = 0.0005
+    positionTrend = 12
+    entry_day = 431
+    exit_day = 454
+    entryPriceTrend = 444.6
+    exitPriceTrend = 465.12
+    profitTrend = 300.43
+
+    with (
+        patch.object(signal, "buy", autospec=True) as mock_buy,
+        patch.object(signal, "sell", autospec=True) as mock_sell,
+        patch.object(signal, "hold", autospec=True) as mock_hold,
+    ):
+        mock_sell.return_value = (276.40, 3.0, 8671.19, 9705.99, 812.55, 52, "SELL")
+
+        expected = (3.0, 812.55, 444.6, 276.40, 8671.19, 9705.99, "SELL", 431, 52)
+
+        actual = signal.trend_step(
+            verbose_run,
+            day,
+            date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice,
+            cashValue,
+            equity,
+            pending_action,
+            positionSizing,
+            flat_fee_per_share,
+            fixed_bps,
+            positionTrend,
+            entry_day,
+            exit_day,
+            entryPriceTrend,
+            exitPriceTrend,
+            profitTrend,
         )
 
-        # capture printed stdout in an in-memory buffer, then compare it to the expected formatted output
-        # pending action is BUY when you've already got shares case
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10.5,
-                10,
-                100,
-                100,
-                "BUY",
-                20,
-                0.005,
-                0.0005,
-                2,
-                10,
-                11,
-                0,
-            )
-        self.assertEqual(
-            buffer.getvalue(),
-            "Day 1 | Date: 2026-05-01 | Close: 10 | Avg: 10.500 | Trend: SELL | Position: 2 | Cash: 100 | Equity: 120\n\n\n",
+        mock_sell.assert_called_once_with(
+            day,
+            cashValue,
+            nextDayOpeningPrice,
+            fixed_bps,
+            entryPriceTrend,
+            closingPrice,
+            flat_fee_per_share,
+            verbose_run,
+            date,
+            average,
+            positionTrend,
         )
 
-        # capture printed stdout in an in-memory buffer, then compare it to the expected formatted output
-        # pending action is SELL and you've got shares case
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10,
-                11,
-                100,
-                100,
-                "SELL",
-                20,
-                0.005,
-                0.0005,
-                2,
-                10,
-                11,
-                0,
-            )
-        self.assertEqual(
-            buffer.getvalue(),
-            "Day 1 | Date: 2026-05-01 | Close: 10 | Execution price: 10.995 | Avg: 10.000 | Trend: HOLD | Position: 0 | Cash: 121.98 | Equity: 121.98 | P&L: 1.990\n\n\n",
+        mock_buy.assert_not_called()
+        mock_hold.assert_not_called()
+
+        assert expected == actual
+
+
+def test_trend_step_hold_branch():
+
+    verbose_run = False
+    day = 34
+    date = datetime.date(2025, 6, 21)
+    closingPrice = 344.6
+    average = 357.7
+    nextDayOpeningPrice = 359.76
+    cashValue = 9500
+    equity = 11500
+    pending_action = "BUY"
+    positionSizing = 2000
+    flat_fee_per_share = 0.005
+    fixed_bps = 0.0005
+    positionTrend = 20
+    entry_day = 431
+    exit_day = 454
+    entryPriceTrend = 444.6
+    exitPriceTrend = 465.12
+    profitTrend = 300.43
+
+    with (
+        patch.object(signal, "buy", autospec=True) as mock_buy,
+        patch.object(signal, "sell", autospec=True) as mock_sell,
+        patch.object(signal, "hold", autospec=True) as mock_hold,
+    ):
+        mock_hold.return_value = (6.0, 4128.73, 7395.28, "HOLD")
+
+        expected = (6.0, 300.43, 444.6, 465.12, 4128.73, 7395.28, "HOLD", 431, 454)
+
+        actual = signal.trend_step(
+            verbose_run,
+            day,
+            date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice,
+            cashValue,
+            equity,
+            pending_action,
+            positionSizing,
+            flat_fee_per_share,
+            fixed_bps,
+            positionTrend,
+            entry_day,
+            exit_day,
+            entryPriceTrend,
+            exitPriceTrend,
+            profitTrend,
         )
 
-        # capture printed stdout in an in-memory buffer, then compare it to the expected formatted output
-        # pending action is SELL and you don't have any shares case
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                10,
-                11,
-                100,
-                100,
-                "SELL",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
-        self.assertEqual(
-            buffer.getvalue(),
-            "Day 1 | Date: 2026-05-01 | Close: 10 | Avg: 10.000 | Trend: HOLD | Position: 0 | Cash: 100 | Equity: 100\n\n\n",
+        mock_hold.assert_called_once_with(
+            cashValue, positionTrend, closingPrice, verbose_run, day, date, average
+        )
+        mock_sell.assert_not_called()
+        mock_buy.assert_not_called()
+
+        assert expected == actual
+
+        pending_action = "SELL"
+        positionTrend = 0
+
+        mock_hold.return_value = (8, 5245.73, 8945.28, "HOLD")
+        expected = (8, 300.43, 444.6, 465.12, 5245.73, 8945.28, "HOLD", 431, 454)
+
+        actual = signal.trend_step(
+            verbose_run,
+            day,
+            date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice,
+            cashValue,
+            equity,
+            pending_action,
+            positionSizing,
+            flat_fee_per_share,
+            fixed_bps,
+            positionTrend,
+            entry_day,
+            exit_day,
+            entryPriceTrend,
+            exitPriceTrend,
+            profitTrend,
         )
 
-        # capture printed stdout in an in-memory buffer, then compare it to the expected formatted output
-        # pending action is HOLD case
-        with contextlib.redirect_stdout(io.StringIO()) as buffer:
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                100,
-                100,
-                "HOLD",
-                20,
-                0.005,
-                0.0005,
-                1,
-                10,
-                11,
-                0,
-            )
-        self.assertEqual(
-            buffer.getvalue(),
-            "Day 1 | Date: 2026-05-01 | Close: 10.000000 | Avg: 5.500 | Trend: BUY | Position: 1 | Cash: 100.000 | Equity: 110.000\n\n\n",
+        assert mock_hold.call_args_list == [
+            call(9500, 20, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+            call(9500, 0, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+        ]
+        mock_sell.assert_not_called()
+        mock_buy.assert_not_called()
+
+        assert expected == actual
+
+        pending_action = "HOLD"
+        positionTrend = 15
+        mock_hold.return_value = (5, 6000, 7000, "HOLD")
+        expected = (5, 300.43, 444.6, 465.12, 6000, 7000, "HOLD", 431, 454)
+
+        actual = signal.trend_step(
+            verbose_run,
+            day,
+            date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice,
+            cashValue,
+            equity,
+            pending_action,
+            positionSizing,
+            flat_fee_per_share,
+            fixed_bps,
+            positionTrend,
+            entry_day,
+            exit_day,
+            entryPriceTrend,
+            exitPriceTrend,
+            profitTrend,
         )
 
-    # and finally add a small set of failures and invalid input tests
-    def test_invalid_inputs(self):
+        assert mock_hold.call_args_list == [
+            call(9500, 20, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+            call(9500, 0, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+            call(9500, 15, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+        ]
+        mock_sell.assert_not_called()
+        mock_buy.assert_not_called()
 
-        # incorrect nb of arguments passed in
-        with self.assertRaises(TypeError):
-            ts.trend_step(
-                1, "2026-05-01", 10, 5.5, 10, 100, 100, "", 20, 0.005, 0.0005, 0, 10, 11
-            )
+        assert expected == actual
 
-        # checking if pending_action is a string
-        with self.assertRaises(TypeError):
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                100,
-                100,
-                55,
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
+        pending_action = ""
+        mock_hold.return_value = (5, 6000, 7000, "")
+        expected = (5, 300.43, 444.6, 465.12, 6000, 7000, "", 431, 454)
 
-        # checking that pending_action is in {"BUY", "SELL", "HOLD", ""}
-        with self.assertRaises(ValueError):
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                100,
-                100,
-                "invalid",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
+        actual = signal.trend_step(
+            verbose_run,
+            day,
+            date,
+            closingPrice,
+            average,
+            nextDayOpeningPrice,
+            cashValue,
+            equity,
+            pending_action,
+            positionSizing,
+            flat_fee_per_share,
+            fixed_bps,
+            positionTrend,
+            entry_day,
+            exit_day,
+            entryPriceTrend,
+            exitPriceTrend,
+            profitTrend,
+        )
 
-        # checking that cashValue is integer or float
-        with self.assertRaises(TypeError):
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                "string",
-                100,
-                "",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
+        assert mock_hold.call_args_list == [
+            call(9500, 20, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+            call(9500, 0, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+            call(9500, 15, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+            call(9500, 15, 344.6, False, 34, datetime.date(2025, 6, 21), 357.7),
+        ]
+        mock_sell.assert_not_called()
+        mock_buy.assert_not_called()
 
-        # checking that cashValue is not negative
-        with self.assertRaises(ValueError):
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                -5,
-                100,
-                "",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
-
-        # checking that cashValue is not zero
-        with self.assertRaises(ValueError):
-            ts.trend_step(
-                1,
-                "2026-05-01",
-                10,
-                5.5,
-                10,
-                0,
-                100,
-                "",
-                20,
-                0.005,
-                0.0005,
-                0,
-                10,
-                11,
-                0,
-            )
+        assert expected == actual

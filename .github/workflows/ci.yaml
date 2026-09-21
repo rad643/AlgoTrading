@@ -24,7 +24,7 @@ jobs:
           ruff check . --exclude=.venv
           ruff format --check . --exclude=.venv
           mypy . --exclude=.venv
-          pytest -v --cov=main tests/test_main.py
+          pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics tests/
 
 
   
