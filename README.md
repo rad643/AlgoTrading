@@ -2,9 +2,9 @@
 
 A Python algorithmic-trading and backtesting platform for retrieving historical US equity data, running rule-based strategies, modelling execution costs, evaluating performance, visualising results, and persisting backtest outputs through a FastAPI/PostgreSQL API.
 
-The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and CircleCI continuous integration.
+The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on both GitHub Actions and CircleCI.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, automated test suite, and CI quality checks are implemented. Current work is focused on API testing and further backend cleanup before building the frontend and deployment layers.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, and CI quality checks are implemented. The test suite covering every non-API module is complete — **123 tests, all passing** — and both CI pipelines now run it in full. Current work is focused on API testing and further backend cleanup before building the frontend and deployment layers.
 
 ## Features
 
@@ -24,11 +24,11 @@ The project began as a small CSV-based backtester and has been progressively ref
 - SQLModel models with asynchronous PostgreSQL sessions
 - Read/delete API routes for summaries, trades, and log events
 - End-to-end `/run_backtest` route that runs a backtest and persists its outputs
-- Pytest + `unittest.mock` test coverage, including a golden-master regression test
+- Pytest + `unittest.mock` test coverage of every non-API module, including a golden-master regression test
 - Ruff linting and formatting checks
 - Mypy static type checking
 - Pre-commit quality checks
-- CircleCI continuous integration
+- GitHub Actions and CircleCI continuous integration
 
 ## Strategies
 
@@ -209,8 +209,11 @@ The current `/run_backtest` route builds an `ExecutionState` from the request bo
 AlgoTrading/
 ├── .circleci/
 │   └── config.yml                 # CircleCI pipeline
+├── .github/
+│   └── workflows/
+│       └── ci.yaml                # GitHub Actions pipeline
 ├── api/
-│   ├── api.py                     # FastAPI application and lifespan handler
+│   ├── main.py                    # FastAPI application and lifespan handler
 │   ├── config.py                  # PostgreSQL settings
 │   ├── database/
 │   │   ├── models.py              # SQLModel tables
@@ -238,7 +241,7 @@ AlgoTrading/
 ├── tests/
 │   ├── golden_masters/
 │   ├── conftest.py
-│   └── test_*.py
+│   └── test_*.py                  # 123 tests across 9 files
 ├── .pre-commit-config.yaml        # Local quality hooks
 ├── main.py                        # Engine, aggregation, plotting, experiment runner
 ├── mypy.ini
@@ -274,7 +277,7 @@ On Windows:
 python -m pip install -r requirements.txt
 ```
 
-The current CI environment uses Python `3.12.7`.
+The GitHub Actions pipeline uses Python `3.13`; the CircleCI pipeline uses Python `3.12.7`.
 
 ## Configuration
 
@@ -291,7 +294,12 @@ APCA_API_SECRET_KEY=YOUR_SECRET_KEY
 
 The `.env` file is excluded by `.gitignore`. Never commit API credentials.
 
-For CircleCI, create project environment variables with the same names:
+Both CI pipelines need the same two credentials, because the golden-master test performs a live Alpaca fetch:
+
+- **GitHub Actions** — repository secrets, injected as job-level `env` in `.github/workflows/ci.yaml`;
+- **CircleCI** — project environment variables.
+
+Use the same names in both:
 
 ```text
 APCA_API_KEY_ID
@@ -327,7 +335,7 @@ The current standalone runner downloads Alpaca data for `AAPL,GOOGL,MSFT`, execu
 Ensure PostgreSQL is running and both sets of environment variables are configured, then run:
 
 ```bash
-uvicorn api.api:app --reload
+uvicorn api.main:app --reload
 ```
 
 FastAPI's interactive Swagger documentation is then available at:
@@ -341,12 +349,30 @@ http://127.0.0.1:8000/docs
 Run the full local test directory with:
 
 ```bash
-python -m pytest -v tests/
+pytest -v tests/
 ```
 
-The test suite covers the strategy logic, data/metric helpers, trading-engine internals, DataFrame builders, aggregation layer, experiment runner, and regression behaviour.
+The suite currently contains **123 tests, all passing**, and covers every module outside `api/`:
 
-`tests/test_main.py` currently contains **62 tests** covering `main.py`. The CircleCI pipeline runs this suite on every configured build.
+| File | Tests | Area under test |
+|---|---|---|
+| `tests/test_main.py` | 62 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation layer, experiment runner, golden master |
+| `tests/test_performance_metrics.py` | 29 | Performance-metric functions |
+| `tests/test_data_loader.py` | 8 | Alpaca retrieval, pagination, and DataFrame preparation |
+| `tests/test_compute_average.py` | 5 | Cumulative moving average |
+| `tests/test_trend_utils.py` | 5 | Trend buy/sell/hold execution and validation |
+| `tests/test_mean_reversion_utils.py` | 5 | Mean Reversion buy/sell/hold execution and validation |
+| `tests/test_process_1_day.py` | 3 | Per-day strategy routing and input validation |
+| `tests/test_trend_signal.py` | 3 | Trend signal step |
+| `tests/test_mean_reversion_signal.py` | 3 | Mean Reversion signal step |
+
+The two strategy layers are tested in different styles. The signal tests patch `buy`, `sell` and `hold` with `unittest.mock` autospecs and assert branch routing, the exact argument mapping, and the returned tuple. The utils tests mock nothing and assert the real execution arithmetic — slippage-adjusted fill price, share count, cash after commission, marked-to-market equity, realised profit — plus the verbose console output through pytest's `capsys` fixture.
+
+Both CI pipelines run the whole directory with per-package coverage:
+
+```bash
+pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics tests/
+```
 
 ### Golden-master regression test
 
@@ -358,7 +384,7 @@ The golden-master path is:
 tests/golden_masters/results.txt
 ```
 
-Because this test currently performs live Alpaca data retrieval, Alpaca environment variables must also be available in CI.
+Because this test currently performs live Alpaca data retrieval, Alpaca environment variables must also be available in CI. The remaining tests run offline.
 
 ## Code Quality and Continuous Integration
 
@@ -376,18 +402,25 @@ Run them manually with:
 pre-commit run --all-files
 ```
 
-### CircleCI
+### Pipelines
 
-`.circleci/config.yml` currently runs the following pipeline on Python `3.12.7`:
+Two pipelines are active, and both run the same stages:
 
 1. checkout;
 2. create a virtual environment and install `requirements.txt`;
 3. `ruff check`;
 4. `ruff format --check`;
 5. `mypy`;
-6. `pytest` for `tests/test_main.py`.
+6. `pytest` over the full `tests/` directory with per-package coverage.
 
-The current pipeline is passing all of these stages.
+| Pipeline | File | Python | Trigger |
+|---|---|---|---|
+| GitHub Actions | `.github/workflows/ci.yaml` | `3.13` | push to `main` |
+| CircleCI | `.circleci/config.yml` | `3.12.7` | project-configured builds |
+
+Coverage is requested one package at a time (`main`, `engine`, `strategies`, `data_loading`, `metrics`) so that the not-yet-tested `api/` package and the retained `legacy/` directory stay out of the report.
+
+Both pipelines are passing all of these stages.
 
 ## Current Development State
 
@@ -411,12 +444,13 @@ The current pipeline is passing all of these stages.
 - End-to-end `/run_backtest` persistence flow
 - Read/delete services for summaries, trades, and log events
 - Refactored `TradingEngine` helpers with unit tests
+- Complete unit coverage of both strategy packages — signal routing and execution arithmetic
 - Golden-master regression coverage
 - Pinned dependency file
 - Ruff linting/formatting
 - Mypy type checking
 - Pre-commit hooks
-- CircleCI CI pipeline
+- GitHub Actions and CircleCI pipelines, both running the full test suite
 
 ### Current work
 

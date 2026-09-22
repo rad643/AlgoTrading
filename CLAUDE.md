@@ -19,14 +19,17 @@ source .venv/bin/activate
 python main.py
 
 # API
-uvicorn api.api:app --reload          # docs at http://127.0.0.1:8000/docs
+uvicorn api.main:app --reload         # docs at http://127.0.0.1:8000/docs
 
 # Tests
-pytest -v tests/                                            # full suite (111 tests)
+pytest -v tests/                                            # full suite (123 tests, all passing)
 pytest tests/test_main.py                                   # one file (62 tests)
 pytest tests/test_main.py::TestExecutionState::test_reset   # one test
 
-# Quality gate — same checks CircleCI runs
+# With coverage, exactly as both CI pipelines run it
+pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics tests/
+
+# Quality gate — same checks both CI pipelines run
 ruff check . --exclude=.venv
 ruff format --check . --exclude=.venv
 mypy . --exclude=.venv
@@ -39,8 +42,17 @@ the root as a package and put its *parent* directory on `sys.path` instead of th
 `python -m pytest`. That file was deleted in 270ea64, so rootdir lands on `sys.path` normally and CI
 runs bare `pytest` too. If you ever re-add an `__init__.py` at the root, this breaks again.
 
-CI (`.circleci/config.yml`) runs lint, format, mypy, then **only `tests/test_main.py`** — not the
-full suite. See "Failing tests" below for what that hides.
+There are **two CI pipelines, both live**, running the same four stages — `ruff check`,
+`ruff format --check`, `mypy`, then `pytest` over the whole `tests/` directory:
+
+| Pipeline | File | Python | Trigger | Alpaca credentials |
+|---|---|---|---|---|
+| GitHub Actions | `.github/workflows/ci.yaml` | 3.13 | push to `main` only — not PRs, not other branches | repository secrets (added in f00a707) |
+| CircleCI | `.circleci/config.yml` | 3.12.7 | project-configured builds | project environment variables |
+
+Both run the full suite, so a failure anywhere in `tests/` breaks CI. `--cov` is passed once per
+package (`main`, `engine`, `strategies`, `data_loading`, `metrics`) to keep `api/` and `legacy/`
+out of the coverage report — a bare `--cov` would measure everything under the rootdir.
 
 `ruff format` also formats Python code blocks inside Markdown, so `README.md` and this file are
 subject to it — a misaligned `# comment` in a ```python block will fail the format check and block commits.
@@ -50,9 +62,10 @@ Ruff and mypy have no config beyond `mypy.ini` (`explicit_package_bases = True`)
 
 They disagree about `legacy/`. Ruff's `respect-gitignore` defaults to true and its gitignore matcher
 never consults the git index, so the `legacy/` entry in `.gitignore` takes that directory out of
-`ruff check .` entirely (43 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` brings back
-10). Mypy has no such behaviour and still type-checks all of it. So `legacy/` must keep passing **mypy**
-but is no longer linted or format-checked.
+`ruff check .` entirely (47 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
+that directory's 5 modules plus other gitignored scratch files). Mypy has no such behaviour and
+still type-checks all of it — `mypy . --exclude=.venv` reports 50 source files. So `legacy/` must
+keep passing **mypy** but is no longer linted or format-checked.
 
 ## Environment
 
@@ -124,6 +137,12 @@ difference is the comparison direction in `pending_action_update()` (trend buys 
 mean reversion below); the rest differs just in variable naming (`positionTrend` vs
 `positionMeanReversion`). A bug fixed in one almost certainly exists in the other — check both.
 
+The tests mirror the packages the same way: `tests/test_trend_signal.py` ↔
+`tests/test_mean_reversion_signal.py` and `tests/test_trend_utils.py` ↔
+`tests/test_mean_reversion_utils.py` are the same tests with different mock values, and the only
+inverted assertion is the `pending_action_update` direction. Fixing one strategy means updating its
+mirrored test too.
+
 Adding a strategy touches: a new `strategies/<name>/` package, a branch in
 `engine/process_1_day.py`, new fields in `ExecutionState` **and** its `reset()`, and new branches in
 the `TradingEngine` accessors (`strategy`, `labels`, `position`, `entry_price`, `exit_price`,
@@ -139,38 +158,43 @@ Engine and strategy code uses camelCase (`cashValue`, `entryPriceTrend`, `positi
 DataFrame columns and DB models use snake_case (`entry_price`, `run_number`, `total_net_profit`).
 This is intentional at the boundary — match whichever convention the file you are editing already uses.
 
-## Failing tests
+## Test suite
 
-`pytest tests/` currently gives **97 passed, 14 failed**. CI is green because it only runs
-`tests/test_main.py` (62 tests, all passing) and never sees the rest.
+`pytest tests/` gives **123 passed, 0 failed**. The suite is complete: every module outside `api/`
+has coverage, and both CI pipelines run all of it.
 
-None of it is flakiness — the tests were left behind by three separate changes to the code under test:
-
-| File | Failures | Cause |
+| File | Tests | Covers |
 |---|---|---|
-| `tests/test_trend_signal.py` | 3 | signature drift |
-| `tests/test_mean_rev_signal.py` | 3 | signature drift |
-| `tests/test_process_1_day.py` | 2 | signature drift |
-| `tests/test_data_loader.py` | 5 | renamed function |
-| `tests/test_compute_average.py` | 1 | changed implementation |
+| `tests/test_main.py` | 62 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation, `ExperimentRunner`, golden master |
+| `tests/test_performance_metrics.py` | 29 | every function in `metrics/performance_metrics.py` |
+| `tests/test_data_loader.py` | 8 | `read_ticker_dataframe` and the Alpaca request/pagination helpers |
+| `tests/test_compute_average.py` | 5 | `averageUpToDay` |
+| `tests/test_trend_utils.py` | 5 | `strategies/trend/utils.py` |
+| `tests/test_mean_reversion_utils.py` | 5 | `strategies/mean_reversion/utils.py` |
+| `tests/test_process_1_day.py` | 3 | `process_one_day` branch routing and its two type/value guards |
+| `tests/test_trend_signal.py` | 3 | `trend_step` |
+| `tests/test_mean_reversion_signal.py` | 3 | `mean_rev_step` |
 
-**Signature drift (8).** `trend_step` (`strategies/trend/signal.py:4`), `mean_rev_step` and
-`process_one_day` grew parameters that the callers in these tests never picked up, so they call an
-18-parameter function with 15 arguments. Python reports the *trailing* unfilled parameters, so the
-error names `entryPriceTrend`/`exitPriceTrend`/`profitTrend` — those are just the last three slots, not
-necessarily the ones that were added.
+Two deliberately different testing styles, one per layer:
 
-**Renamed function (5).** `tests/test_data_loader.py` calls `dl.read_ticker_csv`, which no longer
-exists — `data_loading/data_loader.py:87` defines `read_ticker_dataframe`. The whole module moved from
-reading CSVs to returning DataFrames; these are not signature failures and fixing the `*_step` callers
-will not touch them.
+- **`test_*_signal.py` mock everything.** `buy`, `sell` and `hold` are patched with
+  `patch.object(..., autospec=True)`, so these tests assert *routing*, not arithmetic: which helper
+  a `(pending_action, position)` combination reaches, that the other two are never called, the exact
+  positional mapping via `assert_called_once_with`, and the returned 9-tuple — including the
+  pass-through slots the chosen branch never touches. All four routes into `hold` are covered
+  (`"BUY"` with a position, `"SELL"` with none, `"HOLD"`, `""`), the last two tracked through
+  `mock_hold.call_args_list`.
+- **`test_*_utils.py` mock nothing.** They assert the real numbers — execution price with slippage,
+  share count, cash after commission, marked-to-market equity, realized profit — then re-call with
+  `verbose_run=True` and compare the printed line through `capsys`. Note the print ends with
+  `\n\n\n`: the f-string's own newline plus `print("\n")`.
 
-**Changed implementation (1).** `test_compute_average.py::test_empty_list` asserts that
-`averageUpToDay([])` raises `ZeroDivisionError`. `data_loading/compute_average.py` now computes with
-`np.mean`, which returns `nan` and a RuntimeWarning on an empty array rather than raising. The test
-encodes the old pure-Python `sum()/len()` behaviour.
+When writing an `expected` tuple for a signal test, remember the mocked helper's return **rebinds**
+the caller's variables: `hold` returns `(position, cash, equity, pending_action)`, so slot 0 of the
+mock return is what lands in the 9-tuple, not the `positionTrend` you passed in.
 
-Do not assume a green run means the suite passed — check the count.
+The golden master and the `ExperimentRunner` tests in `test_main.py` perform a live Alpaca fetch, so
+a clean run needs the root `.env` and network access. Everything else runs offline.
 
 ## Golden-master test
 

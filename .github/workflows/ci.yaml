@@ -12,6 +12,11 @@ jobs:
     env:
       APCA_API_KEY_ID: ${{ secrets.APCA_API_KEY_ID }}
       APCA_API_SECRET_KEY: ${{ secrets.APCA_API_SECRET_KEY }}
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_SERVER: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: test
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -25,8 +30,3 @@ jobs:
           ruff format --check . --exclude=.venv
           mypy . --exclude=.venv
           pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics tests/
-
-
-  
-        
-
