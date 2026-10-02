@@ -22,14 +22,15 @@ python main.py
 uvicorn api.main:app --reload         # docs at http://127.0.0.1:8000/docs
 
 # Tests
-pytest -v tests/                                            # full suite (123 tests, all passing)
+pytest -v tests/                                            # full suite (167 tests, all passing)
+pytest tests/api/                                           # API layer only (44 tests)
 pytest tests/test_main.py                                   # one file (62 tests)
 pytest tests/test_main.py::TestExecutionState::test_reset   # one test
 
-# With coverage, exactly as both CI pipelines run it
-pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics tests/
+# With coverage, exactly as CI runs it
+pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics --cov=api tests/
 
-# Quality gate — same checks both CI pipelines run
+# Quality gate — same checks CI runs
 ruff check . --exclude=.venv
 ruff format --check . --exclude=.venv
 mypy . --exclude=.venv
@@ -42,17 +43,27 @@ the root as a package and put its *parent* directory on `sys.path` instead of th
 `python -m pytest`. That file was deleted in 270ea64, so rootdir lands on `sys.path` normally and CI
 runs bare `pytest` too. If you ever re-add an `__init__.py` at the root, this breaks again.
 
-There are **two CI pipelines, both live**, running the same four stages — `ruff check`,
-`ruff format --check`, `mypy`, then `pytest` over the whole `tests/` directory:
+There *is* a tracked, deliberately **empty** `conftest.py` at the repo root. It holds no fixtures —
+its only job is to mark the rootdir so pytest puts it on `sys.path`. Do not delete it, and do not
+confuse it with the `__init__.py` above.
+
+Async tests run on the **anyio** plugin bundled with `anyio==4.13.0`; `pytest-asyncio` is *not*
+installed. There is no `anyio_backend` fixture anywhere, so the asyncio backend comes from anyio's
+default — which is why test ids read `[asyncio]`. Every async test needs `@pytest.mark.anyio`.
+
+There is **one CI pipeline**, running four stages — `ruff check`, `ruff format --check`, `mypy`,
+then `pytest` over the whole `tests/` directory:
 
 | Pipeline | File | Python | Trigger | Alpaca credentials |
 |---|---|---|---|---|
 | GitHub Actions | `.github/workflows/ci.yaml` | 3.13 | push to `main` only — not PRs, not other branches | repository secrets (added in f00a707) |
-| CircleCI | `.circleci/config.yml` | 3.12.7 | project-configured builds | project environment variables |
 
-Both run the full suite, so a failure anywhere in `tests/` breaks CI. `--cov` is passed once per
-package (`main`, `engine`, `strategies`, `data_loading`, `metrics`) to keep `api/` and `legacy/`
-out of the coverage report — a bare `--cov` would measure everything under the rootdir.
+CircleCI used to be a second live pipeline; `.circleci/config.yml` was **deleted in d608322** and the
+directory no longer exists. Ignore any older reference to it.
+
+It runs the full suite, so a failure anywhere in `tests/` breaks CI. `--cov` is passed once per
+package (`main`, `engine`, `strategies`, `data_loading`, `metrics`, `api`) to keep `legacy/` out of
+the coverage report — a bare `--cov` would measure everything under the rootdir.
 
 `ruff format` also formats Python code blocks inside Markdown, so `README.md` and this file are
 subject to it — a misaligned `# comment` in a ```python block will fail the format check and block commits.
@@ -62,9 +73,9 @@ Ruff and mypy have no config beyond `mypy.ini` (`explicit_package_bases = True`)
 
 They disagree about `legacy/`. Ruff's `respect-gitignore` defaults to true and its gitignore matcher
 never consults the git index, so the `legacy/` entry in `.gitignore` takes that directory out of
-`ruff check .` entirely (47 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
+`ruff check .` entirely (54 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
 that directory's 5 modules plus other gitignored scratch files). Mypy has no such behaviour and
-still type-checks all of it — `mypy . --exclude=.venv` reports 50 source files. So `legacy/` must
+still type-checks all of it — `mypy . --exclude=.venv` reports 59 source files. So `legacy/` must
 keep passing **mypy** but is no longer linted or format-checked.
 
 ## Environment
@@ -75,8 +86,10 @@ Two separate `.env` files, both gitignored:
 - `api/.env` — `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_SERVER`, `POSTGRES_PORT`, `POSTGRES_DB`
 
 `api/config.py` calls `Settings()` at module import, so **importing anything under `api/` fails
-without `api/.env`**. Keep that in mind when adding API tests — the import blows up before any
-fixture runs.
+unless those five values are present**. Pydantic Settings reads real environment variables too, not
+just the file — CI relies on exactly that, injecting dummy `POSTGRES_*` values as job-level `env` in
+`ci.yaml` so `tests/api/` can import the app without an `api/.env`. Locally the file is the easy
+route. Either way the import blows up before any fixture runs.
 
 Tests that touch `ExperimentRunner.structured_data_outputs` or `hist_data` hit the live Alpaca
 API and need the root `.env` plus network access.
@@ -98,9 +111,12 @@ Every `TradingEngine` method is a `@staticmethod` taking `state` and **mutating 
 nothing returns a new state. `backtest_run()` calls `state.reset()` first so one instance can be reused.
 
 `backtest_run_number` is a **class variable**, not a field — a counter shared by every instance,
-incremented once per `backtest_run()`. It becomes the `run_number` column and the API's lookup key.
-Tests must zero it before and after (see the `state_backtest_run` fixture in `tests/conftest.py`),
-or run ordering leaks into the golden master.
+incremented once per `backtest_run()`. It becomes the `run_number` column in the log-event, trade,
+equity-curve and drawdown frames. Tests must zero it before and after (see the `state_backtest_run`
+fixture in `tests/conftest.py`), or run ordering leaks into the golden master.
+
+It is **not** the API's lookup key. The counter is a process-local run *label* only: it resets to 0
+on every restart, and the database issues its own identities. See "Run identity" below.
 
 ### The per-day loop
 
@@ -125,10 +141,37 @@ Trade(**event)  # from build_trades_data_frame
 ```
 
 **Renaming or adding a column in `main.py` silently breaks `/run_backtest` at runtime** — mypy will
-not catch it and no unit test covers it. Keep those builders in sync with `api/database/models.py`.
+not catch it. `tests/api/test_router_backtest.py` now covers the happy path end to end, so a renamed
+column will fail there, but keep those builders in sync with `api/database/models.py` regardless.
+
+One column is no longer a pass-through: `router_backtest.py` overwrites `run_number` on every child
+record with `new_summary.id` before the splat. See "Run identity" below.
 
 The same applies to `ExecutionState(**config.model_dump())`: field names in
 `api/schemas/schemas.py::BacktestConfig` must match `ExecutionState`'s constructor.
+
+Note that `Summary(**summary_dict)` is *not* protected by this — SQLModel silently discards unknown
+kwargs on `table=True` models. `Summary(run_number=1, ...)` raises nothing and sets nothing, so a
+misspelled or removed field passes construction and only shows up as missing data later.
+
+### Run identity
+
+`summary.id` is the identity of a backtest run. `Summary` has **no** `run_number` column;
+`LogEvent.run_number` and `Trade.run_number` are `Field(foreign_key="summary.id")`.
+
+Two different things therefore produce run numbers, and they must not be confused:
+
+| | Source | Lifetime |
+|---|---|---|
+| `ExecutionState.backtest_run_number` | Python class variable | resets to 0 each process |
+| `summary.id` | Postgres sequence | persistent, never reused |
+
+`main.py` stamps the counter into its frames, which is correct for the standalone runner and the
+golden master. The API must **translate**: `router_backtest.py` inserts the `Summary`, commits and
+refreshes so the database assigns `id`, then sets `event["run_number"] = new_summary.id` on each
+child before constructing it. Writing the counter straight into the FK column is the bug this design
+exists to prevent — it only looks correct on an empty database in a fresh process, and breaks on a
+restart, after any `DELETE /summary/{id}`, or with more than one worker.
 
 ### Strategies are deliberate near-duplicates
 
@@ -160,8 +203,8 @@ This is intentional at the boundary — match whichever convention the file you 
 
 ## Test suite
 
-`pytest tests/` gives **123 passed, 0 failed**. The suite is complete: every module outside `api/`
-has coverage, and both CI pipelines run all of it.
+`pytest tests/` gives **167 passed, 0 failed** — 123 outside `api/` plus 44 in `tests/api/`. Every
+module in the project now has coverage, and CI runs all of it.
 
 | File | Tests | Covers |
 |---|---|---|
@@ -174,6 +217,18 @@ has coverage, and both CI pipelines run all of it.
 | `tests/test_process_1_day.py` | 3 | `process_one_day` branch routing and its two type/value guards |
 | `tests/test_trend_signal.py` | 3 | `trend_step` |
 | `tests/test_mean_reversion_signal.py` | 3 | `mean_rev_step` |
+
+API layer — `tests/api/`, all offline against in-memory SQLite:
+
+| File | Tests | Covers |
+|---|---|---|
+| `tests/api/test_log_events_service.py` | 8 | `LogEventsService` against a real session |
+| `tests/api/test_router_log_events.py` | 8 | log-event routes with a faked service |
+| `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
+| `tests/api/test_router_trades.py` | 8 | trade routes with a faked service |
+| `tests/api/test_router_backtest.py` | 4 | `/run_backtest` end to end, including run-identity wiring |
+| `tests/api/test_summary_service.py` | 4 | `SummaryService` (`session.get(Summary, id)`) |
+| `tests/api/test_router_summary.py` | 4 | summary routes with a faked service |
 
 Two deliberately different testing styles, one per layer:
 
@@ -196,10 +251,34 @@ mock return is what lands in the 9-tuple, not the `positionTrend` you passed in.
 The golden master and the `ExperimentRunner` tests in `test_main.py` perform a live Alpaca fetch, so
 a clean run needs the root `.env` and network access. Everything else runs offline.
 
+### Two traps in `tests/api/`
+
+Neither is visible from the code; both matter if you change these tests.
+
+**SQLite does not enforce the foreign keys.** `tests/api/conftest.py` never issues
+`PRAGMA foreign_keys=ON`, and SQLite defaults it off per connection. A `LogEvent` whose `run_number`
+points at no summary row inserts without error. Postgres does enforce it. So a broken FK will pass
+`tests/api/` and fail in production — the suite guards run identity through explicit assertions
+(`run_number == new_summary["id"]`), not through the constraint.
+
+**The run counter is not reset between these tests, only the database is.** Fixtures are
+function-scoped, so every test builds a fresh in-memory database and its first summary gets `id=1`.
+`ExecutionState.backtest_run_number` is a class variable and keeps climbing across the module:
+
+```text
+test_create_backtest_mean_reversion_branch: counter 0 -> 1   (stamps 1, summary.id 1 — they match)
+test_create_backtest_trend_branch:          counter 1 -> 2   (stamps 2, summary.id 1 — they diverge)
+```
+
+That divergence is the whole reason the Trend branch carries the `run_number == summary["id"]`
+assertions: it is the only test where the counter and the database id disagree, so it is the only one
+that can actually catch a regression in the translation. Run that test **alone** and the counter
+starts at 0, stamps 1, matches by coincidence, and passes even with the bug reintroduced.
+
 ## Golden-master test
 
 `tests/test_main.py::TestTradingEngineBacktestRun` serializes every output DataFrame to CSV and
-compares it against `tests/golden_masters/results.txt` (~587 KB).
+compares it against `tests/golden_masters/results.txt` (~573 KB).
 
 It runs a **live Alpaca fetch**, so it needs credentials and network. To regenerate after an
 intentional behaviour change, delete `results.txt` and run the test once — it writes the file and
@@ -212,9 +291,20 @@ Do not "fix" these incidentally — they are tracked work:
 
 - The backtest date window `start="2024-01-16", end="2026-01-13"` is hard-coded in **two** places:
   `ExperimentRunner.fetch_bars_by_symbol()` and `router_backtest.py`. Moving it into config is planned.
-- `/run_backtest` commits and refreshes **once per row** inside its loops. Batching is planned.
+- `/run_backtest` commits and refreshes **once per row** inside its loops. Batching is planned. The
+  summary's own commit must stay ahead of the loops, though — that is what assigns `summary.id`.
+- **There is no migration tooling.** `api/database/session.py` only calls `SQLModel.metadata.create_all`,
+  which creates missing tables and never `ALTER`s an existing one. Any model change therefore has no
+  effect on a live database until those tables are dropped and recreated, which destroys their rows.
+  Adding Alembic is the real fix.
 - Tradeable tickers are whitelisted in `COMPANY_NAMES` (`main.py`); `ExperimentRunner.state()`
   raises `ValueError` for anything else. Adding a ticker means adding it there.
+- **Route naming is now inconsistent.** The summary router moved to `/summary/{id}`, but the trades
+  and log-events routers still read `/trades_backtest_run_number/{backtest_run_number}` and
+  `/log_events_backtest_run_number/{backtest_run_number}`, with matching
+  `read_run_number`/`delete_run_number` service methods. Those children do still have a `run_number`
+  column, so the names are not *wrong* — but the same number is called `id` on one route and
+  `backtest_run_number` on another, which is confusing in `/docs`.
 - `legacy/` holds the earlier SQLite implementation, kept on disk for reference only. It is untracked
   and gitignored, and not imported by live code. Mypy still type-checks it, so it must keep passing
   `mypy .`; ruff skips it (see "Commands" above).

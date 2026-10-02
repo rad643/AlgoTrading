@@ -2,9 +2,9 @@
 
 A Python algorithmic-trading and backtesting platform for retrieving historical US equity data, running rule-based strategies, modelling execution costs, evaluating performance, visualising results, and persisting backtest outputs through a FastAPI/PostgreSQL API.
 
-The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on both GitHub Actions and CircleCI.
+The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, and CI quality checks are implemented. The test suite covering every non-API module is complete — **123 tests, all passing** — and both CI pipelines now run it in full. Current work is focused on API testing and further backend cleanup before building the frontend and deployment layers.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **167 tests, all passing** — and CI runs it in full. Current work is focused on backend cleanup before building the frontend and deployment layers.
 
 ## Features
 
@@ -24,11 +24,12 @@ The project began as a small CSV-based backtester and has been progressively ref
 - SQLModel models with asynchronous PostgreSQL sessions
 - Read/delete API routes for summaries, trades, and log events
 - End-to-end `/run_backtest` route that runs a backtest and persists its outputs
-- Pytest + `unittest.mock` test coverage of every non-API module, including a golden-master regression test
+- Pytest + `unittest.mock` test coverage of every module, including the API layer and a golden-master regression test
+- Async API tests against an in-memory SQLite database via FastAPI dependency overrides
 - Ruff linting and formatting checks
 - Mypy static type checking
 - Pre-commit quality checks
-- GitHub Actions and CircleCI continuous integration
+- GitHub Actions continuous integration
 
 ## Strategies
 
@@ -185,13 +186,17 @@ Database tables are created during the FastAPI lifespan startup handler.
 - `trades` — completed trades
 - `log_events` — execution and backtest lifecycle events
 
+A run is identified by `summary.id`, the database-assigned primary key. Both child tables carry a
+`run_number` column declared as a foreign key to `summary.id`, so every trade and log event is tied
+to the summary of the run that produced it.
+
 ### Implemented Routes
 
 | Method | Route | Purpose |
 |---|---|---|
 | POST | `/run_backtest` | Run a backtest and persist its summary, trades, and log events |
-| GET | `/summary/{backtest_run_number}` | Retrieve one run summary |
-| DELETE | `/summary/{backtest_run_number}` | Delete one run summary |
+| GET | `/summary/{id}` | Retrieve one run summary |
+| DELETE | `/summary/{id}` | Delete one run summary |
 | GET | `/trade_id/{id}` | Retrieve a trade by database ID |
 | GET | `/trades_backtest_run_number/{backtest_run_number}` | Retrieve all trades for one run |
 | DELETE | `/trade_id/{id}` | Delete a trade by database ID |
@@ -203,12 +208,15 @@ Database tables are created during the FastAPI lifespan startup handler.
 
 The current `/run_backtest` route builds an `ExecutionState` from the request body, fetches Alpaca data, executes the trading engine, calculates the run summary, and persists the summary, trades, and log events to PostgreSQL.
 
+The summary is inserted first so that PostgreSQL assigns its `id`. That id is then written onto every
+trade and log event before they are inserted, which is what keeps the foreign keys pointing at the
+correct run. The engine's own in-process run counter is a local label for the standalone runner and
+is never used as a database key.
+
 ## Project Structure
 
 ```text
 AlgoTrading/
-├── .circleci/
-│   └── config.yml                 # CircleCI pipeline
 ├── .github/
 │   └── workflows/
 │       └── ci.yaml                # GitHub Actions pipeline
@@ -239,10 +247,14 @@ AlgoTrading/
 │   ├── mean_reversion/
 │   └── trend/
 ├── tests/
+│   ├── api/
+│   │   ├── conftest.py            # In-memory SQLite session fixture
+│   │   └── test_*.py              # 44 tests across 7 files
 │   ├── golden_masters/
 │   ├── conftest.py
 │   └── test_*.py                  # 123 tests across 9 files
 ├── .pre-commit-config.yaml        # Local quality hooks
+├── conftest.py                    # Empty; marks the rootdir for pytest
 ├── main.py                        # Engine, aggregation, plotting, experiment runner
 ├── mypy.ini
 ├── requirements.txt               # Pinned Python dependencies
@@ -277,7 +289,7 @@ On Windows:
 python -m pip install -r requirements.txt
 ```
 
-The GitHub Actions pipeline uses Python `3.13`; the CircleCI pipeline uses Python `3.12.7`.
+The GitHub Actions pipeline uses Python `3.13`.
 
 ## Configuration
 
@@ -294,12 +306,9 @@ APCA_API_SECRET_KEY=YOUR_SECRET_KEY
 
 The `.env` file is excluded by `.gitignore`. Never commit API credentials.
 
-Both CI pipelines need the same two credentials, because the golden-master test performs a live Alpaca fetch:
-
-- **GitHub Actions** — repository secrets, injected as job-level `env` in `.github/workflows/ci.yaml`;
-- **CircleCI** — project environment variables.
-
-Use the same names in both:
+CI needs the same two credentials, because the golden-master test performs a live Alpaca fetch. They
+are stored as GitHub repository secrets and injected as job-level `env` in `.github/workflows/ci.yaml`
+under these names:
 
 ```text
 APCA_API_KEY_ID
@@ -319,6 +328,15 @@ POSTGRES_DB=algotrading
 ```
 
 Create the matching PostgreSQL database before starting the API.
+
+`api/config.py` instantiates its `Settings` object at import time, so these five values must be
+resolvable before anything under `api/` can be imported — including by the test suite. Pydantic
+Settings accepts plain environment variables as well as the file, which is how CI supplies dummy
+values without an `api/.env`.
+
+There is no migration tooling. Tables are created by `SQLModel.metadata.create_all`, which only
+creates tables that do not yet exist and never alters one that does, so a model change requires
+dropping and recreating the affected tables.
 
 ## Running the Standalone Backtest
 
@@ -352,7 +370,9 @@ Run the full local test directory with:
 pytest -v tests/
 ```
 
-The suite currently contains **123 tests, all passing**, and covers every module outside `api/`:
+The suite currently contains **167 tests, all passing**, and covers every module in the project.
+
+Engine, strategy, and data layers — 123 tests:
 
 | File | Tests | Area under test |
 |---|---|---|
@@ -366,12 +386,24 @@ The suite currently contains **123 tests, all passing**, and covers every module
 | `tests/test_trend_signal.py` | 3 | Trend signal step |
 | `tests/test_mean_reversion_signal.py` | 3 | Mean Reversion signal step |
 
-The two strategy layers are tested in different styles. The signal tests patch `buy`, `sell` and `hold` with `unittest.mock` autospecs and assert branch routing, the exact argument mapping, and the returned tuple. The utils tests mock nothing and assert the real execution arithmetic — slippage-adjusted fill price, share count, cash after commission, marked-to-market equity, realised profit — plus the verbose console output through pytest's `capsys` fixture.
+API layer — 44 tests, all offline:
 
-Both CI pipelines run the whole directory with per-package coverage:
+| File | Tests | Area under test |
+|---|---|---|
+| `tests/api/test_log_events_service.py` | 8 | `LogEventsService` against a real session |
+| `tests/api/test_router_log_events.py` | 8 | Log-event routes with a faked service |
+| `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
+| `tests/api/test_router_trades.py` | 8 | Trade routes with a faked service |
+| `tests/api/test_router_backtest.py` | 4 | `/run_backtest` end to end, including run-identity wiring |
+| `tests/api/test_summary_service.py` | 4 | `SummaryService` primary-key lookups |
+| `tests/api/test_router_summary.py` | 4 | Summary routes with a faked service |
+
+Three testing styles are used, one per layer. The **signal** tests patch `buy`, `sell` and `hold` with `unittest.mock` autospecs and assert branch routing, the exact argument mapping, and the returned tuple. The **utils** tests mock nothing and assert the real execution arithmetic — slippage-adjusted fill price, share count, cash after commission, marked-to-market equity, realised profit — plus the verbose console output through pytest's `capsys` fixture. The **API** tests run against an in-memory SQLite database: route tests swap the service dependency for a fake, while service and end-to-end tests use a real async session created through `app.dependency_overrides`. Async tests run on the `anyio` plugin and are marked with `@pytest.mark.anyio`; `pytest-asyncio` is not used.
+
+CI runs the whole directory with per-package coverage:
 
 ```bash
-pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics tests/
+pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics --cov=api tests/
 ```
 
 ### Golden-master regression test
@@ -404,7 +436,7 @@ pre-commit run --all-files
 
 ### Pipelines
 
-Two pipelines are active, and both run the same stages:
+One pipeline is active, running these stages:
 
 1. checkout;
 2. create a virtual environment and install `requirements.txt`;
@@ -416,11 +448,16 @@ Two pipelines are active, and both run the same stages:
 | Pipeline | File | Python | Trigger |
 |---|---|---|---|
 | GitHub Actions | `.github/workflows/ci.yaml` | `3.13` | push to `main` |
-| CircleCI | `.circleci/config.yml` | `3.12.7` | project-configured builds |
 
-Coverage is requested one package at a time (`main`, `engine`, `strategies`, `data_loading`, `metrics`) so that the not-yet-tested `api/` package and the retained `legacy/` directory stay out of the report.
+A CircleCI pipeline previously ran the same stages on Python `3.12.7`; it was removed and
+`.circleci/config.yml` no longer exists.
 
-Both pipelines are passing all of these stages.
+Alongside the Alpaca secrets, the workflow sets dummy `POSTGRES_*` environment variables so that
+`api/` can be imported in CI without an `api/.env` file.
+
+Coverage is requested one package at a time (`main`, `engine`, `strategies`, `data_loading`, `metrics`, `api`) so that the retained `legacy/` directory stays out of the report.
+
+The pipeline is passing all of these stages.
 
 ## Current Development State
 
@@ -446,21 +483,24 @@ Both pipelines are passing all of these stages.
 - Refactored `TradingEngine` helpers with unit tests
 - Complete unit coverage of both strategy packages — signal routing and execution arithmetic
 - Golden-master regression coverage
+- Database-assigned run identity, with `summary.id` as the foreign key on trades and log events
+- Full API test suite — routes with faked services, services against a real async session, and an end-to-end `/run_backtest` test
+- Test database/session dependency overrides against in-memory SQLite
 - Pinned dependency file
 - Ruff linting/formatting
 - Mypy type checking
 - Pre-commit hooks
-- GitHub Actions and CircleCI pipelines, both running the full test suite
+- GitHub Actions pipeline running the full test suite
 
 ### Current work
 
-- API testing with FastAPI `TestClient`
-- Test database/session dependency overrides
 - Further API/database cleanup, including reducing per-row commit overhead
 - Moving hard-coded backtest date configuration into the request/configuration layer
+- Aligning route naming — the summary routes use `{id}` while the trade and log-event routes still use `{backtest_run_number}`
 
 ### Planned
 
+- Database migrations (Alembic) so model changes no longer require dropping tables
 - React frontend/dashboard
 - Dockerised application/deployment
 - Broader CI/CD workflow
