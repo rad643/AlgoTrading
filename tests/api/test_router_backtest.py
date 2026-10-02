@@ -10,31 +10,74 @@ from sqlmodel.pool import StaticPool
 
 from api.database.session import get_session
 from api.main import app
+from api.router import router_backtest
 from api.router.services.log_events_service import LogEventsService
 from api.router.services.summary_service import SummaryService
 from api.router.services.trades_service import TradesService
-from data_loading import data_loader
 
 ticker_df = {
     "AAPL": pd.DataFrame(
         {
-            "open": [99.6, 100.6, 114.6, 87.6, 119.6, 84.6, 124.6, 81.6],
-            "high": [101.5, 102.5, 116.5, 89.5, 121.5, 86.5, 126.5, 83.5],
-            "low": [98.5, 99.5, 113.5, 86.5, 118.5, 83.5, 123.5, 80.5],
-            "close": [100.0, 101.0, 115.0, 88.0, 120.0, 85.0, 125.0, 82.0],
-            "volume": [
-                40000000,
-                40100000,
-                40200000,
-                40300000,
-                40400000,
-                40500000,
-                40600000,
-                40700000,
+            "open": [
+                99.6,
+                91.6,
+                83.6,
+                91.6,
+                86.6,
+                91.6,
+                86.6,
+                98.6,
+                106.6,
+                94.6,
+                86.6,
+                91.6,
             ],
+            "high": [
+                101.5,
+                93.5,
+                85.5,
+                93.5,
+                88.5,
+                93.5,
+                88.5,
+                100.5,
+                108.5,
+                96.5,
+                88.5,
+                93.5,
+            ],
+            "low": [
+                98.5,
+                90.5,
+                82.5,
+                90.5,
+                85.5,
+                90.5,
+                85.5,
+                97.5,
+                105.5,
+                93.5,
+                85.5,
+                90.5,
+            ],
+            "close": [
+                100.0,
+                92.0,
+                84.0,
+                92.0,
+                87.0,
+                92.0,
+                87.0,
+                99.0,
+                107.0,
+                95.0,
+                87.0,
+                92.0,
+            ],
+            "volume": [40000000 + i * 100000 for i in range(12)],
         },
         index=pd.DatetimeIndex(
-            pd.to_datetime([f"2025-03-{d:02d}T05:00:00Z" for d in range(3, 11)]),
+            pd.to_datetime([f"2025-03-{d:02d}T05:00:00Z" for d in range(3, 15)]),
             name="time",
         ).tz_convert("America/New_York"),
     )
@@ -103,7 +146,7 @@ async def test_create_backtest_mean_reversion_branch(async_client, async_session
     client = async_client
     _, session_maker = async_session
 
-    with patch.object(data_loader, "hist_data", autospec=True) as mock_ticker_df:
+    with patch.object(router_backtest, "hist_data", autospec=True) as mock_ticker_df:
         mock_ticker_df.return_value = ticker_df
 
         config = {"symbol": "AAPL", "cashValue": 10000, "ticker_name": "Apple"}
@@ -116,49 +159,53 @@ async def test_create_backtest_mean_reversion_branch(async_client, async_session
         assert new_summary["ticker"] == "Apple"
         assert new_summary["strategy"] == "Mean Reversion"
         assert new_summary["starting_cash"] == 10000
-        assert new_summary["total_net_profit"] == 317.992
-        assert new_summary["mdd"] == 2.65
-        assert new_summary["expectancy"] == 35.43
-        assert new_summary["payoff_ratio"] == 1.61
-        assert new_summary["profit_factor"] == 5.64
-        assert new_summary["sharpe_ratio"] == 0.031
+        assert new_summary["total_net_profit"] == 58.01
+        assert new_summary["mdd"] == 1.14
+        assert new_summary["expectancy"] == 25.55
+        assert new_summary["payoff_ratio"] == 1.48
+        assert new_summary["profit_factor"] == 1.48
+        assert new_summary["sharpe_ratio"] == 0.072
         assert new_summary["labels"] == "Apple-Mean Reversion"
         assert new_summary["id"] is not None
 
         log_events_list_with_id = data["log_events"]
-        assert len(log_events_list_with_id) == 29
-        last_log_event = log_events_list_with_id[28]
+        assert len(log_events_list_with_id) == 9
+        last_log_event = log_events_list_with_id[8]
         assert last_log_event["run_number"] == new_summary["id"]
-        assert last_log_event["day"] == 501
-        assert last_log_event["date"] == "2026-01-13"
+        assert last_log_event["day"] == 12
+        assert last_log_event["date"] == "2025-03-14"
         assert last_log_event["ticker"] == "Apple"
         assert last_log_event["strategy"] == "Mean Reversion"
         assert last_log_event["event_type"] == "BACKTEST_END"
         assert last_log_event["message"] == "Backtest has ended"
-        assert last_log_event["cash"] == 10317.992
-        assert last_log_event["equity"] == 10317.992
-        assert last_log_event["position"] == 0
+        assert last_log_event["cash"] == 8126.01
+        assert last_log_event["equity"] == 10058.01
+        assert last_log_event["position"] == 21
         assert last_log_event["execution_price"] is None
-        assert last_log_event["pnl"] == 317.992
+        assert last_log_event["pnl"] == 58.01
         assert last_log_event["labels"] == "Apple-Mean Reversion"
         assert last_log_event["id"] is not None
         assert all(log_event["id"] is not None for log_event in log_events_list_with_id)
 
         trades_list_with_id = data["trades"]
-        assert len(trades_list_with_id) == 9
+        assert len(trades_list_with_id) == 2
         first_trade = trades_list_with_id[0]
         assert first_trade["run_number"] == new_summary["id"]
         assert first_trade["ticker"] == "Apple"
         assert first_trade["strategy"] == "Mean Reversion"
-        assert first_trade["entry_day"] == 12
-        assert first_trade["entry_price"] == 187.134
-        assert first_trade["exit_day"] == 18
-        assert first_trade["exit_price"] == 189.29
-        assert first_trade["profit"] == 21.56
-        assert first_trade["return_pct"] == 1.15
+        assert first_trade["entry_day"] == 4
+        assert first_trade["entry_price"] == 91.646
+        assert first_trade["exit_day"] == 7
+        assert first_trade["exit_price"] == 86.557
+        assert first_trade["profit"] == -106.869
+        assert first_trade["return_pct"] == -5.55
         assert first_trade["labels"] == "Apple-Mean Reversion"
         assert first_trade["number_trades_took_place"] == 1
         assert all(trade["id"] is not None for trade in trades_list_with_id)
+
+        mock_ticker_df.assert_called_once_with(
+            "AAPL", timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
+        )
 
         async with session_maker() as second_session:
             summary_service = SummaryService(second_session)
@@ -169,14 +216,22 @@ async def test_create_backtest_mean_reversion_branch(async_client, async_session
             log_events_service = LogEventsService(second_session)
             result = await log_events_service.read_run_number(new_summary["id"])
             assert len(result) == len(log_events_list_with_id)
-            log_event_15 = await log_events_service.read_id(15)
-            assert log_event_15.model_dump(mode="json") == log_events_list_with_id[14]
+            log_event_4 = await log_events_service.read_id(4)
+            assert log_event_4.model_dump(mode="json") == log_events_list_with_id[3]
 
             trades_service = TradesService(second_session)
             result = await trades_service.read_run_number(new_summary["id"])
             assert len(result) == len(trades_list_with_id)
-            trade_5 = await trades_service.read_id(5)
-            assert trade_5.model_dump(mode="json") == trades_list_with_id[4]
+            trade_2 = await trades_service.read_id(2)
+            assert trade_2.model_dump(mode="json") == trades_list_with_id[1]
+
+            mock_ticker_df.assert_called_once_with(
+                "AAPL",
+                timeframe="1Day",
+                start="2024-01-16",
+                end="2026-01-13",
+                limit=1000,
+            )
 
 
 @pytest.mark.anyio
@@ -204,7 +259,7 @@ async def test_create_backtest_trend_branch(async_client):
 
     client = async_client
 
-    with patch.object(data_loader, "hist_data", autospec=True) as mock_ticker_df:
+    with patch.object(router_backtest, "hist_data", autospec=True) as mock_ticker_df:
         mock_ticker_df.return_value = ticker_df
 
         config = {
@@ -222,12 +277,12 @@ async def test_create_backtest_trend_branch(async_client):
         assert new_summary["ticker"] == "Apple"
         assert new_summary["strategy"] == "Trend"
         assert new_summary["starting_cash"] == 10000
-        assert new_summary["total_net_profit"] == 327.693
-        assert new_summary["mdd"] == 7.29
-        assert new_summary["expectancy"] == -5.56
-        assert new_summary["payoff_ratio"] == 6.81
-        assert new_summary["profit_factor"] == 0.85
-        assert new_summary["sharpe_ratio"] == 0.025
+        assert new_summary["total_net_profit"] == 1.692
+        assert new_summary["mdd"] == 3.5
+        assert new_summary["expectancy"] == 1.05
+        assert new_summary["payoff_ratio"] == 1.01
+        assert new_summary["profit_factor"] == 1.01
+        assert new_summary["sharpe_ratio"] == 0.007
         assert new_summary["labels"] == "Apple-Trend"
         assert new_summary["id"] is not None
 
@@ -240,4 +295,8 @@ async def test_create_backtest_trend_branch(async_client):
         trades_list_with_id = data["trades"]
         assert all(
             trade["run_number"] == new_summary["id"] for trade in trades_list_with_id
+        )
+
+        mock_ticker_df.assert_called_once_with(
+            "AAPL", timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
         )
