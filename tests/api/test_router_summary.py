@@ -9,7 +9,6 @@ client = TestClient(app)
 
 summary = Summary(
     id=1,
-    run_number=1,
     ticker="Apple",
     strategy="Trend",
     starting_cash=1000.0,
@@ -24,11 +23,10 @@ summary = Summary(
 
 
 class FakeSummaryService:
-    async def read(self, backtest_run_number: int):
-        if backtest_run_number == 1:
+    async def read(self, id: int):
+        if id == 1:
             return Summary(
                 id=1,
-                run_number=1,
                 ticker="Apple",
                 strategy="Trend",
                 starting_cash=1000,
@@ -42,8 +40,8 @@ class FakeSummaryService:
             )
         return None
 
-    async def delete(self, backtest_run_number: int):
-        return backtest_run_number == 1
+    async def delete(self, id: int):
+        return id == 1
 
 
 def get_fake_summary_service():
@@ -66,18 +64,16 @@ def test_read_summary(dependency_overrides):
 def test_read_summary_bad_id(dependency_overrides):
     response = client.get("/summary/2")
     assert response.status_code == 404
-    assert response.json() == {"detail": "Backtest run number 2 doesn't exist"}
+    assert response.json() == {"detail": "Id number 2 doesn't exist"}
 
 
 def test_delete_summary(dependency_overrides):
     response = client.delete("/summary/1")
     assert response.status_code == 200
-    assert response.json() == {
-        "message": "Summary with backtest run number 1 has been deleted"
-    }
+    assert response.json() == {"message": "Summary with id number 1 has been deleted"}
 
 
 def test_delete_summary_bad_id(dependency_overrides):
     response = client.delete("/summary/2")
     assert response.status_code == 404
-    assert response.json() == {"detail": "Backtest run number 2 doesn't exist"}
+    assert response.json() == {"detail": "Id number 2 doesn't exist"}

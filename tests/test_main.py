@@ -99,7 +99,6 @@ class TestTradingEngineWiringFunctions(TestCase):
         Checks that the dictionary values are the same objects as the arguments that were passed in
         and not just copies (identical content)"""
 
-        run_number = 1
         ticker = "Apple"
         strategy = "Trend"
         starting_cash = 100
@@ -112,7 +111,6 @@ class TestTradingEngineWiringFunctions(TestCase):
         labels = "Apple-Trend"
 
         d = main.TradingEngine.build_run_df(
-            run_number,
             ticker,
             strategy,
             starting_cash,
@@ -125,8 +123,7 @@ class TestTradingEngineWiringFunctions(TestCase):
             labels,
         )
 
-        self.assertEqual(len(d), 11)
-        self.assertEqual(d["run_number"], run_number)
+        self.assertEqual(len(d), 10)
         self.assertEqual(d["ticker"], ticker)
         self.assertEqual(d["strategy"], strategy)
         self.assertEqual(d["starting_cash"], starting_cash)
@@ -475,7 +472,7 @@ class TestLogEventsTrend(TestCase):
         self.assertEqual(row["position"], main.TradingEngine.position(self.state))
         self.assertEqual(row["execution_price"], None)
         self.assertEqual(row["pnl"], None)
-        self.assertEqual(row["labels"], None)
+        self.assertEqual(row["labels"], main.TradingEngine.labels(self.state))
 
         self.assertEqual(len(self.state.list_dictionaries_event_logs), 1)
 
@@ -575,7 +572,7 @@ class TestLogEventsTrend(TestCase):
         self.assertEqual(row["position"], 10)
         self.assertEqual(row["execution_price"], None)
         self.assertEqual(row["pnl"], 431.9)
-        self.assertEqual(row["labels"], None)
+        self.assertEqual(row["labels"], main.TradingEngine.labels(self.state))
 
         self.assertEqual(len(self.state.list_dictionaries_event_logs), 1)
 
@@ -583,9 +580,11 @@ class TestLogEventsTrend(TestCase):
 class TestLogEventsMeanReversion(TestCase):
     def setUp(self):
 
+        main.ExecutionState.backtest_run_number = 0
         self.state = main.ExecutionState(
             trendMethod=False, symbol="GOOGL", cashValue=10000, ticker_name="Google"
         )
+        main.ExecutionState.backtest_run_number = 0
 
     def test_backtest_start_logging_event(self):
 
@@ -605,7 +604,7 @@ class TestLogEventsMeanReversion(TestCase):
         self.assertEqual(row["position"], 0)
         self.assertEqual(row["execution_price"], None)
         self.assertEqual(row["pnl"], None)
-        self.assertEqual(row["labels"], None)
+        self.assertEqual(row["labels"], "Google-Mean Reversion")
 
         self.assertEqual(len(self.state.list_dictionaries_event_logs), 1)
 
@@ -723,12 +722,16 @@ class TestLogEventsMeanReversion(TestCase):
         self.assertEqual(row["position"], self.state.positionMeanReversion)
         self.assertEqual(row["execution_price"], None)
         self.assertEqual(row["pnl"], self.state.totalProfit)
-        self.assertEqual(row["labels"], None)
+        self.assertEqual(row["labels"], "Google-Mean Reversion")
 
         self.assertEqual(len(self.state.list_dictionaries_event_logs), 1)
 
 
 class TestBuildingDictionaries(TestCase):
+    def setUp(self):
+
+        main.ExecutionState.backtest_run_number = 0
+
     def test_build_dictionary_prices(self):
 
         state = main.ExecutionState(
@@ -1488,7 +1491,7 @@ class TestBacktestRun:
                 "position": [0.0, 19.0, 19.0],
                 "execution_price": [np.nan, 102.151, np.nan],
                 "pnl": [np.nan, np.nan, 92.036],
-                "labels": [np.nan, "Google-Trend", np.nan],
+                "labels": ["Google-Trend"] * 3,
             }
         )
 
@@ -1679,7 +1682,6 @@ class TestPerformanceMetrics:
         monkeypatch.setattr(performance_metrics, "sharpe_ratio", patch_sharpe_ratio)
 
         d = {
-            "run_number": 1,
             "ticker": "Google",
             "strategy": "Trend",
             "starting_cash": 9832.65,

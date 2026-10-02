@@ -1,4 +1,3 @@
-from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from api.database.models import Summary
@@ -8,18 +7,12 @@ class SummaryService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def read(self, backtest_run_number: int):
-        result = await self.session.exec(
-            select(Summary).where(Summary.run_number == backtest_run_number)
-        )
-        summary = result.first()
+    async def read(self, id: int):
+        summary = await self.session.get(Summary, id)
         return summary
 
-    async def delete(self, backtest_run_number: int):
-        result = await self.session.exec(
-            select(Summary).where(Summary.run_number == backtest_run_number)
-        )
-        summary = result.first()
+    async def delete(self, id: int):
+        summary = await self.session.get(Summary, id)
         if summary:
             await self.session.delete(summary)
             await self.session.commit()

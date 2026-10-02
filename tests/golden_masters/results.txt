@@ -1,11 +1,11 @@
 === Final Data Frame Run ===
-run_number,ticker,strategy,starting_cash,total_net_profit,mdd,expectancy,payoff_ratio,profit_factor,sharpe_ratio,labels
-1,Apple,Trend,10000,327.693,7.29,-5.56,6.81,0.85,0.025,Apple-Trend
-2,Apple,Mean Reversion,10000,317.992,2.65,35.43,1.61,5.64,0.031,Apple-Mean Reversion
-3,Google,Trend,10000,1712.064,6.61,-7.69,1.32,0.76,0.087,Google-Trend
-4,Google,Mean Reversion,10000,415.557,2.54,37.9,1.87,8.42,0.046,Google-Mean Reversion
-5,Microsoft,Trend,10000,-246.263,5.46,-23.55,0.94,0.13,-0.025,Microsoft-Trend
-6,Microsoft,Mean Reversion,10000,492.648,2.48,29.02,12.8,204.85,0.068,Microsoft-Mean Reversion
+ticker,strategy,starting_cash,total_net_profit,mdd,expectancy,payoff_ratio,profit_factor,sharpe_ratio,labels
+Apple,Trend,10000,327.693,7.29,-5.56,6.81,0.85,0.025,Apple-Trend
+Apple,Mean Reversion,10000,317.992,2.65,35.43,1.61,5.64,0.031,Apple-Mean Reversion
+Google,Trend,10000,1712.064,6.61,-7.69,1.32,0.76,0.087,Google-Trend
+Google,Mean Reversion,10000,415.557,2.54,37.9,1.87,8.42,0.046,Google-Mean Reversion
+Microsoft,Trend,10000,-246.263,5.46,-23.55,0.94,0.13,-0.025,Microsoft-Trend
+Microsoft,Mean Reversion,10000,492.648,2.48,29.02,12.8,204.85,0.068,Microsoft-Mean Reversion
 
 === Equity Curve ===
 day,run_number,ticker,strategy,equity,labels
@@ -6104,7 +6104,7 @@ run_number,ticker,strategy,entry_day,entry_price,exit_day,exit_price,profit,retu
 
 === Log Events ===
 run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,execution_price,pnl,labels
-1,,,Apple,Trend,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,
+1,,,Apple,Trend,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,Apple-Trend
 1,4,2024-01-19,Apple,Trend,BUY_EXECUTED,A Buy has been executed,8105.7,10021.3,10.0,189.425,,Apple-Trend
 1,12,2024-01-31,Apple,Trend,SELL_EXECUTED,A Sell has been executed,9975.11,9975.11,0.0,186.946,-24.79,Apple-Trend
 1,12,2024-01-31,Apple,Trend,TRADE_CLOSED,A Trade has been executed,9975.11,9975.11,0.0,186.946,-24.79,Apple-Trend
@@ -6133,8 +6133,8 @@ run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,exec
 1,387,2025-07-31,Apple,Trend,SELL_EXECUTED,A Sell has been executed,9949.144,9949.144,0.0,208.386,-34.38,Apple-Trend
 1,387,2025-07-31,Apple,Trend,TRADE_CLOSED,A Trade has been executed,9949.144,9949.144,0.0,208.386,-34.38,Apple-Trend
 1,392,2025-08-07,Apple,Trend,BUY_EXECUTED,A Buy has been executed,7978.243,9958.513,9.0,218.984,,Apple-Trend
-1,501,2026-01-13,Apple,Trend,BACKTEST_END,Backtest has ended,7978.243,10327.693,9.0,,327.6929999999993,
-2,,,Apple,Mean Reversion,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,
+1,501,2026-01-13,Apple,Trend,BACKTEST_END,Backtest has ended,7978.243,10327.693,9.0,,327.6929999999993,Apple-Trend
+2,,,Apple,Mean Reversion,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,Apple-Mean Reversion
 2,12,2024-01-31,Apple,Mean Reversion,BUY_EXECUTED,A Buy has been executed,8128.61,9972.61,10.0,187.134,,Apple-Mean Reversion
 2,18,2024-02-08,Apple,Mean Reversion,SELL_EXECUTED,A Sell has been executed,10021.46,10021.46,0.0,189.29,21.56,Apple-Mean Reversion
 2,18,2024-02-08,Apple,Mean Reversion,TRADE_CLOSED,A Trade has been executed,10021.46,10021.46,0.0,189.29,21.56,Apple-Mean Reversion
@@ -6162,8 +6162,8 @@ run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,exec
 2,387,2025-07-31,Apple,Mean Reversion,BUY_EXECUTED,A Buy has been executed,8349.143,10217.273,9.0,208.594,,Apple-Mean Reversion
 2,392,2025-08-07,Apple,Mean Reversion,SELL_EXECUTED,A Sell has been executed,10317.992,10317.992,0.0,218.766,91.548,Apple-Mean Reversion
 2,392,2025-08-07,Apple,Mean Reversion,TRADE_CLOSED,A Trade has been executed,10317.992,10317.992,0.0,218.766,91.548,Apple-Mean Reversion
-2,501,2026-01-13,Apple,Mean Reversion,BACKTEST_END,Backtest has ended,10317.992,10317.992,0.0,,317.9920000000002,
-3,,,Google,Trend,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,
+2,501,2026-01-13,Apple,Mean Reversion,BACKTEST_END,Backtest has ended,10317.992,10317.992,0.0,,317.9920000000002,Apple-Mean Reversion
+3,,,Google,Trend,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,Google-Trend
 3,4,2024-01-19,Google,Trend,BUY_EXECUTED,A Buy has been executed,8117.379,10020.319,13.0,144.812,,Google-Trend
 3,13,2024-02-01,Google,Trend,SELL_EXECUTED,A Sell has been executed,9963.951,9963.951,0.0,142.049,-35.919,Google-Trend
 3,13,2024-02-01,Google,Trend,TRADE_CLOSED,A Trade has been executed,9963.951,9963.951,0.0,142.049,-35.919,Google-Trend
@@ -6198,8 +6198,8 @@ run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,exec
 3,360,2025-06-23,Google,Trend,SELL_EXECUTED,A Sell has been executed,9914.125,9914.125,0.0,166.187,-46.618,Google-Trend
 3,360,2025-06-23,Google,Trend,TRADE_CLOSED,A Trade has been executed,9914.125,9914.125,0.0,166.187,-46.618,Google-Trend
 3,363,2025-06-26,Google,Trend,BUY_EXECUTED,A Buy has been executed,8016.394,9925.334,11.0,172.516,,Google-Trend
-3,501,2026-01-13,Google,Trend,BACKTEST_END,Backtest has ended,8016.394,11712.064,11.0,,1712.0640000000003,
-4,,,Google,Mean Reversion,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,
+3,501,2026-01-13,Google,Trend,BACKTEST_END,Backtest has ended,8016.394,11712.064,11.0,,1712.0640000000003,Google-Trend
+4,,,Google,Mean Reversion,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,Google-Mean Reversion
 4,13,2024-02-01,Google,Mean Reversion,BUY_EXECUTED,A Buy has been executed,8009.256,9985.496,14.0,142.191,,Google-Mean Reversion
 4,20,2024-02-12,Google,Mean Reversion,SELL_EXECUTED,A Sell has been executed,10086.03,10086.03,0.0,148.346,86.17,Google-Mean Reversion
 4,20,2024-02-12,Google,Mean Reversion,TRADE_CLOSED,A Trade has been executed,10086.03,10086.03,0.0,148.346,86.17,Google-Mean Reversion
@@ -6233,8 +6233,8 @@ run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,exec
 4,360,2025-06-23,Google,Mean Reversion,BUY_EXECUTED,A Buy has been executed,8347.489,10329.769,12.0,166.353,,Google-Mean Reversion
 4,363,2025-06-26,Google,Mean Reversion,SELL_EXECUTED,A Sell has been executed,10415.557,10415.557,0.0,172.344,71.892,Google-Mean Reversion
 4,363,2025-06-26,Google,Mean Reversion,TRADE_CLOSED,A Trade has been executed,10415.557,10415.557,0.0,172.344,71.892,Google-Mean Reversion
-4,501,2026-01-13,Google,Mean Reversion,BACKTEST_END,Backtest has ended,10415.557,10415.557,0.0,,415.5570000000007,
-5,,,Microsoft,Trend,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,
+4,501,2026-01-13,Google,Mean Reversion,BACKTEST_END,Backtest has ended,10415.557,10415.557,0.0,,415.5570000000007,Google-Mean Reversion
+5,,,Microsoft,Trend,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,Microsoft-Trend
 5,4,2024-01-19,Microsoft,Trend,BUY_EXECUTED,A Buy has been executed,8020.185,10013.535,5.0,395.958,,Microsoft-Trend
 5,13,2024-02-01,Microsoft,Trend,SELL_EXECUTED,A Sell has been executed,10028.305,10028.305,0.0,401.629,28.355,Microsoft-Trend
 5,13,2024-02-01,Microsoft,Trend,TRADE_CLOSED,A Trade has been executed,10028.305,10028.305,0.0,401.629,28.355,Microsoft-Trend
@@ -6287,8 +6287,8 @@ run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,exec
 5,263,2025-01-31,Microsoft,Trend,SELL_EXECUTED,A Sell has been executed,9598.901,9598.901,0.0,418.771,-40.552,Microsoft-Trend
 5,263,2025-01-31,Microsoft,Trend,TRADE_CLOSED,A Trade has been executed,9598.901,9598.901,0.0,418.771,-40.552,Microsoft-Trend
 5,326,2025-05-02,Microsoft,Trend,BUY_EXECUTED,A Buy has been executed,7871.057,9612.177,4.0,431.956,,Microsoft-Trend
-5,501,2026-01-13,Microsoft,Trend,BACKTEST_END,Backtest has ended,7871.057,9753.737,4.0,,-246.26300000000083,
-6,,,Microsoft,Mean Reversion,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,
+5,501,2026-01-13,Microsoft,Trend,BACKTEST_END,Backtest has ended,7871.057,9753.737,4.0,,-246.26300000000083,Microsoft-Trend
+6,,,Microsoft,Mean Reversion,BACKTEST_START,Backtest started,10000.0,10000.0,0.0,,,Microsoft-Mean Reversion
 6,13,2024-02-01,Microsoft,Mean Reversion,BUY_EXECUTED,A Buy has been executed,8391.856,10006.976,4.0,402.031,,Microsoft-Mean Reversion
 6,14,2024-02-02,Microsoft,Mean Reversion,SELL_EXECUTED,A Sell has been executed,10006.268,10006.268,0.0,403.608,6.308,Microsoft-Mean Reversion
 6,14,2024-02-02,Microsoft,Mean Reversion,TRADE_CLOSED,A Trade has been executed,10006.268,10006.268,0.0,403.608,6.308,Microsoft-Mean Reversion
@@ -6340,7 +6340,7 @@ run_number,day,date,ticker,strategy,event_type,message,cash,equity,position,exec
 6,263,2025-01-31,Microsoft,Mean Reversion,BUY_EXECUTED,A Buy has been executed,8766.572,10426.812,4.0,419.189,,Microsoft-Mean Reversion
 6,326,2025-05-02,Microsoft,Mean Reversion,SELL_EXECUTED,A Sell has been executed,10492.648,10492.648,0.0,431.524,49.34,Microsoft-Mean Reversion
 6,326,2025-05-02,Microsoft,Mean Reversion,TRADE_CLOSED,A Trade has been executed,10492.648,10492.648,0.0,431.524,49.34,Microsoft-Mean Reversion
-6,501,2026-01-13,Microsoft,Mean Reversion,BACKTEST_END,Backtest has ended,10492.648,10492.648,0.0,,492.64799999999923,
+6,501,2026-01-13,Microsoft,Mean Reversion,BACKTEST_END,Backtest has ended,10492.648,10492.648,0.0,,492.64799999999923,Microsoft-Mean Reversion
 
 === Prices ===
 day,date,ticker,strategy,closing_price,average

@@ -215,7 +215,6 @@ class TradingEngine:
 
     @staticmethod
     def build_run_df(
-        run_number: int,
         ticker: str,
         strategy: str,
         starting_cash: float,
@@ -231,7 +230,6 @@ class TradingEngine:
         into a dictionary with values computed from the performance_metrics_data_frame() method"""
 
         return {
-            "run_number": run_number,
             "ticker": ticker,
             "strategy": strategy,
             "starting_cash": starting_cash,
@@ -589,7 +587,7 @@ class TradingEngine:
             TradingEngine.position(state),
             None,
             None,
-            None,
+            TradingEngine.labels(state),
         )
         state.list_dictionaries_event_logs.append(event_log_row)
 
@@ -696,7 +694,7 @@ class TradingEngine:
             TradingEngine.position(state),
             None,
             state.totalProfit,
-            None,
+            TradingEngine.labels(state),
         )
         state.list_dictionaries_event_logs.append(event_log_row)
 
@@ -1184,7 +1182,7 @@ class TradingEngine:
             state (ExecutionState): completed backtest state
 
         Returns:
-            pd.DataFrame: one-row DataFrame containing run_number, ticker, strategy, starting cash,
+            pd.DataFrame: one-row DataFrame containing ticker, strategy, starting cash,
                         total net profit, mdd, expectancy, payoff ratio, profit factor, sharpe ratio, labels
         """
 
@@ -1222,7 +1220,6 @@ class TradingEngine:
         )
 
         run_data_frame = TradingEngine.build_run_df(
-            ExecutionState.backtest_run_number,
             state.ticker_name,
             TradingEngine.strategy(state),
             state.startingCashValue,
@@ -1316,12 +1313,11 @@ class PlottingLayer:
 
         run_data_frame_chart = px.bar(
             data_frame=self.results_data_frames["Final Data Frame Run"],
-            x="run_number",
+            x="labels",
             y="total_net_profit",
             color="labels",
             title="Run Chart",
             barmode="group",
-            labels={"run_number": "Backtest run number"},
         )
         run_data_frame_chart.show()
 

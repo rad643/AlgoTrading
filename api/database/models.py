@@ -1,12 +1,13 @@
 import datetime
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class LogEvent(SQLModel, table=True):
     __tablename__ = "log_events"
     id: int | None = Field(default=None, primary_key=True)
-    run_number: int
+    run_number: int = Field(foreign_key="summary.id")
+    summary: "Summary" = Relationship()
     day: int | None
     date: datetime.date | None
     ticker: str
@@ -24,7 +25,6 @@ class LogEvent(SQLModel, table=True):
 class Summary(SQLModel, table=True):
     __tablename__ = "summary"
     id: int | None = Field(default=None, primary_key=True)
-    run_number: int
     ticker: str
     strategy: str
     starting_cash: float
@@ -40,7 +40,8 @@ class Summary(SQLModel, table=True):
 class Trade(SQLModel, table=True):
     __tablename__ = "trades"
     id: int | None = Field(default=None, primary_key=True)
-    run_number: int
+    run_number: int = Field(foreign_key="summary.id")
+    summary: "Summary" = Relationship()
     ticker: str
     strategy: str
     entry_day: int

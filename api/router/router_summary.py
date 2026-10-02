@@ -5,27 +5,25 @@ from api.router.dependencies import SummaryServiceDep
 router_summary = APIRouter(tags=["summary"])
 
 
-@router_summary.get("/summary/{backtest_run_number}")
-async def get_summary(backtest_run_number: int, summary_service: SummaryServiceDep):
+@router_summary.get("/summary/{id}")
+async def get_summary(id: int, summary_service: SummaryServiceDep):
 
-    summary = await summary_service.read(backtest_run_number)
+    summary = await summary_service.read(id)
     if summary:
         return summary
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Backtest run number {backtest_run_number} doesn't exist",
+        detail=f"Id number {id} doesn't exist",
     )
 
 
-@router_summary.delete("/summary/{backtest_run_number}")
-async def delete_summary(backtest_run_number: int, summary_service: SummaryServiceDep):
+@router_summary.delete("/summary/{id}")
+async def delete_summary(id: int, summary_service: SummaryServiceDep):
 
-    summary = await summary_service.delete(backtest_run_number)
+    summary = await summary_service.delete(id)
     if summary:
-        return {
-            "message": f"Summary with backtest run number {backtest_run_number} has been deleted"
-        }
+        return {"message": f"Summary with id number {id} has been deleted"}
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
-        detail=f"Backtest run number {backtest_run_number} doesn't exist",
+        detail=f"Id number {id} doesn't exist",
     )

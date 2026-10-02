@@ -17,11 +17,16 @@ router_backtest = APIRouter(tags=["backtest"])
 async def create_backtest(
     config: BacktestConfig, session: SessionDep
 ) -> dict[str, Any]:
-
-    # create state object
-    # which will serve as the engine parameter
-    # built from the Pydantic model body configuration
+    """Runs one backtest and saves everything it produced to the database.
+    Builds a state object from the config in the request body, pulls the ticker's
+    historical data, and runs the whole backtest once through the engine. Then it
+    takes the performance metrics, casts them to a Summary object and adds it to
+    the summary table, does the same for every log event and every trade the run
+    produced, and returns all three back in the response with their ids filled in
+    by the database.
+    """
     state = ExecutionState(**config.model_dump())
+
     ticker_df = hist_data(
         state.symbol, timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
     )
@@ -49,6 +54,7 @@ async def create_backtest(
     log_events_list_with_id = []
     for event in log_events_list:
         event["date"] = pd.to_datetime(event["date"]).date() if event["date"] else None
+        event["run_number"] = new_summary.id
         new_event = LogEvent(
             **event
         )  # cast the event dict to a LogEvent object so that sql can add it to the log_events table
@@ -66,9 +72,10 @@ async def create_backtest(
     trades_json_string = trades.to_json(orient="records")
     trades_list = json.loads(trades_json_string)
     trades_list_with_id = []
-    for event in trades_list:
+    for trade in trades_list:
+        trade["run_number"] = new_summary.id
         new_trade = Trade(
-            **event
+            **trade
         )  # cast the event dict to a Trade object so that sql can add it to the trades table
         session.add(new_trade)
         await session.commit()
