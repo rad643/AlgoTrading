@@ -21,6 +21,9 @@ python main.py
 # API
 uvicorn api.main:app --reload         # docs at http://127.0.0.1:8000/docs
 
+# Reset the dev database: wipes all rows, restarts summary.id at 1. Destructive — only when the user asks.
+psql -U postgres -d algo_trading_dev -c "TRUNCATE TABLE log_events, summary, trades RESTART IDENTITY CASCADE;"
+
 # Tests
 pytest -v tests/                                            # full suite (167 tests, all passing)
 pytest tests/api/                                           # API layer only (44 tests)
@@ -93,6 +96,60 @@ route. Either way the import blows up before any fixture runs.
 
 Tests that touch `ExperimentRunner.structured_data_outputs` or `hist_data` hit the live Alpaca
 API and need the root `.env` plus network access.
+
+## Alpaca historical bars reference
+
+`data_loading/data_loader.py::hist_data()` calls one endpoint:
+
+```
+GET https://data.alpaca.markets/v2/stocks/bars
+```
+
+Auth: headers `APCA-API-KEY-ID` and `APCA-API-SECRET-KEY`, built by `get_headers()` from the
+`APCA_API_KEY_ID` / `APCA_API_SECRET_KEY` env vars (root `.env`).
+
+Results are sorted by symbol first, then by bar timestamp. With several symbols and a `limit`,
+the first page may contain only one symbol; keep requesting with `next_page_token` until it is
+`null`. `hist_data()` does this loop.
+
+### Query params
+
+| Param | Type | Required | Default | Notes |
+|---|---|---|---|---|
+| `symbols` | string | yes | — | Comma-separated, e.g. `AAPL,TSLA` |
+| `timeframe` | string | yes | — | `[1-59]Min`/`T`, `[1-23]Hour`/`H`, `1Day`/`1D`, `1Week`/`1W`, `[1,2,3,4,6,12]Month`/`M` |
+| `start` | date-time | no | start of current day (≥15 min ago without real-time access) | Inclusive. RFC-3339 or `YYYY-MM-DD` |
+| `end` | date-time | no | now (or 15 min ago without real-time access) | Inclusive. RFC-3339 or `YYYY-MM-DD` |
+| `limit` | int 1–10000 | no | `1000` | Max data points **per page**, counted across **all symbols**, not per symbol. May return fewer |
+| `adjustment` | string | no | `raw` | `raw`, `split`, `dividend`, `spin-off`, `all`; combine with commas, e.g. `split,spin-off` |
+| `asof` | `YYYY-MM-DD` | no | today | Resolves symbol name changes (FB → META on 2022-06-09). `-` skips mapping |
+| `feed` | enum | no | `sip` | `sip` all US exchanges, `iex` Investors Exchange, `boats` Blue Ocean overnight, `otc` |
+| `currency` | ISO 4217 | no | `USD` | |
+| `page_token` | string | no | — | From the previous response's `next_page_token` |
+| `sort` | enum | no | `asc` | `asc` or `desc` |
+
+### Responses
+
+| Code | Meaning |
+|---|---|
+| 200 | OK |
+| 400 | A parameter is invalid; the body says which. **`start` after `end` is a 400** |
+| 401 | Auth headers missing or invalid |
+| 403 | Forbidden |
+| 429 | Rate limit; check the `X-RateLimit-*` headers |
+| 500 | Alpaca-side error; retry later |
+
+### What this project sends
+
+- `hist_data()` sends `symbols`, `timeframe`, `start`, `end`, `limit`, plus `page_token` when
+  paging. Nothing else, so `adjustment`, `feed`, `asof`, `currency`, `sort` are all Alpaca defaults.
+- `hist_data()`'s own defaults are `timeframe="15Min"`, `start=""`, `end=""`, `limit=1000`.
+  `/run_backtest` overrides them from `BacktestConfig`: `1Day`, `2024-01-16`, `2026-01-13`, `1000`.
+  The golden master and the API tests assume those four values.
+- `raise_for_status()` turns any non-2xx into `requests.exceptions.HTTPError`, which is what the
+  route currently surfaces as a 500.
+
+Docs: https://docs.alpaca.markets/reference/stockbars
 
 ## Architecture
 

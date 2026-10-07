@@ -167,6 +167,9 @@ The loader:
 6. converts timestamps to the `America/New_York` timezone; and
 7. returns a dictionary mapping each symbol to its DataFrame.
 
+The full query-parameter and response-code reference for this endpoint, plus what the
+project actually sends, is in `CLAUDE.md` under "Alpaca historical bars reference".
+
 ## Backend API
 
 The backend stack currently uses:
@@ -337,6 +340,14 @@ values without an `api/.env`.
 There is no migration tooling. Tables are created by `SQLModel.metadata.create_all`, which only
 creates tables that do not yet exist and never alters one that does, so a model change requires
 dropping and recreating the affected tables.
+
+To wipe all backtest rows and reset `summary.id` back to 1 (tables and schema are kept):
+
+```bash
+psql -U postgres -d algo_trading_dev -c "TRUNCATE TABLE log_events, summary, trades RESTART IDENTITY CASCADE;"
+```
+
+This is destructive and irreversible. Replace `algo_trading_dev` with your `POSTGRES_DB`.
 
 ## Running the Standalone Backtest
 

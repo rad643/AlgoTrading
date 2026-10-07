@@ -25,10 +25,11 @@ async def create_backtest(
     produced, and returns all three back in the response with their ids filled in
     by the database.
     """
-    state = ExecutionState(**config.model_dump())
-
+    state = ExecutionState(
+        **config.model_dump(exclude={"timeframe", "start", "end", "limit"})
+    )
     ticker_df = hist_data(
-        state.symbol, timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
+        state.symbol, config.timeframe, config.start, config.end, config.limit
     )
     engine = TradingEngine.backtest_run(
         state, ticker_df[state.symbol]
