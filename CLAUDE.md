@@ -25,10 +25,14 @@ uvicorn api.main:app --reload         # docs at http://127.0.0.1:8000/docs
 psql -U postgres -d algo_trading_dev -c "TRUNCATE TABLE log_events, summary, trades RESTART IDENTITY CASCADE;"
 
 # Tests
-pytest -v tests/                                            # full suite (167 tests, all passing)
-pytest tests/api/                                           # API layer only (44 tests)
-pytest tests/test_main.py                                   # one file (62 tests)
+pytest -v tests/                                            # full suite (168 passed, 1 deselected)
+pytest tests/api/                                           # API layer only (45 tests)
+pytest tests/test_main.py                                   # one file (61 tests)
 pytest tests/test_main.py::TestExecutionState::test_reset   # one test
+pytest -m heavy_test                                        # only the opt-in live Alpaca check
+
+# Re-record the golden master's input bars (one live Alpaca call, overwrites ohlcv.pkl)
+python -m tests.golden_masters.record_ohlcv_pickle
 
 # With coverage, exactly as CI runs it
 pytest -v --cov=main --cov=engine --cov=strategies --cov=data_loading --cov=metrics --cov=api tests/
@@ -94,8 +98,10 @@ just the file — CI relies on exactly that, injecting dummy `POSTGRES_*` values
 `ci.yaml` so `tests/api/` can import the app without an `api/.env`. Locally the file is the easy
 route. Either way the import blows up before any fixture runs.
 
-Tests that touch `ExperimentRunner.structured_data_outputs` or `hist_data` hit the live Alpaca
-API and need the root `.env` plus network access.
+The default test run makes **no** Alpaca calls: every test that reaches `hist_data` patches it or
+`fetch_bars_by_symbol`. The one live test, `tests/test_alpaca_live_bars.py`, is marked `heavy_test`
+and deselected by `pytest.ini` (`addopts = -m "not heavy_test"`); only it needs the root `.env` plus
+network access.
 
 ## Alpaca historical bars reference
 
@@ -148,6 +154,9 @@ the first page may contain only one symbol; keep requesting with `next_page_toke
   The golden master and the API tests assume those four values.
 - `raise_for_status()` turns any non-2xx into `requests.exceptions.HTTPError`, which is what the
   route currently surfaces as a 500.
+- A reversed window never reaches Alpaca through the API: `BacktestConfig.check_time_window()`
+  (`api/schemas/schemas.py`) rejects `start > end` with a **422**. It compares the strings, which is
+  only correct because both are `YYYY-MM-DD`.
 
 Docs: https://docs.alpaca.markets/reference/stockbars
 
@@ -260,12 +269,13 @@ This is intentional at the boundary — match whichever convention the file you 
 
 ## Test suite
 
-`pytest tests/` gives **167 passed, 0 failed** — 123 outside `api/` plus 44 in `tests/api/`. Every
-module in the project now has coverage, and CI runs all of it.
+`pytest tests/` gives **168 passed, 1 deselected** — 123 outside `api/` plus 45 in `tests/api/`;
+the deselected one is the opt-in `heavy_test`. Every module in the project has coverage, and CI runs
+all of it.
 
 | File | Tests | Covers |
 |---|---|---|
-| `tests/test_main.py` | 62 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation, `ExperimentRunner`, golden master |
+| `tests/test_main.py` | 61 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation, `ExperimentRunner` |
 | `tests/test_performance_metrics.py` | 29 | every function in `metrics/performance_metrics.py` |
 | `tests/test_data_loader.py` | 8 | `read_ticker_dataframe` and the Alpaca request/pagination helpers |
 | `tests/test_compute_average.py` | 5 | `averageUpToDay` |
@@ -274,6 +284,8 @@ module in the project now has coverage, and CI runs all of it.
 | `tests/test_process_1_day.py` | 3 | `process_one_day` branch routing and its two type/value guards |
 | `tests/test_trend_signal.py` | 3 | `trend_step` |
 | `tests/test_mean_reversion_signal.py` | 3 | `mean_rev_step` |
+| `tests/test_golden_master.py` | 1 | full pipeline output vs `results.txt`, fed from `ohlcv.pkl` |
+| `tests/test_alpaca_live_bars.py` | 1 | `heavy_test`, deselected by default: live Alpaca bars vs `ohlcv.pkl` |
 
 API layer — `tests/api/`, all offline against in-memory SQLite:
 
@@ -283,7 +295,7 @@ API layer — `tests/api/`, all offline against in-memory SQLite:
 | `tests/api/test_router_log_events.py` | 8 | log-event routes with a faked service |
 | `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
 | `tests/api/test_router_trades.py` | 8 | trade routes with a faked service |
-| `tests/api/test_router_backtest.py` | 4 | `/run_backtest` end to end, including run-identity wiring |
+| `tests/api/test_router_backtest.py` | 5 | `/run_backtest` end to end, run-identity wiring, 422 on a reversed window |
 | `tests/api/test_summary_service.py` | 4 | `SummaryService` (`session.get(Summary, id)`) |
 | `tests/api/test_router_summary.py` | 4 | summary routes with a faked service |
 
@@ -305,8 +317,7 @@ When writing an `expected` tuple for a signal test, remember the mocked helper's
 the caller's variables: `hold` returns `(position, cash, equity, pending_action)`, so slot 0 of the
 mock return is what lands in the 9-tuple, not the `positionTrend` you passed in.
 
-The golden master and the `ExperimentRunner` tests in `test_main.py` perform a live Alpaca fetch, so
-a clean run needs the root `.env` and network access. Everything else runs offline.
+Everything in the default run is offline. Only `pytest -m heavy_test` calls Alpaca.
 
 ### Two traps in `tests/api/`
 
@@ -334,22 +345,41 @@ starts at 0, stamps 1, matches by coincidence, and passes even with the bug rein
 
 ## Golden-master test
 
-`tests/test_main.py::TestTradingEngineBacktestRun` serializes every output DataFrame to CSV and
-compares it against `tests/golden_masters/results.txt` (~573 KB).
+`tests/test_golden_master.py::test_golden_master_backtest_run` serializes every output DataFrame to
+CSV and compares it against `tests/golden_masters/results.txt` (~573 KB).
 
-It runs a **live Alpaca fetch**, so it needs credentials and network. To regenerate after an
-intentional behaviour change, delete `results.txt` and run the test once — it writes the file and
-asserts nothing on that run. Never regenerate to make an unexplained diff go away; that is the only
-thing guarding the refactors against silent behavioural drift.
+It is **offline**. `ExperimentRunner.fetch_bars_by_symbol` is patched to return the bars pickled in
+`tests/golden_masters/ohlcv.pkl`, so the input is identical on every run. It zeroes
+`ExecutionState.backtest_run_number` itself and builds paths from its own folder, so it does not
+depend on test order or the working directory.
+
+Two files, two jobs — keep them apart:
+
+| File | Guards | Regenerate when |
+|---|---|---|
+| `ohlcv.pkl` | the **input** bars | Alpaca's data changed, or tickers/window changed: `python -m tests.golden_masters.record_ohlcv_pickle` |
+| `results.txt` | the **output** of the code | an intentional behaviour change: delete it and run the test once (it writes and asserts nothing) |
+
+`tests/test_alpaca_live_bars.py` (`pytest -m heavy_test`) fetches the same window live and compares
+it to `ohlcv.pkl`. If it fails, Alpaca changed, not the code: re-record `ohlcv.pkl`, then regenerate
+`results.txt`.
+
+Never regenerate either file to make an unexplained diff go away; the golden master is the only thing
+guarding the refactors against silent behavioural drift.
 
 ## Known rough edges
 
 Do not "fix" these incidentally — they are tracked work:
 
-- The backtest date window `start="2024-01-16", end="2026-01-13"` is hard-coded in **two** places:
-  `ExperimentRunner.fetch_bars_by_symbol()` and `router_backtest.py`. Moving it into config is planned.
-- `/run_backtest` commits and refreshes **once per row** inside its loops. Batching is planned. The
-  summary's own commit must stay ahead of the loops, though — that is what assigns `summary.id`.
+- The API now takes the window from `BacktestConfig` (`timeframe`, `start`, `end`, `limit`, defaults
+  `1Day` / `2024-01-16` / `2026-01-13` / `1000`). The same four values are still hard-coded in
+  `ExperimentRunner.fetch_bars_by_symbol()`, `tests/golden_masters/record_ohlcv_pickle.py` and
+  `tests/test_alpaca_live_bars.py`. Change one and the others, plus `ohlcv.pkl`, must follow.
+- `/run_backtest` commits twice: once for the `Summary` (that is what assigns `summary.id`), then once
+  for all trades and log events via `session.add_all`. The summary's commit must stay first.
+- `router_backtest.py` passes `exclude={"timeframe", "start", "end", "limit"}` to `model_dump()`
+  because `ExecutionState` has no such fields. Adding a fetch-only field to `BacktestConfig` means
+  adding it to that set too.
 - **There is no migration tooling.** `api/database/session.py` only calls `SQLModel.metadata.create_all`,
   which creates missing tables and never `ALTER`s an existing one. Any model change therefore has no
   effect on a live database until those tables are dropped and recreated, which destroys their rows.

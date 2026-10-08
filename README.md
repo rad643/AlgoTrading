@@ -4,7 +4,7 @@ A Python algorithmic-trading and backtesting platform for retrieving historical 
 
 The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **167 tests, all passing** — and CI runs it in full. Current work is focused on backend cleanup before building the frontend and deployment layers.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **168 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. Current work is focused on backend cleanup before building the frontend and deployment layers.
 
 ## Features
 
@@ -24,7 +24,8 @@ The project began as a small CSV-based backtester and has been progressively ref
 - SQLModel models with asynchronous PostgreSQL sessions
 - Read/delete API routes for summaries, trades, and log events
 - End-to-end `/run_backtest` route that runs a backtest and persists its outputs
-- Pytest + `unittest.mock` test coverage of every module, including the API layer and a golden-master regression test
+- Pytest + `unittest.mock` test coverage of every module, including the API layer and an offline golden-master regression test
+- Request validation: `/run_backtest` rejects a reversed date window with a 422
 - Async API tests against an in-memory SQLite database via FastAPI dependency overrides
 - Ruff linting and formatting checks
 - Mypy static type checking
@@ -209,7 +210,7 @@ to the summary of the run that produced it.
 | DELETE | `/log_event_id/{id}` | Delete a log event by database ID |
 | DELETE | `/log_events_backtest_run_number/{backtest_run_number}` | Delete all log events for one run |
 
-The current `/run_backtest` route builds an `ExecutionState` from the request body, fetches Alpaca data, executes the trading engine, calculates the run summary, and persists the summary, trades, and log events to PostgreSQL.
+The current `/run_backtest` route builds an `ExecutionState` from the request body, fetches Alpaca data for the request's `timeframe`, `start`, `end` and `limit` (defaults `1Day`, `2024-01-16`, `2026-01-13`, `1000`; a `start` after `end` is rejected with a 422), executes the trading engine, calculates the run summary, and persists the summary, trades, and log events to PostgreSQL.
 
 The summary is inserted first so that PostgreSQL assigns its `id`. That id is then written onto every
 trade and log event before they are inserted, which is what keeps the foreign keys pointing at the
@@ -252,14 +253,18 @@ AlgoTrading/
 ├── tests/
 │   ├── api/
 │   │   ├── conftest.py            # In-memory SQLite session fixture
-│   │   └── test_*.py              # 44 tests across 7 files
+│   │   └── test_*.py              # 45 tests across 7 files
 │   ├── golden_masters/
+│   │   ├── ohlcv.pkl              # Recorded Alpaca bars, the golden master's input
+│   │   ├── record_ohlcv_pickle.py # Re-records ohlcv.pkl (one live call)
+│   │   └── results.txt            # Golden-master expected output
 │   ├── conftest.py
-│   └── test_*.py                  # 123 tests across 9 files
+│   └── test_*.py                  # 123 tests across 10 files, plus 1 opt-in live test
 ├── .pre-commit-config.yaml        # Local quality hooks
 ├── conftest.py                    # Empty; marks the rootdir for pytest
 ├── main.py                        # Engine, aggregation, plotting, experiment runner
 ├── mypy.ini
+├── pytest.ini                     # Registers heavy_test and deselects it by default
 ├── requirements.txt               # Pinned Python dependencies
 └── README.md
 ```
@@ -309,8 +314,8 @@ APCA_API_SECRET_KEY=YOUR_SECRET_KEY
 
 The `.env` file is excluded by `.gitignore`. Never commit API credentials.
 
-CI needs the same two credentials, because the golden-master test performs a live Alpaca fetch. They
-are stored as GitHub repository secrets and injected as job-level `env` in `.github/workflows/ci.yaml`
+No test in the default run calls Alpaca, so the credentials are only needed for the standalone
+runner, the API, and the opt-in `pytest -m heavy_test` check. CI still has them, stored as GitHub repository secrets and injected as job-level `env` in `.github/workflows/ci.yaml`
 under these names:
 
 ```text
@@ -381,13 +386,14 @@ Run the full local test directory with:
 pytest -v tests/
 ```
 
-The suite currently contains **167 tests, all passing**, and covers every module in the project.
+The suite currently gives **168 passed, 1 deselected**, and covers every module in the project. The
+deselected test is the opt-in live Alpaca check described below.
 
 Engine, strategy, and data layers — 123 tests:
 
 | File | Tests | Area under test |
 |---|---|---|
-| `tests/test_main.py` | 62 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation layer, experiment runner, golden master |
+| `tests/test_main.py` | 61 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation layer, experiment runner |
 | `tests/test_performance_metrics.py` | 29 | Performance-metric functions |
 | `tests/test_data_loader.py` | 8 | Alpaca retrieval, pagination, and DataFrame preparation |
 | `tests/test_compute_average.py` | 5 | Cumulative moving average |
@@ -396,8 +402,9 @@ Engine, strategy, and data layers — 123 tests:
 | `tests/test_process_1_day.py` | 3 | Per-day strategy routing and input validation |
 | `tests/test_trend_signal.py` | 3 | Trend signal step |
 | `tests/test_mean_reversion_signal.py` | 3 | Mean Reversion signal step |
+| `tests/test_golden_master.py` | 1 | Full pipeline output against `results.txt` |
 
-API layer — 44 tests, all offline:
+API layer — 45 tests, all offline:
 
 | File | Tests | Area under test |
 |---|---|---|
@@ -405,7 +412,7 @@ API layer — 44 tests, all offline:
 | `tests/api/test_router_log_events.py` | 8 | Log-event routes with a faked service |
 | `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
 | `tests/api/test_router_trades.py` | 8 | Trade routes with a faked service |
-| `tests/api/test_router_backtest.py` | 4 | `/run_backtest` end to end, including run-identity wiring |
+| `tests/api/test_router_backtest.py` | 5 | `/run_backtest` end to end, run-identity wiring, reversed-window 422 |
 | `tests/api/test_summary_service.py` | 4 | `SummaryService` primary-key lookups |
 | `tests/api/test_router_summary.py` | 4 | Summary routes with a faked service |
 
@@ -427,7 +434,19 @@ The golden-master path is:
 tests/golden_masters/results.txt
 ```
 
-Because this test currently performs live Alpaca data retrieval, Alpaca environment variables must also be available in CI. The remaining tests run offline.
+The test runs offline: Alpaca is patched out and the bars come from `tests/golden_masters/ohlcv.pkl`, recorded once with:
+
+```bash
+python -m tests.golden_masters.record_ohlcv_pickle
+```
+
+A separate opt-in test checks that Alpaca still returns those same bars. It is marked `heavy_test`, which `pytest.ini` deselects by default:
+
+```bash
+pytest -m heavy_test
+```
+
+If it fails, Alpaca's data changed, not the code: re-record `ohlcv.pkl`, then delete `results.txt` and run the golden master once to save a new one.
 
 ## Code Quality and Continuous Integration
 
@@ -493,7 +512,9 @@ The pipeline is passing all of these stages.
 - Read/delete services for summaries, trades, and log events
 - Refactored `TradingEngine` helpers with unit tests
 - Complete unit coverage of both strategy packages — signal routing and execution arithmetic
-- Golden-master regression coverage
+- Offline golden-master regression coverage, plus an opt-in live check of the recorded bars
+- Backtest date window and bar limit configurable per request through `BacktestConfig`, with start/end validation
+- Batched persistence in `/run_backtest` — two commits per run instead of one per row
 - Database-assigned run identity, with `summary.id` as the foreign key on trades and log events
 - Full API test suite — routes with faked services, services against a real async session, and an end-to-end `/run_backtest` test
 - Test database/session dependency overrides against in-memory SQLite
@@ -505,8 +526,8 @@ The pipeline is passing all of these stages.
 
 ### Current work
 
-- Further API/database cleanup, including reducing per-row commit overhead
-- Moving hard-coded backtest date configuration into the request/configuration layer
+- Further API/database cleanup
+- Removing the date window still hard-coded in the standalone runner (`ExperimentRunner.fetch_bars_by_symbol`)
 - Aligning route naming — the summary routes use `{id}` while the trade and log-event routes still use `{backtest_run_number}`
 
 ### Planned
