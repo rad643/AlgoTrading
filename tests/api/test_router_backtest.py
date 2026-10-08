@@ -300,3 +300,20 @@ async def test_create_backtest_trend_branch(async_client):
         mock_ticker_df.assert_called_once_with(
             "AAPL", timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
         )
+
+
+@pytest.mark.anyio
+async def test_reversed_window(async_client):
+
+    client = async_client
+
+    config = {
+        "symbol": "AAPL",
+        "cashValue": 100,
+        "ticker_name": "Apple",
+        "start": "2026-01-16",
+    }
+    response = await client.post("/run_backtest", json=config)
+    assert response.status_code == 422
+    api_error_message_body = response.json()["detail"][0]["msg"]
+    assert api_error_message_body == "Value error, Start date must come before end"
