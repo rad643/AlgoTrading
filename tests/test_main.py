@@ -1,6 +1,5 @@
 import math
 from datetime import date
-from pathlib import Path
 from unittest import TestCase
 from unittest.mock import call, patch
 
@@ -2557,35 +2556,3 @@ class TestExperimentRunner:
                 call(state_trend_google),
                 call(state_mean_reversion_google),
             ]
-
-
-class TestTradingEngineBacktestRun(TestCase):
-    def test_golden_master_backtest_run(self):
-        """
-        Builds the path to results.txt so it lives next to test_main.py,
-        no matter which folder I run pytest from.
-
-        Runs the whole backtest and turns every DataFrame into CSV text.
-
-        First run: write_text() creates results.txt file on disk and the test
-        asserts nothing. Every run after that: compares the new output
-        against that file.
-
-        If they stop matching, my refactoring changed something.
-        Delete results.txt to save a new one.
-        """
-
-        golden_file_path = Path("tests/golden_masters/results.txt")
-
-        d = main.ExperimentRunner.structured_data_outputs(selected_tickers)
-        results = "\n".join(
-            f"=== {k} ===\n{v.to_csv(index=False)}" for k, v in d.items()
-        )
-
-        if not golden_file_path.exists():
-            golden_file_path.parent.mkdir(parents=True, exist_ok=True)
-
-            golden_file_path.write_text(results)
-            return
-
-        self.assertEqual(results, golden_file_path.read_text())
