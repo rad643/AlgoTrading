@@ -1,4 +1,5 @@
 import json
+import math
 from typing import Any, cast
 
 import pandas as pd
@@ -41,6 +42,9 @@ async def create_backtest(
         orient="records"
     )  # [] of dictionaries of the form {column: values of that column}
     summary_dict = cast(dict[str, Any], run_dict[0])
+    for k, v in summary_dict.items():
+        if type(v) == float and math.isnan(v):
+            summary_dict[k] = None
     new_summary = Summary(**summary_dict)
     session.add(new_summary)
     await session.commit()

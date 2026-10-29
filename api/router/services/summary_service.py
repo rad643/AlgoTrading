@@ -1,3 +1,4 @@
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from api.database.models import Summary
@@ -6,6 +7,11 @@ from api.database.models import Summary
 class SummaryService:
     def __init__(self, session: AsyncSession):
         self.session = session
+
+    async def read_all(self):
+        result = await self.session.exec(select(Summary))
+        summary = result.all()
+        return summary
 
     async def read(self, id: int):
         summary = await self.session.get(Summary, id)

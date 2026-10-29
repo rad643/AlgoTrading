@@ -30,10 +30,10 @@ class Summary(SQLModel, table=True):
     starting_cash: float
     total_net_profit: float
     mdd: float
-    expectancy: float
-    payoff_ratio: float
-    profit_factor: float
-    sharpe_ratio: float
+    expectancy: float | None
+    payoff_ratio: float | None
+    profit_factor: float | None
+    sharpe_ratio: float | None
     labels: str
 
 

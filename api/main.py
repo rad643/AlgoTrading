@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from rich import panel, print
 
 from api.database.session import create_database
@@ -25,6 +26,10 @@ async def lifespan_handler(app: FastAPI):
 
 # server booting starts here
 app = FastAPI(lifespan=lifespan_handler)
+
+origins = ["http://localhost:5173"]
+
+app.add_middleware(CORSMiddleware, allow_origins=origins)
 
 # run it through a separate API Router object
 app.include_router(router_backtest)
