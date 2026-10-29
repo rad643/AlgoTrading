@@ -5,6 +5,18 @@ from api.router.dependencies import SummaryServiceDep
 router_summary = APIRouter(tags=["summary"])
 
 
+@router_summary.get("/summary")
+async def summary(summary_service: SummaryServiceDep):
+
+    summary = await summary_service.read_all()
+    if summary:
+        return summary
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="The selected summary does not exist",
+    )
+
+
 @router_summary.get("/summary/{id}")
 async def get_summary(id: int, summary_service: SummaryServiceDep):
 
