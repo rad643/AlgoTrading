@@ -23,7 +23,7 @@ class TestExecutionState(TestCase):
     def test_post_init(self):
 
         self.assertEqual(self.state.startingCashValue, self.state.cashValue)
-        self.assertEqual(self.state.positionSizing, 0.2 * self.state.cashValue)
+        self.assertEqual(self.state.startingPositionSizing, self.state.positionSizing)
         self.assertEqual(self.state.equity, self.state.cashValue)
 
     def test_reset(self):
@@ -2052,25 +2052,12 @@ class TestAggregationLayer:
 
         assert str(excinfo.value) == "The selected run trade list is empty"
 
-    def test_ticker_strategy_validation(self):
-
-        ticker = "Tesla"
-
-        strategy = "Trend"
-
-        with pytest.raises(ValueError) as excinfo:
-            main.AggregationLayer.ticker_strategy_validation(ticker, strategy)
-
-        assert str(excinfo.value) == "This selected ticker does not exist"
-
-        ticker = "Apple"
+    def test_strategy_validation(self):
 
         strategy = "Momentum"
 
-        with pytest.raises(ValueError) as excinfo:
-            main.AggregationLayer.ticker_strategy_validation(ticker, strategy)
-
-        assert str(excinfo.value) == "This selected strategy does not exist"
+        with pytest.raises(ValueError):
+            main.AggregationLayer.strategy_validation(strategy)
 
     def test_aggregation_outputs(self, results_data_frames):
 
@@ -2174,20 +2161,10 @@ class TestExperimentRunner:
 
     def test_state(self):
 
-        symbol = "TSLA"
-        trendMethod = True
-
-        with pytest.raises(ValueError) as excinfo:
-            main.ExperimentRunner.state(symbol, trendMethod)
-
-        assert (
-            str(excinfo.value)
-            == f"The selected ticker {symbol} is not in the dictionary of selected companies"
-        )
-
         symbol = "AAPL"
+        trendMethod = True
         cashValue = 9875.67
-        ticker_name = "Apple"
+        ticker_name = "AAPL"
 
         expected = main.ExecutionState(trendMethod, symbol, cashValue, ticker_name)
 

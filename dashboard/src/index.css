@@ -1,3 +1,17 @@
+:root {
+  color-scheme: dark;
+  --bg: #0f1117;
+  --surface: #161a23;
+  --surface-hover: #1f2430;
+  --border: #2a2f3a;
+  --text: #e6e8ec;
+  --text-muted: #8b93a3;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --profit: #22c55e;
+  --loss: #ef4444;
+}
+
 *,
 *::before,
 *::after {
@@ -8,8 +22,8 @@ body {
   margin: 0;
   padding: 24px 32px;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color: #1a1a1a;
-  background: #ffffff;
+  color: var(--text);
+  background: var(--bg);
 }
 
 h1 {
@@ -20,15 +34,59 @@ h1 {
 
 button {
   font: inherit;
+  color: var(--text);
   padding: 6px 14px;
-  border: 1px solid #c8c8c8;
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: #ffffff;
+  background: var(--surface);
   cursor: pointer;
 }
 
 button:hover {
-  background: #f3f3f3;
+  background: var(--surface-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+div:has(> button + button) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+button + button {
+  font-size: 12px;
+  padding: 3px 7px;
+}
+
+div:has(> button + button) > button:first-child {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+div:has(> button + button) > button:first-child:hover:not(:disabled) {
+  background: var(--accent-hover);
 }
 
 table {
@@ -42,10 +100,152 @@ th,
 td {
   text-align: left;
   padding: 10px 12px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--border);
 }
 
 th {
   font-weight: 600;
-  color: #666666;
+  color: var(--text-muted);
+}
+
+tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.layout {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.results {
+  flex: 1;
+  min-width: 0;
+}
+
+.params-panel {
+  flex: 0 0 180px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.params-panel div:has(> button + button) {
+  align-items: stretch;
+  margin-top: 8px;
+}
+
+.params-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-muted);
+}
+
+.params-panel input {
+  width: 100%;
+}
+
+.params-panel button + button {
+  align-self: center;
+}
+
+.params-panel h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.result_summary h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.results > h1 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.result_summary > div:has(> table) {
+  max-height: 40vh;
+  overflow-y: auto;
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.result_summary table {
+  margin-top: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.result_summary th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.summary-table tbody tr {
+  cursor: pointer;
+}
+
+.summary-table th:nth-child(1), .summary-table td:nth-child(1),
+.summary-table th:nth-child(n+4):nth-child(-n+10),
+.summary-table td:nth-child(n+4):nth-child(-n+10),
+.log-table th:nth-child(-n+3), .log-table td:nth-child(-n+3),
+.log-table th:nth-child(n+9):nth-child(-n+13),
+.log-table td:nth-child(n+9):nth-child(-n+13) { text-align: right; }
+
+.profit { color: var(--profit); font-weight: 500; }
+.loss { color: var(--loss); font-weight: 500; }
+
+.trades-table th:nth-child(-n+2), .trades-table td:nth-child(-n+2),
+.trades-table th:nth-child(n+5):nth-child(-n+10),
+.trades-table td:nth-child(n+5):nth-child(-n+10),
+.trades-table th:nth-child(12), .trades-table td:nth-child(12) { text-align: right; }
+
+.params-panel label[data-prefix],
+.params-panel label[data-unit] {
+  position: relative;
+}
+
+.params-panel label[data-prefix]::before,
+.params-panel label[data-unit]::after {
+  position: absolute;
+  bottom: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.params-panel label[data-prefix]::before {
+  content: attr(data-prefix);
+  left: 9px;
+}
+
+.params-panel label[data-unit]::after {
+  content: attr(data-unit);
+  right: 9px;
+}
+
+.params-panel label[data-prefix] input {
+  padding-left: 20px;
+}
+
+.params-panel label[data-unit] input {
+  padding-right: 58px;
+}
+
+.params-panel label[data-unit]:has(select)::after {
+  right: 28px;
 }

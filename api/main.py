@@ -29,7 +29,11 @@ app = FastAPI(lifespan=lifespan_handler)
 
 origins = ["http://localhost:5173"]
 
-app.add_middleware(CORSMiddleware, allow_origins=origins)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=["*"],
+)
 
 # run it through a separate API Router object
 app.include_router(router_backtest)

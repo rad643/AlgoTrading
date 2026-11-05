@@ -4,7 +4,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from api.config import settings
 
-async_engine = create_async_engine(url=settings.url, echo=True)
+async_engine = create_async_engine(url=settings.url)
 
 async_session = async_sessionmaker(
     bind=async_engine, class_=AsyncSession, expire_on_commit=False

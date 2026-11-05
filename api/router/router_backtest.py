@@ -3,7 +3,7 @@ import math
 from typing import Any, cast
 
 import pandas as pd
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from api.database.models import LogEvent, Summary, Trade
 from api.router.dependencies import SessionDep
@@ -32,6 +32,12 @@ async def create_backtest(
     ticker_df = hist_data(
         state.symbol, config.timeframe, config.start, config.end, config.limit
     )
+    # if Alpaca sends no bars (doesn't have the ticker or no bars returned for the specified timeframe window) -> {}
+    if not ticker_df:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Alpaca has returned empty bars",
+        )
     engine = TradingEngine.backtest_run(
         state, ticker_df[state.symbol]
     )  # run the entire backtest once -> this is going to be your engine

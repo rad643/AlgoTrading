@@ -1,4 +1,5 @@
 aiosqlite==0.22.1
+alembic==1.20.1
 allpairspy==2.5.1
 annotated-doc==0.0.4
 annotated-types==0.7.0
@@ -40,6 +41,7 @@ iniconfig==2.3.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
 librt==0.15.0
+Mako==1.4.3
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 mdurl==0.1.2

@@ -317,3 +317,26 @@ async def test_reversed_window(async_client):
     assert response.status_code == 422
     api_error_message_body = response.json()["detail"][0]["msg"]
     assert api_error_message_body == "Value error, Start date must come before end"
+
+
+@pytest.mark.anyio
+async def test_empty_bars(async_client):
+
+    client = async_client
+
+    with patch.object(router_backtest, "hist_data", autospec=True) as mock_ticker_df:
+        mock_ticker_df.return_value = {}
+
+        config = {
+            "trendMethod": True,
+            "symbol": "XXXX",
+            "cashValue": 10000,
+            "ticker_name": "XXXX",
+        }
+        response = await client.post("/run_backtest", json=config)
+        assert response.status_code == 422
+        assert response.json()["detail"] == "Alpaca has returned empty bars"
+
+        mock_ticker_df.assert_called_once_with(
+            "XXXX", timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
+        )

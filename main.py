@@ -13,8 +13,6 @@ import data_loading.data_loader as dl
 from engine import process_1_day
 from metrics import performance_metrics
 
-COMPANY_NAMES = {"AAPL": "Apple", "GOOGL": "Google", "MSFT": "Microsoft"}
-
 selected_tickers = "AAPL,GOOGL,MSFT"
 
 
@@ -119,7 +117,7 @@ class ExecutionState:
     verbose_run: bool = False
     fixed_bps: float = 0.0005
     flat_fee_per_share: float = 0.005
-    positionSizing: float = 0
+    positionSizing: float = 0.2
     list_dictionaries_event_logs: list = dataclasses.field(default_factory=list)
     list_dictionaries_prices: list = dataclasses.field(default_factory=list)
     list_dictionaries_completed_trades: list = dataclasses.field(default_factory=list)
@@ -152,7 +150,7 @@ class ExecutionState:
 
     def __post_init__(self):
         self.startingCashValue = self.cashValue
-        self.positionSizing = self.cashValue * 0.2
+        self.startingPositionSizing = self.positionSizing
         self.equity = self.cashValue
 
     def reset(self):
@@ -161,7 +159,7 @@ class ExecutionState:
         self.list_dictionaries_prices = []
         self.listStoreEquityValues = []
         self.cashValue = self.startingCashValue
-        self.positionSizing = self.cashValue * 0.2
+        self.positionSizing = self.cashValue * self.startingPositionSizing
         self.equity = self.cashValue
         self.positionTrend = 0
         self.entry_day = 0
@@ -1593,7 +1591,7 @@ class AggregationLayer:
         """Picks out the run matching the ticker and strategy the user selected and returns it as a dictionary.
 
         Args:
-            ticker (str): Apple, Google or Microsoft.
+            ticker (str): ticker symbol of the run (e.g. "AAPL").
             strategy (str): Trend or Mean Reversion.
 
         Returns:
@@ -1603,7 +1601,7 @@ class AggregationLayer:
             ValueError: if the ticker or the strategy doesn't exist, or if no run matches that pair that the user selected.
         """
 
-        AggregationLayer.ticker_strategy_validation(ticker, strategy)
+        AggregationLayer.strategy_validation(strategy)
 
         selected_label = f"{ticker}-{strategy}"
 
@@ -1628,7 +1626,7 @@ class AggregationLayer:
         """Picks out all the completed trades belonging to the ticker and strategy the user selected.
 
         Args:
-            ticker (str): Apple, Google or Microsoft.
+            ticker (str): ticker symbol of the run (e.g. "AAPL").
             strategy (str): Trend or Mean Reversion.
 
         Returns:
@@ -1638,7 +1636,7 @@ class AggregationLayer:
             ValueError: if the ticker or the strategy doesn't exist, or if no trades match that pair.
         """
 
-        AggregationLayer.ticker_strategy_validation(ticker, strategy)
+        AggregationLayer.strategy_validation(strategy)
 
         selected_label = f"{ticker}-{strategy}"
 
@@ -1654,19 +1652,15 @@ class AggregationLayer:
         return boolean_index
 
     @staticmethod
-    def ticker_strategy_validation(ticker: str, strategy: str) -> None:
-        """Checks that the ticker and the strategy the user selected are ones the backtest actually ran.
+    def strategy_validation(strategy: str) -> None:
+        """Checks that the strategy the user selected is the one the backtest actually ran.
 
         Args:
-            ticker (str): Apple, Google or Microsoft.
             strategy (str): Trend or Mean Reversion.
 
         Raises:
-            ValueError: if the ticker isn't one of the three, or if the strategy isn't one of the two.
+            ValueError: if the strategy isn't one of the two.
         """
-
-        if ticker not in ["Apple", "Google", "Microsoft"]:
-            raise ValueError("This selected ticker does not exist")
 
         if strategy not in ["Trend", "Mean Reversion"]:
             raise ValueError("This selected strategy does not exist")
@@ -1678,7 +1672,7 @@ class AggregationLayer:
         selected run summary and selected run trade list.
 
         Args:
-            ticker (str): Apple, Google or Microsoft.
+            ticker (str): ticker symbol of the run (e.g. "AAPL").
             strategy (str): Trend or Mean Reversion.
 
         Returns:
@@ -1747,24 +1741,16 @@ class ExperimentRunner:
             trendMethod (bool): True = Trend strategy, False = Mean Reversion strategy
             cashValue (float, optional): starting cash for the run. Defaults to 10000.
 
-        Raises:
-            KeyError: if the symbol is not in the COMPANY_NAMES dictionary
-
         Returns:
             ExecutionState: 1 state object corresponding to 1 backtest run,
-            with ticker_name looked up from the COMPANY_NAMES dictionary
+            with ticker_name set to the symbol itself
         """
-
-        if symbol not in COMPANY_NAMES:
-            raise ValueError(
-                f"The selected ticker {symbol} is not in the dictionary of selected companies"
-            )
 
         return ExecutionState(
             trendMethod=trendMethod,
             symbol=symbol,
             cashValue=cashValue,
-            ticker_name=COMPANY_NAMES[symbol],
+            ticker_name=symbol,
         )
 
     @staticmethod
@@ -1871,7 +1857,7 @@ if __name__ == "__main__":
     plottedChart.user_interface_oriented_plotting_completed_trades()
     plottedChart.user_interface_oriented_plotting_log_events()
     plottedChart.user_interface_oriented_plotting_run_data_frame()
-    plottedChart.user_interface_oriented_plotting_price_chart("Apple", "Trend")
+    plottedChart.user_interface_oriented_plotting_price_chart("AAPL", "Trend")
 
     print(results["Final Data Frame Run"])
     print(results["Completed Trades"])
