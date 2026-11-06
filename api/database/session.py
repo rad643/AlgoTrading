@@ -11,6 +11,7 @@ async_session = async_sessionmaker(
 )
 
 
+# no longer called: kept for reference only, the schema is now managed by Alembic (migrations/)
 async def create_database():
     async with async_engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
