@@ -9,6 +9,9 @@ from sqlmodel import SQLModel
 
 from api.config import settings
 
+# imported only to register the tables on SQLModel.metadata, which autogenerate compares against
+from api.database import models  # noqa: F401
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
