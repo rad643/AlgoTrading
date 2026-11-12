@@ -52,3 +52,43 @@ class Trade(SQLModel, table=True):
     return_pct: float
     labels: str
     number_trades_took_place: int
+
+
+class Equities(SQLModel, table=True):
+    __tablename__ = "equities"
+    id: int | None = Field(default=None, primary_key=True)
+    day: int
+    run_number: int = Field(foreign_key="summary.id")
+    summary: "Summary" = Relationship()
+    ticker: str
+    strategy: str
+    equity: float
+    labels: str
+
+
+class Drawdowns(SQLModel, table=True):
+    __tablename__ = "drawdowns"
+    id: int | None = Field(default=None, primary_key=True)
+    day: int
+    run_number: int = Field(foreign_key="summary.id")
+    summary: "Summary" = Relationship()
+    ticker: str
+    strategy: str
+    equity: float
+    peak_so_far: float
+    drawdown: float
+    drawdown_pct: float
+    labels: str
+
+
+class Prices(SQLModel, table=True):
+    __tablename__ = "prices"
+    id: int | None = Field(default=None, primary_key=True)
+    day: int
+    date: datetime.date
+    run_number: int = Field(foreign_key="summary.id")
+    summary: "Summary" = Relationship()
+    ticker: str
+    strategy: str
+    closing_price: float
+    average: float | None

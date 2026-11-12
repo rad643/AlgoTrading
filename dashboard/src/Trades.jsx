@@ -55,8 +55,8 @@ function Table( {trades, tradeRowRunNumber} ){
 									<td>{tradeRow.entry_price}</td>
 									<td>{tradeRow.exit_day}</td>
 									<td>{tradeRow.exit_price}</td>
-									<td className={tradeRow.profit < 0 ? "loss" : tradeRow.profit > 0 ? "profit" : ""}>{tradeRow.profit}</td>
-									<td className={tradeRow.return_pct < 0 ? "loss" : tradeRow.return_pct > 0 ? "profit" : ""}>{tradeRow.return_pct}</td>
+									<td>{tradeRow.profit}</td>
+									<td>{tradeRow.return_pct}</td>
 									<td>{tradeRow.labels}</td>
 									<td>{tradeRow.number_trades_took_place}</td>
 

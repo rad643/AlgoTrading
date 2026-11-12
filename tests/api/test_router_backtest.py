@@ -11,7 +11,10 @@ from sqlmodel.pool import StaticPool
 from api.database.session import get_session
 from api.main import app
 from api.router import router_backtest
+from api.router.services.drawdown_services import DrawdownsService
+from api.router.services.equities_service import EquitiesService
 from api.router.services.log_events_service import LogEventsService
+from api.router.services.prices_service import PricesService
 from api.router.services.summary_service import SummaryService
 from api.router.services.trades_service import TradesService
 
@@ -203,6 +206,57 @@ async def test_create_backtest_mean_reversion_branch(async_client, async_session
         assert first_trade["number_trades_took_place"] == 1
         assert all(trade["id"] is not None for trade in trades_list_with_id)
 
+        equities_list_with_id = data["equities"]
+        assert len(equities_list_with_id) == 12
+        last_equity = equities_list_with_id[11]
+        assert last_equity["run_number"] == new_summary["id"]
+        assert last_equity["day"] == 12
+        assert last_equity["ticker"] == "Apple"
+        assert last_equity["strategy"] == "Mean Reversion"
+        assert last_equity["equity"] == 10058.01
+        assert last_equity["labels"] == "Apple-Mean Reversion"
+        assert all(equity["id"] is not None for equity in equities_list_with_id)
+        assert [equity["day"] for equity in equities_list_with_id] == list(range(1, 13))
+
+        drawdowns_list_with_id = data["drawdowns"]
+        assert len(drawdowns_list_with_id) == 12
+        last_drawdown = drawdowns_list_with_id[11]
+        assert last_drawdown["run_number"] == new_summary["id"]
+        assert last_drawdown["day"] == 12
+        assert last_drawdown["ticker"] == "Apple"
+        assert last_drawdown["strategy"] == "Mean Reversion"
+        assert last_drawdown["equity"] == 10058.01
+        assert last_drawdown["peak_so_far"] == 10058.01
+        assert last_drawdown["drawdown"] == 0.0
+        assert last_drawdown["drawdown_pct"] == 0.0
+        assert last_drawdown["labels"] == "Apple-Mean Reversion"
+        assert all(drawdown["id"] is not None for drawdown in drawdowns_list_with_id)
+        assert [drawdown["day"] for drawdown in drawdowns_list_with_id] == list(
+            range(1, 13)
+        )
+        # the deepest drawdown of the series is the summary's mdd, with the sign flipped
+        assert (
+            min(drawdown["drawdown_pct"] for drawdown in drawdowns_list_with_id)
+            == -new_summary["mdd"]
+        )
+
+        prices_list_with_id = data["prices"]
+        assert len(prices_list_with_id) == 12
+        first_price = prices_list_with_id[0]
+        # no running average yet on the two warm-up days
+        assert first_price["average"] is None
+        assert prices_list_with_id[1]["average"] is None
+        last_price = prices_list_with_id[11]
+        assert last_price["run_number"] == new_summary["id"]
+        assert last_price["day"] == 12
+        assert last_price["date"] == "2025-03-14"
+        assert last_price["ticker"] == "Apple"
+        assert last_price["strategy"] == "Mean Reversion"
+        assert last_price["closing_price"] == 92.0
+        assert last_price["average"] == 92.9090909090909
+        assert all(price["id"] is not None for price in prices_list_with_id)
+        assert [price["day"] for price in prices_list_with_id] == list(range(1, 13))
+
         mock_ticker_df.assert_called_once_with(
             "AAPL", timeframe="1Day", start="2024-01-16", end="2026-01-13", limit=1000
         )
@@ -224,6 +278,24 @@ async def test_create_backtest_mean_reversion_branch(async_client, async_session
             assert len(result) == len(trades_list_with_id)
             trade_2 = await trades_service.read_id(2)
             assert trade_2.model_dump(mode="json") == trades_list_with_id[1]
+
+            equities_service = EquitiesService(second_session)
+            result = await equities_service.read_run_number(new_summary["id"])
+            assert len(result) == len(equities_list_with_id)
+            equity_5 = await equities_service.read_id(5)
+            assert equity_5.model_dump(mode="json") == equities_list_with_id[4]
+
+            drawdowns_service = DrawdownsService(second_session)
+            result = await drawdowns_service.read_run_number(new_summary["id"])
+            assert len(result) == len(drawdowns_list_with_id)
+            drawdown_5 = await drawdowns_service.read_id(5)
+            assert drawdown_5.model_dump(mode="json") == drawdowns_list_with_id[4]
+
+            prices_service = PricesService(second_session)
+            result = await prices_service.read_run_number(new_summary["id"])
+            assert len(result) == len(prices_list_with_id)
+            price_5 = await prices_service.read_id(5)
+            assert price_5.model_dump(mode="json") == prices_list_with_id[4]
 
             mock_ticker_df.assert_called_once_with(
                 "AAPL",
@@ -295,6 +367,23 @@ async def test_create_backtest_trend_branch(async_client):
         trades_list_with_id = data["trades"]
         assert all(
             trade["run_number"] == new_summary["id"] for trade in trades_list_with_id
+        )
+
+        equities_list_with_id = data["equities"]
+        assert all(
+            equity["run_number"] == new_summary["id"]
+            for equity in equities_list_with_id
+        )
+
+        drawdowns_list_with_id = data["drawdowns"]
+        assert all(
+            drawdown["run_number"] == new_summary["id"]
+            for drawdown in drawdowns_list_with_id
+        )
+
+        prices_list_with_id = data["prices"]
+        assert all(
+            price["run_number"] == new_summary["id"] for price in prices_list_with_id
         )
 
         mock_ticker_df.assert_called_once_with(

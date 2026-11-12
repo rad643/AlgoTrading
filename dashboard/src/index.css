@@ -249,3 +249,21 @@ tbody tr:hover {
 .params-panel label[data-unit]:has(select)::after {
   right: 28px;
 }
+
+.price_chart,
+.equity_chart,
+.drawdown_series_chart {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.price_chart h1,
+.equity_chart h1,
+.drawdown_series_chart h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 4px 0 8px;
+}

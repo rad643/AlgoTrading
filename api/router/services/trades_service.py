@@ -1,4 +1,4 @@
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from api.database.models import Trade
@@ -14,7 +14,9 @@ class TradesService:
 
     async def read_run_number(self, backtest_run_number: int):
         result = await self.session.exec(
-            select(Trade).where(Trade.run_number == backtest_run_number)
+            select(Trade)
+            .where(Trade.run_number == backtest_run_number)
+            .order_by(col(Trade.id).asc())
         )
         trades = result.all()
         return trades

@@ -2,7 +2,7 @@ import { useState } from "react";
 
 
 
-function Summary ( {summaries, fetchLogEvents, fetchTrades} ) {
+function Summary ( {summaries, fetchLogEvents, fetchTrades, fetchEquities, fetchDrawdowns, fetchPrices} ) {
 
 		const [selectedTicker,setTicker]=useState("");
 
@@ -27,8 +27,11 @@ function Summary ( {summaries, fetchLogEvents, fetchTrades} ) {
 					/>
 
 					<Table filteredItems={filteredItems}
-								 fetchLogEvents={fetchLogEvents}
-								 fetchTrades={fetchTrades}
+						   fetchLogEvents={fetchLogEvents}
+						   fetchTrades={fetchTrades}
+						   fetchEquities={fetchEquities}
+						   fetchDrawdowns={fetchDrawdowns}
+					   fetchPrices={fetchPrices}
 					/>
 
 				</div>
@@ -41,7 +44,7 @@ function Summary ( {summaries, fetchLogEvents, fetchTrades} ) {
 
 
 
-function Table( {filteredItems, fetchLogEvents, fetchTrades} ){
+function Table( {filteredItems, fetchLogEvents, fetchTrades, fetchEquities, fetchDrawdowns, fetchPrices} ){
 
 	return(
 		<div>
@@ -73,6 +76,9 @@ function Table( {filteredItems, fetchLogEvents, fetchTrades} ){
 										onClick={ () => {
 											fetchLogEvents(summaryRow, indexRow);
 											fetchTrades(summaryRow, indexRow);
+											fetchEquities(summaryRow);
+											fetchDrawdowns(summaryRow);
+											fetchPrices(summaryRow);
 										} }
 								>
 

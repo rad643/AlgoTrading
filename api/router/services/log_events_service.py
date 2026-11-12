@@ -1,4 +1,4 @@
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from api.database.models import LogEvent
@@ -14,7 +14,9 @@ class LogEventsService:
 
     async def read_run_number(self, backtest_run_number: int):
         result = await self.session.exec(
-            select(LogEvent).where(LogEvent.run_number == backtest_run_number)
+            select(LogEvent)
+            .where(LogEvent.run_number == backtest_run_number)
+            .order_by(col(LogEvent.id).asc())
         )
         log_events = result.all()
         return log_events

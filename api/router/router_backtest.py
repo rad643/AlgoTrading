@@ -5,7 +5,7 @@ from typing import Any, cast
 import pandas as pd
 from fastapi import APIRouter, HTTPException, status
 
-from api.database.models import LogEvent, Summary, Trade
+from api.database.models import Drawdowns, Equities, LogEvent, Prices, Summary, Trade
 from api.router.dependencies import SessionDep
 from api.schemas.schemas import BacktestConfig
 from data_loading.data_loader import hist_data
@@ -56,6 +56,37 @@ async def create_backtest(
     await session.commit()
     await session.refresh(new_summary)
 
+    # compute the daily equities
+    daily_equities = engine["equity_curve"]
+    daily_equities_dict = cast(
+        list[dict[str, Any]], daily_equities.to_dict(orient="records")
+    )
+    daily_equities_with_id = []
+    for equity in daily_equities_dict:
+        equity["run_number"] = new_summary.id
+        new_equity = Equities(**equity)
+        daily_equities_with_id.append(new_equity)
+
+    # compute the drawdowns
+    drawdowns = engine["drawdown_series"]
+    drawdowns_dict = cast(list[dict[str, Any]], drawdowns.to_dict(orient="records"))
+    drawdowns_with_id = []
+    for drawdown in drawdowns_dict:
+        drawdown["run_number"] = new_summary.id
+        new_drawdown = Drawdowns(**drawdown)
+        drawdowns_with_id.append(new_drawdown)
+
+    # compute the daily prices (average is NaN on the two warm-up days -> None)
+    prices = engine["prices"]
+    prices_dict = cast(list[dict[str, Any]], prices.to_dict(orient="records"))
+    prices_with_id = []
+    for price in prices_dict:
+        if type(price["average"]) == float and math.isnan(price["average"]):
+            price["average"] = None
+        price["run_number"] = new_summary.id
+        new_price = Prices(**price)
+        prices_with_id.append(new_price)
+
     # compute the log events
     log_events = engine["log_events"]
     log_events_json_string = log_events.to_json(orient="records", date_format="iso")
@@ -77,11 +108,22 @@ async def create_backtest(
         new_trade = Trade(**trade)
         trades_list_with_id.append(new_trade)
 
-    session.add_all(log_events_list_with_id + trades_list_with_id)  # type: ignore [operator]
+    session.add_all(
+        [
+            *log_events_list_with_id,
+            *trades_list_with_id,
+            *daily_equities_with_id,
+            *drawdowns_with_id,
+            *prices_with_id,
+        ]
+    )
     await session.commit()
 
     return {
         "summary": new_summary,
         "log_events": log_events_list_with_id,
         "trades": trades_list_with_id,
+        "equities": daily_equities_with_id,
+        "drawdowns": drawdowns_with_id,
+        "prices": prices_with_id,
     }
