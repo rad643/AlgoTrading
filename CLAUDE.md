@@ -21,12 +21,19 @@ python main.py
 # API
 uvicorn api.main:app --reload         # docs at http://127.0.0.1:8000/docs
 
+# React dashboard (needs the API running) — view at http://127.0.0.1:5173/
+cd dashboard && npm run dev
+
 # Reset the dev database: wipes all rows, restarts summary.id at 1. Destructive — only when the user asks.
 psql -U postgres -d algo_trading_dev -c "TRUNCATE TABLE log_events, summary, trades RESTART IDENTITY CASCADE;"
 
+# Schema migrations (Alembic): generate from models.py, read the file in migrations/versions/, then apply
+alembic revision --autogenerate -m "describe the change"
+alembic upgrade head
+
 # Tests
-pytest -v tests/                                            # full suite (168 passed, 1 deselected)
-pytest tests/api/                                           # API layer only (45 tests)
+pytest -v tests/                                            # full suite (169 passed, 1 deselected)
+pytest tests/api/                                           # API layer only (46 tests)
 pytest tests/test_main.py                                   # one file (61 tests)
 pytest tests/test_main.py::TestExecutionState::test_reset   # one test
 pytest -m heavy_test                                        # only the opt-in live Alpaca check
@@ -80,9 +87,9 @@ Ruff and mypy have no config beyond `mypy.ini` (`explicit_package_bases = True`)
 
 They disagree about `legacy/`. Ruff's `respect-gitignore` defaults to true and its gitignore matcher
 never consults the git index, so the `legacy/` entry in `.gitignore` takes that directory out of
-`ruff check .` entirely (54 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
+`ruff check .` entirely (59 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
 that directory's 5 modules plus other gitignored scratch files). Mypy has no such behaviour and
-still type-checks all of it — `mypy . --exclude=.venv` reports 59 source files. So `legacy/` must
+still type-checks all of it — `mypy . --exclude=.venv` reports 64 source files. So `legacy/` must
 keep passing **mypy** but is no longer linted or format-checked.
 
 ## Environment
@@ -154,6 +161,9 @@ the first page may contain only one symbol; keep requesting with `next_page_toke
   The golden master and the API tests assume those four values.
 - `raise_for_status()` turns any non-2xx into `requests.exceptions.HTTPError`, which is what the
   route currently surfaces as a 500.
+- An empty response (unknown ticker, or no bars in the window) is not an HTTP error: Alpaca returns
+  `"bars": {}` with a 200, so `hist_data()` returns `{}`. `/run_backtest` checks for that and raises
+  `HTTPException` **422** with detail `"Alpaca has returned empty bars"`.
 - A reversed window never reaches Alpaca through the API: `BacktestConfig.check_time_window()`
   (`api/schemas/schemas.py`) rejects `start > end` with a **422**. It compares the strings, which is
   only correct because both are `YYYY-MM-DD`.
@@ -269,7 +279,7 @@ This is intentional at the boundary — match whichever convention the file you 
 
 ## Test suite
 
-`pytest tests/` gives **168 passed, 1 deselected** — 123 outside `api/` plus 45 in `tests/api/`;
+`pytest tests/` gives **169 passed, 1 deselected** — 123 outside `api/` plus 46 in `tests/api/`;
 the deselected one is the opt-in `heavy_test`. Every module in the project has coverage, and CI runs
 all of it.
 
@@ -295,7 +305,7 @@ API layer — `tests/api/`, all offline against in-memory SQLite:
 | `tests/api/test_router_log_events.py` | 8 | log-event routes with a faked service |
 | `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
 | `tests/api/test_router_trades.py` | 8 | trade routes with a faked service |
-| `tests/api/test_router_backtest.py` | 5 | `/run_backtest` end to end, run-identity wiring, 422 on a reversed window |
+| `tests/api/test_router_backtest.py` | 6 | `/run_backtest` end to end, run-identity wiring, 422 on a reversed window and on empty bars |
 | `tests/api/test_summary_service.py` | 4 | `SummaryService` (`session.get(Summary, id)`) |
 | `tests/api/test_router_summary.py` | 4 | summary routes with a faked service |
 
@@ -380,12 +390,24 @@ Do not "fix" these incidentally — they are tracked work:
 - `router_backtest.py` passes `exclude={"timeframe", "start", "end", "limit"}` to `model_dump()`
   because `ExecutionState` has no such fields. Adding a fetch-only field to `BacktestConfig` means
   adding it to that set too.
-- **There is no migration tooling.** `api/database/session.py` only calls `SQLModel.metadata.create_all`,
-  which creates missing tables and never `ALTER`s an existing one. Any model change therefore has no
-  effect on a live database until those tables are dropped and recreated, which destroys their rows.
-  Adding Alembic is the real fix.
-- Tradeable tickers are whitelisted in `COMPANY_NAMES` (`main.py`); `ExperimentRunner.state()`
-  raises `ValueError` for anything else. Adding a ticker means adding it there.
+- **The schema is owned by Alembic (`migrations/`), not by the app.** FastAPI no longer creates tables
+  at startup: the lifespan handler calling `SQLModel.metadata.create_all` is gone, and
+  `create_database()` in `api/database/session.py` is kept, uncalled, for reference only.
+  `create_all` only creates missing tables and never `ALTER`s an existing one, which is why the
+  `summary` metric columns stayed `NOT NULL` in Postgres after `models.py` made them optional.
+  Alembic is a separate CLI step: `alembic revision --autogenerate` makes `migrations/env.py` compare
+  `SQLModel.metadata` against the live database and *writes* a migration (`upgrade()`/`downgrade()`)
+  into `migrations/versions/`; `alembic upgrade head` is what actually applies it. Three things this
+  depends on:
+  - `env.py` imports `api.database.models` with `# noqa: F401` — it is only there to register the
+    tables on the metadata. `ruff --fix` once deleted it, and autogenerate then saw empty metadata
+    and proposed dropping every table.
+  - `script.py.mako` imports `sqlmodel`, because autogenerate writes `str` columns as
+    `sqlmodel.sql.sqltypes.AutoString()`.
+  - There is a single initial revision, `fd940e1cdfa5`, that creates all three tables, so
+    `upgrade head` works on an empty database. Never base a migration on tables that an earlier
+    revision does not create.
+  So far Alembic has only done schema migrations, no data migrations.
 - **Route naming is now inconsistent.** The summary router moved to `/summary/{id}`, but the trades
   and log-events routers still read `/trades_backtest_run_number/{backtest_run_number}` and
   `/log_events_backtest_run_number/{backtest_run_number}`, with matching

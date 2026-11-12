@@ -4,7 +4,7 @@ A Python algorithmic-trading and backtesting platform for retrieving historical 
 
 The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **168 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. Current work is focused on backend cleanup before building the frontend and deployment layers.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **169 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live and implemented, with 2 charts left, before proceeding onto deployment.
 
 ## Features
 
@@ -25,12 +25,15 @@ The project began as a small CSV-based backtester and has been progressively ref
 - Read/delete API routes for summaries, trades, and log events
 - End-to-end `/run_backtest` route that runs a backtest and persists its outputs
 - Pytest + `unittest.mock` test coverage of every module, including the API layer and an offline golden-master regression test
-- Request validation: `/run_backtest` rejects a reversed date window with a 422
+- Request validation: `/run_backtest` rejects a reversed date window with a 422 or when alpaca returns no bars 
 - Async API tests against an in-memory SQLite database via FastAPI dependency overrides
 - Ruff linting and formatting checks
 - Mypy static type checking
 - Pre-commit quality checks
 - GitHub Actions continuous integration
+- Alembic schema migrations
+- React dashboard
+- Slippage, commission and position sizing are now configurable from the API and dashboard.
 
 ## Strategies
 
@@ -61,7 +64,7 @@ The engine models several execution constraints rather than assuming fills occur
 - Default slippage: `0.05%` (`0.0005`).
 - Default commission: `$0.005` per share on entry and exit.
 - Position sizing defaults to `20%` of available starting capital.
-- No pyramiding is used; a sell liquidates the full position.
+- No pyramiding: a buy signal while a position is open is ignored; a sell liquidates the full position.
 - Equity is marked to market using the current closing price.
 
 ## Architecture
@@ -70,7 +73,7 @@ The engine models several execution constraints rather than assuming fills occur
 
 `ExecutionState` is the dataclass that owns the configuration and mutable state for a single backtest run. It stores information such as:
 
-- ticker and company name;
+- ticker;
 - strategy selection;
 - starting/current cash;
 - current position;
@@ -182,7 +185,7 @@ The backend stack currently uses:
 - PostgreSQL
 - Pydantic Settings
 
-Database tables are created during the FastAPI lifespan startup handler.
+The database schema is managed by Alembic (`migrations/`), not created at application startup. See "Database Migrations" below.
 
 ### Database Tables
 
@@ -225,7 +228,7 @@ AlgoTrading/
 │   └── workflows/
 │       └── ci.yaml                # GitHub Actions pipeline
 ├── api/
-│   ├── main.py                    # FastAPI application and lifespan handler
+│   ├── main.py                    # FastAPI application and CORS
 │   ├── config.py                  # PostgreSQL settings
 │   ├── database/
 │   │   ├── models.py              # SQLModel tables
@@ -239,6 +242,14 @@ AlgoTrading/
 │   │   └── services/              # Async database service classes
 │   └── schemas/
 │       └── schemas.py             # Pydantic request models
+├── dashboard/                     # Vite + React frontend
+│   └── src/
+│       ├── Dashboard.jsx          # Page layout, state, API fetches
+│       ├── BacktestParameters.jsx # Parameter panel, POSTs /run_backtest
+│       ├── Summary.jsx            # Runs table with ticker filter
+│       ├── LogEvents.jsx          # Log events of the selected run
+│       ├── Trades.jsx             # Trades of the selected run
+│       └── index.css              # Dark theme and table layout
 ├── data_loading/
 │   ├── compute_average.py         # Cumulative-average calculation
 │   └── data_loader.py             # Alpaca data retrieval/preparation
@@ -247,13 +258,16 @@ AlgoTrading/
 ├── legacy/                        # Earlier implementation retained for reference
 ├── metrics/
 │   └── performance_metrics.py     # Performance-metric functions
+├── migrations/
+│   ├── env.py                     # Alembic environment, reads the URL from api.config
+│   └── versions/                  # Migration scripts
 ├── strategies/
 │   ├── mean_reversion/
 │   └── trend/
 ├── tests/
 │   ├── api/
 │   │   ├── conftest.py            # In-memory SQLite session fixture
-│   │   └── test_*.py              # 45 tests across 7 files
+│   │   └── test_*.py              # 46 tests across 7 files
 │   ├── golden_masters/
 │   │   ├── ohlcv.pkl              # Recorded Alpaca bars, the golden master's input
 │   │   ├── record_ohlcv_pickle.py # Re-records ohlcv.pkl (one live call)
@@ -261,6 +275,7 @@ AlgoTrading/
 │   ├── conftest.py
 │   └── test_*.py                  # 123 tests across 10 files, plus 1 opt-in live test
 ├── .pre-commit-config.yaml        # Local quality hooks
+├── alembic.ini                    # Alembic config (URL is set in migrations/env.py)
 ├── conftest.py                    # Empty; marks the rootdir for pytest
 ├── main.py                        # Engine, aggregation, plotting, experiment runner
 ├── mypy.ini
@@ -342,9 +357,30 @@ resolvable before anything under `api/` can be imported — including by the tes
 Settings accepts plain environment variables as well as the file, which is how CI supplies dummy
 values without an `api/.env`.
 
-There is no migration tooling. Tables are created by `SQLModel.metadata.create_all`, which only
-creates tables that do not yet exist and never alters one that does, so a model change requires
-dropping and recreating the affected tables.
+### Database Migrations
+
+Schema changes are applied with Alembic, so a model change no longer means dropping tables and
+losing their rows. `SQLModel.metadata.create_all` only creates missing tables and never alters an
+existing one, which is why it was replaced.
+
+- `migrations/env.py` reads the database URL from `api.config.settings`, so no credentials are
+  stored in `alembic.ini`.
+- `env.py` imports `api.database.models` only to register the tables on `SQLModel.metadata`, which
+  autogenerate compares against the live database. The import is marked `# noqa: F401` so Ruff
+  does not remove it.
+- `migrations/script.py.mako` imports `sqlmodel`, because autogenerate writes `str` columns as
+  `sqlmodel.sql.sqltypes.AutoString()`.
+- The initial revision, `fd940e1cdfa5`, creates `summary`, `log_events` and `trades` from
+  `models.py`, so `alembic upgrade head` builds the full schema on an empty database.
+
+```bash
+alembic revision --autogenerate -m "describe the change"   # generate a migration from models.py
+alembic upgrade head                                       # apply pending migrations
+alembic current                                            # revision the database is at
+alembic check                                              # fails if models.py and the database differ
+```
+
+Always read the generated file in `migrations/versions/` before running `alembic upgrade head`.
 
 To wipe all backtest rows and reset `summary.id` back to 1 (tables and schema are kept):
 
@@ -378,6 +414,28 @@ FastAPI's interactive Swagger documentation is then available at:
 http://127.0.0.1:8000/docs
 ```
 
+## React Dashboard
+
+`dashboard/` is a Vite + React app that runs backtests through the API and displays the stored
+results. It calls the API at `http://localhost:8000`; the API's CORS settings allow
+`http://localhost:5173`, Vite's default dev address.
+
+- Parameter panel: ticker, strategy, starting cash, slippage, commission and position size, posted
+  to `/run_backtest`
+- Summary table of runs, filterable by ticker, with green/red net profit
+- Clicking a run loads its log events and trades
+- Dark theme, right-aligned tabular numbers, profit/loss colouring
+
+With the API running:
+
+```bash
+cd dashboard
+npm install
+npm run dev
+```
+
+Still to come: an equity-curve chart and a drawdown/metrics-comparison chart.
+
 ## Testing
 
 Run the full local test directory with:
@@ -386,7 +444,7 @@ Run the full local test directory with:
 pytest -v tests/
 ```
 
-The suite currently gives **168 passed, 1 deselected**, and covers every module in the project. The
+The suite currently gives **169 passed, 1 deselected**, and covers every module in the project. The
 deselected test is the opt-in live Alpaca check described below.
 
 Engine, strategy, and data layers — 123 tests:
@@ -404,7 +462,7 @@ Engine, strategy, and data layers — 123 tests:
 | `tests/test_mean_reversion_signal.py` | 3 | Mean Reversion signal step |
 | `tests/test_golden_master.py` | 1 | Full pipeline output against `results.txt` |
 
-API layer — 45 tests, all offline:
+API layer — 46 tests, all offline:
 
 | File | Tests | Area under test |
 |---|---|---|
@@ -412,7 +470,7 @@ API layer — 45 tests, all offline:
 | `tests/api/test_router_log_events.py` | 8 | Log-event routes with a faked service |
 | `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
 | `tests/api/test_router_trades.py` | 8 | Trade routes with a faked service |
-| `tests/api/test_router_backtest.py` | 5 | `/run_backtest` end to end, run-identity wiring, reversed-window 422 |
+| `tests/api/test_router_backtest.py` | 6 | `/run_backtest` end to end, run-identity wiring, reversed-window and empty-bars 422 |
 | `tests/api/test_summary_service.py` | 4 | `SummaryService` primary-key lookups |
 | `tests/api/test_router_summary.py` | 4 | Summary routes with a faked service |
 
@@ -523,17 +581,18 @@ The pipeline is passing all of these stages.
 - Mypy type checking
 - Pre-commit hooks
 - GitHub Actions pipeline running the full test suite
+- Alembic schema migrations
+- React dashboard — parameter panel, run summaries, log events and trades per run
 
 ### Current work
 
+- Dashboard equity-curve and drawdown/metrics-comparison charts
 - Further API/database cleanup
 - Removing the date window still hard-coded in the standalone runner (`ExperimentRunner.fetch_bars_by_symbol`)
 - Aligning route naming — the summary routes use `{id}` while the trade and log-event routes still use `{backtest_run_number}`
 
 ### Planned
 
-- Database migrations (Alembic) so model changes no longer require dropping tables
-- React frontend/dashboard
 - Dockerised application/deployment
 - Broader CI/CD workflow
 - Live Alpaca websocket market-data integration
