@@ -25,15 +25,15 @@ uvicorn api.main:app --reload         # docs at http://127.0.0.1:8000/docs
 cd dashboard && npm run dev
 
 # Reset the dev database: wipes all rows, restarts summary.id at 1. Destructive — only when the user asks.
-psql -U postgres -d algo_trading_dev -c "TRUNCATE TABLE log_events, summary, trades RESTART IDENTITY CASCADE;"
+psql -U postgres -d algo_trading_dev -c "TRUNCATE TABLE log_events, summary, trades, equities, drawdowns, prices RESTART IDENTITY CASCADE;"
 
 # Schema migrations (Alembic): generate from models.py, read the file in migrations/versions/, then apply
 alembic revision --autogenerate -m "describe the change"
 alembic upgrade head
 
 # Tests
-pytest -v tests/                                            # full suite (169 passed, 1 deselected)
-pytest tests/api/                                           # API layer only (46 tests)
+pytest -v tests/                                            # full suite (217 passed, 1 deselected)
+pytest tests/api/                                           # API layer only (94 tests)
 pytest tests/test_main.py                                   # one file (61 tests)
 pytest tests/test_main.py::TestExecutionState::test_reset   # one test
 pytest -m heavy_test                                        # only the opt-in live Alpaca check
@@ -87,9 +87,9 @@ Ruff and mypy have no config beyond `mypy.ini` (`explicit_package_bases = True`)
 
 They disagree about `legacy/`. Ruff's `respect-gitignore` defaults to true and its gitignore matcher
 never consults the git index, so the `legacy/` entry in `.gitignore` takes that directory out of
-`ruff check .` entirely (59 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
+`ruff check .` entirely (71 files seen, 0 of them in `legacy/`; `--no-respect-gitignore` pulls in
 that directory's 5 modules plus other gitignored scratch files). Mypy has no such behaviour and
-still type-checks all of it — `mypy . --exclude=.venv` reports 64 source files. So `legacy/` must
+still type-checks all of it — `mypy . --exclude=.venv` reports 76 source files. So `legacy/` must
 keep passing **mypy** but is no longer linted or format-checked.
 
 ## Environment
@@ -188,7 +188,7 @@ nothing returns a new state. `backtest_run()` calls `state.reset()` first so one
 
 `backtest_run_number` is a **class variable**, not a field — a counter shared by every instance,
 incremented once per `backtest_run()`. It becomes the `run_number` column in the log-event, trade,
-equity-curve and drawdown frames. Tests must zero it before and after (see the `state_backtest_run`
+equity-curve, drawdown and prices frames. Tests must zero it before and after (see the `state_backtest_run`
 fixture in `tests/conftest.py`), or run ordering leaks into the golden master.
 
 It is **not** the API's lookup key. The counter is a process-local run *label* only: it resets to 0
@@ -214,6 +214,11 @@ offset is the core of the execution model — preserve it in any engine change.
 Summary(**summary_dict)  # from TradingEngine.performance_metrics_data_frame
 LogEvent(**event)  # from build_log_events_data_frame
 Trade(**event)  # from build_trades_data_frame
+Equities(**equity)  # from build_equity_curve_data_frame
+Drawdowns(**drawdown)  # from build_drawdown_series_data_frame
+Prices(
+    **price
+)  # from build_prices_data_frame; it also converts the average price to None if it comes in as Nan ( the conversion happens in router_backtest.py )
 ```
 
 **Renaming or adding a column in `main.py` silently breaks `/run_backtest` at runtime** — mypy will
@@ -233,7 +238,7 @@ misspelled or removed field passes construction and only shows up as missing dat
 ### Run identity
 
 `summary.id` is the identity of a backtest run. `Summary` has **no** `run_number` column;
-`LogEvent.run_number` and `Trade.run_number` are `Field(foreign_key="summary.id")`.
+`LogEvent.run_number`, `Trade.run_number`, `Equities.run_number`, `Drawdowns.run_number` and `Prices.run_number` are `Field(foreign_key="summary.id")`.
 
 Two different things therefore produce run numbers, and they must not be confused:
 
@@ -279,7 +284,7 @@ This is intentional at the boundary — match whichever convention the file you 
 
 ## Test suite
 
-`pytest tests/` gives **169 passed, 1 deselected** — 123 outside `api/` plus 46 in `tests/api/`;
+`pytest tests/` gives **217 passed, 1 deselected** — 123 outside `api/` plus 94 in `tests/api/`;
 the deselected one is the opt-in `heavy_test`. Every module in the project has coverage, and CI runs
 all of it.
 
@@ -305,6 +310,12 @@ API layer — `tests/api/`, all offline against in-memory SQLite:
 | `tests/api/test_router_log_events.py` | 8 | log-event routes with a faked service |
 | `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
 | `tests/api/test_router_trades.py` | 8 | trade routes with a faked service |
+| `tests/api/test_equities_service.py` | 8 | `EquitiesService` against a real session |
+| `tests/api/test_router_equities.py` | 8 | equity routes with a faked service |
+| `tests/api/test_drawdown_service.py` | 8 | `DrawdownsService` against a real session |
+| `tests/api/test_router_drawdown.py` | 8 | drawdown routes with a faked service |
+| `tests/api/test_prices_service.py` | 8 | `PricesService` against a real session |
+| `tests/api/test_router_prices.py` | 8 | price routes with a faked service |
 | `tests/api/test_router_backtest.py` | 6 | `/run_backtest` end to end, run-identity wiring, 422 on a reversed window and on empty bars |
 | `tests/api/test_summary_service.py` | 4 | `SummaryService` (`session.get(Summary, id)`) |
 | `tests/api/test_router_summary.py` | 4 | summary routes with a faked service |
@@ -386,7 +397,7 @@ Do not "fix" these incidentally — they are tracked work:
   `ExperimentRunner.fetch_bars_by_symbol()`, `tests/golden_masters/record_ohlcv_pickle.py` and
   `tests/test_alpaca_live_bars.py`. Change one and the others, plus `ohlcv.pkl`, must follow.
 - `/run_backtest` commits twice: once for the `Summary` (that is what assigns `summary.id`), then once
-  for all trades and log events via `session.add_all`. The summary's commit must stay first.
+  for all trades, log events, equities, drawdowns and prices via `session.add_all`. The summary's commit must stay first.
 - `router_backtest.py` passes `exclude={"timeframe", "start", "end", "limit"}` to `model_dump()`
   because `ExecutionState` has no such fields. Adding a fetch-only field to `BacktestConfig` means
   adding it to that set too.
@@ -404,16 +415,11 @@ Do not "fix" these incidentally — they are tracked work:
     and proposed dropping every table.
   - `script.py.mako` imports `sqlmodel`, because autogenerate writes `str` columns as
     `sqlmodel.sql.sqltypes.AutoString()`.
-  - There is a single initial revision, `fd940e1cdfa5`, that creates all three tables, so
+  - There is a single initial revision, `9bf48830f47f`, that creates all six tables, so
     `upgrade head` works on an empty database. Never base a migration on tables that an earlier
     revision does not create.
   So far Alembic has only done schema migrations, no data migrations.
-- **Route naming is now inconsistent.** The summary router moved to `/summary/{id}`, but the trades
-  and log-events routers still read `/trades_backtest_run_number/{backtest_run_number}` and
-  `/log_events_backtest_run_number/{backtest_run_number}`, with matching
-  `read_run_number`/`delete_run_number` service methods. Those children do still have a `run_number`
-  column, so the names are not *wrong* — but the same number is called `id` on one route and
-  `backtest_run_number` on another, which is confusing in `/docs`.
+  - The summary router moved to `/summary/{id}`; the trades, log_events, equities, drawdowns, prices read `/trades_backtest_run_number/{backtest_run_number}`, `/log_events_backtest_run_number/{backtest_run_number}`, `/equities_backtest_run_number/{backtest_run_number}` , `/drawdowns_backtest_run_number/{backtest_run_number}`, `/prices_backtest_run_number/{backtest_run_number}` with matching `read_run_number`/`delete_run_number` service methods. Those children do still have a `run_number` column.
 - `legacy/` holds the earlier SQLite implementation, kept on disk for reference only. It is untracked
   and gitignored, and not imported by live code. Mypy still type-checks it, so it must keep passing
   `mypy .`; ruff skips it (see "Commands" above).

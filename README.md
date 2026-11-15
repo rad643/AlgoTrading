@@ -4,7 +4,7 @@ A Python algorithmic-trading and backtesting platform for retrieving historical 
 
 The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **169 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live and implemented, with 2 charts left, before proceeding onto deployment.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **217 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live and with 3 charts implemented, before proceeding onto deployment.
 
 ## Features
 
@@ -18,11 +18,10 @@ The project began as a small CSV-based backtester and has been progressively ref
 - Performance metrics including Sharpe ratio and maximum drawdown
 - Multi-ticker / multi-strategy experiment runner
 - Structured pandas DataFrame outputs for downstream API/UI use
-- Aggregated summaries for comparing backtest runs
 - Interactive Plotly visualisations
 - FastAPI backend
 - SQLModel models with asynchronous PostgreSQL sessions
-- Read/delete API routes for summaries, trades, and log events
+- Read/delete API routes for summaries, trades, log events, equities, drawdowns, and prices 
 - End-to-end `/run_backtest` route that runs a backtest and persists its outputs
 - Pytest + `unittest.mock` test coverage of every module, including the API layer and an offline golden-master regression test
 - Request validation: `/run_backtest` rejects a reversed date window with a 422 or when alpaca returns no bars 
@@ -128,18 +127,6 @@ AAPL, GOOGL, MSFT
 
 with both Trend Following and Mean Reversion run for each symbol.
 
-### `AggregationLayer`
-
-The aggregation layer converts the raw run outputs into UI-oriented summaries, including:
-
-- total number of runs;
-- per-run summaries;
-- best-performing run;
-- worst-performing run;
-- average performance across runs;
-- selected ticker/strategy summary;
-- selected-run trade list.
-
 ### `PlottingLayer`
 
 The Plotly layer creates interactive visualisations from the structured outputs, including equity, drawdown, trade, run-summary, and price/strategy views.
@@ -192,16 +179,19 @@ The database schema is managed by Alembic (`migrations/`), not created at applic
 - `summary` — one performance summary per backtest run
 - `trades` — completed trades
 - `log_events` — execution and backtest lifecycle events
+- `equities` — daily marked-to-market equity per run
+- `drawdowns` — daily drawdown from the running equity peak per run
+- `prices` — daily closing price and running average per run
 
-A run is identified by `summary.id`, the database-assigned primary key. Both child tables carry a
-`run_number` column declared as a foreign key to `summary.id`, so every trade and log event is tied
-to the summary of the run that produced it.
+A run is identified by `summary.id`, the database-assigned primary key. All five child tables carry a
+`run_number` column declared as a foreign key to `summary.id`, so every child row is tied to the
+summary of the run that produced it.
 
 ### Implemented Routes
 
 | Method | Route | Purpose |
 |---|---|---|
-| POST | `/run_backtest` | Run a backtest and persist its summary, trades, and log events |
+| POST | `/run_backtest` | Run a backtest and persist its summary, trades, log events, equities, drawdowns, and prices |
 | GET | `/summary/{id}` | Retrieve one run summary |
 | DELETE | `/summary/{id}` | Delete one run summary |
 | GET | `/trade_id/{id}` | Retrieve a trade by database ID |
@@ -212,11 +202,23 @@ to the summary of the run that produced it.
 | GET | `/log_events_backtest_run_number/{backtest_run_number}` | Retrieve all log events for one run |
 | DELETE | `/log_event_id/{id}` | Delete a log event by database ID |
 | DELETE | `/log_events_backtest_run_number/{backtest_run_number}` | Delete all log events for one run |
+| GET | `/equity_id/{id}` | Retrieve a daily equity row by database ID |
+| GET | `/equities_backtest_run_number/{backtest_run_number}` | Retrieve the equity curve for one run, ordered by day |
+| DELETE | `/equity_id/{id}` | Delete a daily equity row by database ID |
+| DELETE | `/equities_backtest_run_number/{backtest_run_number}` | Delete the equity curve for one run |
+| GET | `/drawdown_id/{id}` | Retrieve a drawdown row by database ID |
+| GET | `/drawdowns_backtest_run_number/{backtest_run_number}` | Retrieve the drawdown series for one run, ordered by day |
+| DELETE | `/drawdown_id/{id}` | Delete a drawdown row by database ID |
+| DELETE | `/drawdowns_backtest_run_number/{backtest_run_number}` | Delete the drawdown series for one run |
+| GET | `/price_id/{id}` | Retrieve a price row by database ID |
+| GET | `/prices_backtest_run_number/{backtest_run_number}` | Retrieve the closing prices and running average for one run, ordered by day |
+| DELETE | `/price_id/{id}` | Delete a price row by database ID |
+| DELETE | `/prices_backtest_run_number/{backtest_run_number}` | Delete the price series for one run |
 
-The current `/run_backtest` route builds an `ExecutionState` from the request body, fetches Alpaca data for the request's `timeframe`, `start`, `end` and `limit` (defaults `1Day`, `2024-01-16`, `2026-01-13`, `1000`; a `start` after `end` is rejected with a 422), executes the trading engine, calculates the run summary, and persists the summary, trades, and log events to PostgreSQL.
+The current `/run_backtest` route builds an `ExecutionState` from the request body, fetches Alpaca data for the request's `timeframe`, `start`, `end` and `limit` (defaults `1Day`, `2024-01-16`, `2026-01-13`, `1000`; a `start` after `end` is rejected with a 422), executes the trading engine, calculates the run summary, and persists the summary, trades, log events, equities, drawdowns, and prices to PostgreSQL.
 
 The summary is inserted first so that PostgreSQL assigns its `id`. That id is then written onto every
-trade and log event before they are inserted, which is what keeps the foreign keys pointing at the
+trade, log event, equity, drawdown, and price row before they are inserted, which is what keeps the foreign keys pointing at the
 correct run. The engine's own in-process run counter is a local label for the standalone runner and
 is never used as a database key.
 
@@ -236,7 +238,10 @@ AlgoTrading/
 │   ├── router/
 │   │   ├── dependencies.py        # FastAPI dependencies
 │   │   ├── router_backtest.py
+│   │   ├── router_drawdowns.py
+│   │   ├── router_equities.py
 │   │   ├── router_log_events.py
+│   │   ├── router_prices.py
 │   │   ├── router_summary.py
 │   │   ├── router_trades.py
 │   │   └── services/              # Async database service classes
@@ -249,7 +254,10 @@ AlgoTrading/
 │       ├── Summary.jsx            # Runs table with ticker filter
 │       ├── LogEvents.jsx          # Log events of the selected run
 │       ├── Trades.jsx             # Trades of the selected run
-│       └── index.css              # Dark theme and table layout
+│       ├── PriceChart.jsx         # Close, running average and buy/sell markers
+│       ├── EquityCurve.jsx        # Equity curve of the selected run
+│       ├── DrawdownSeriesChart.jsx # Drawdown % of the selected run
+│       └── index.css              # Dark theme, table and chart layout
 ├── data_loading/
 │   ├── compute_average.py         # Cumulative-average calculation
 │   └── data_loader.py             # Alpaca data retrieval/preparation
@@ -267,7 +275,7 @@ AlgoTrading/
 ├── tests/
 │   ├── api/
 │   │   ├── conftest.py            # In-memory SQLite session fixture
-│   │   └── test_*.py              # 46 tests across 7 files
+│   │   └── test_*.py              # 94 tests across 13 files
 │   ├── golden_masters/
 │   │   ├── ohlcv.pkl              # Recorded Alpaca bars, the golden master's input
 │   │   ├── record_ohlcv_pickle.py # Re-records ohlcv.pkl (one live call)
@@ -370,7 +378,7 @@ existing one, which is why it was replaced.
   does not remove it.
 - `migrations/script.py.mako` imports `sqlmodel`, because autogenerate writes `str` columns as
   `sqlmodel.sql.sqltypes.AutoString()`.
-- The initial revision, `fd940e1cdfa5`, creates `summary`, `log_events` and `trades` from
+- The initial revision, `9bf48830f47f`, creates `summary`, `log_events`, `trades`, `equities`, `drawdowns` and `prices` from
   `models.py`, so `alembic upgrade head` builds the full schema on an empty database.
 
 ```bash
@@ -423,7 +431,10 @@ results. It calls the API at `http://localhost:8000`; the API's CORS settings al
 - Parameter panel: ticker, strategy, starting cash, slippage, commission and position size, posted
   to `/run_backtest`
 - Summary table of runs, filterable by ticker, with green/red net profit
-- Clicking a run loads its log events and trades
+- Clicking a run loads its log events, trades, equity curve, drawdown series and prices
+- Price chart: closing price, running average, and buy/sell markers at each trade's entry and exit
+- Equity-curve chart of the selected run
+- Drawdown chart (% below the running peak) of the selected run
 - Dark theme, right-aligned tabular numbers, profit/loss colouring
 
 With the API running:
@@ -434,8 +445,6 @@ npm install
 npm run dev
 ```
 
-Still to come: an equity-curve chart and a drawdown/metrics-comparison chart.
-
 ## Testing
 
 Run the full local test directory with:
@@ -444,7 +453,7 @@ Run the full local test directory with:
 pytest -v tests/
 ```
 
-The suite currently gives **169 passed, 1 deselected**, and covers every module in the project. The
+The suite currently gives **217 passed, 1 deselected**, and covers every module in the project. The
 deselected test is the opt-in live Alpaca check described below.
 
 Engine, strategy, and data layers — 123 tests:
@@ -462,7 +471,7 @@ Engine, strategy, and data layers — 123 tests:
 | `tests/test_mean_reversion_signal.py` | 3 | Mean Reversion signal step |
 | `tests/test_golden_master.py` | 1 | Full pipeline output against `results.txt` |
 
-API layer — 46 tests, all offline:
+API layer — 94 tests, all offline:
 
 | File | Tests | Area under test |
 |---|---|---|
@@ -470,6 +479,12 @@ API layer — 46 tests, all offline:
 | `tests/api/test_router_log_events.py` | 8 | Log-event routes with a faked service |
 | `tests/api/test_trades_service.py` | 8 | `TradesService` against a real session |
 | `tests/api/test_router_trades.py` | 8 | Trade routes with a faked service |
+| `tests/api/test_equities_service.py` | 8 | `EquitiesService` against a real session |
+| `tests/api/test_router_equities.py` | 8 | Equity routes with a faked service |
+| `tests/api/test_drawdown_service.py` | 8 | `DrawdownsService` against a real session |
+| `tests/api/test_router_drawdown.py` | 8 | Drawdown routes with a faked service |
+| `tests/api/test_prices_service.py` | 8 | `PricesService` against a real session |
+| `tests/api/test_router_prices.py` | 8 | Price routes with a faked service |
 | `tests/api/test_router_backtest.py` | 6 | `/run_backtest` end to end, run-identity wiring, reversed-window and empty-bars 422 |
 | `tests/api/test_summary_service.py` | 4 | `SummaryService` primary-key lookups |
 | `tests/api/test_router_summary.py` | 4 | Summary routes with a faked service |
@@ -567,7 +582,7 @@ The pipeline is passing all of these stages.
 - FastAPI routers and dependency injection
 - SQLModel/PostgreSQL persistence with async sessions
 - End-to-end `/run_backtest` persistence flow
-- Read/delete services for summaries, trades, and log events
+- Read/delete services for summaries, trades, log events, equities, drawdowns and prices
 - Refactored `TradingEngine` helpers with unit tests
 - Complete unit coverage of both strategy packages — signal routing and execution arithmetic
 - Offline golden-master regression coverage, plus an opt-in live check of the recorded bars
@@ -582,14 +597,13 @@ The pipeline is passing all of these stages.
 - Pre-commit hooks
 - GitHub Actions pipeline running the full test suite
 - Alembic schema migrations
-- React dashboard — parameter panel, run summaries, log events and trades per run
+- React dashboard — parameter panel, run summaries, log events and trades per run, prices, equities and drawdowns charts
 
 ### Current work
 
-- Dashboard equity-curve and drawdown/metrics-comparison charts
+- Performance statistics by querying the database 
 - Further API/database cleanup
 - Removing the date window still hard-coded in the standalone runner (`ExperimentRunner.fetch_bars_by_symbol`)
-- Aligning route naming — the summary routes use `{id}` while the trade and log-event routes still use `{backtest_run_number}`
 
 ### Planned
 
