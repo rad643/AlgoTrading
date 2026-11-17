@@ -415,11 +415,12 @@ Do not "fix" these incidentally — they are tracked work:
     and proposed dropping every table.
   - `script.py.mako` imports `sqlmodel`, because autogenerate writes `str` columns as
     `sqlmodel.sql.sqltypes.AutoString()`.
-  - There is a single initial revision, `9bf48830f47f`, that creates all six tables, so
+  - There is a single initial revision, `74bc25b2f973`, that creates all six tables, so
     `upgrade head` works on an empty database. Never base a migration on tables that an earlier
     revision does not create.
   So far Alembic has only done schema migrations, no data migrations.
   - The summary router moved to `/summary/{id}`; the trades, log_events, equities, drawdowns, prices read `/trades_backtest_run_number/{backtest_run_number}`, `/log_events_backtest_run_number/{backtest_run_number}`, `/equities_backtest_run_number/{backtest_run_number}` , `/drawdowns_backtest_run_number/{backtest_run_number}`, `/prices_backtest_run_number/{backtest_run_number}` with matching `read_run_number`/`delete_run_number` service methods. Those children do still have a `run_number` column.
+  - `router_statistics.py` serves one performance statistic per route (`/final_equity/{id}`, `/total_commission/{id}`, ...), each computed by `StatisticsService` from the database.
 - `legacy/` holds the earlier SQLite implementation, kept on disk for reference only. It is untracked
   and gitignored, and not imported by live code. Mypy still type-checks it, so it must keep passing
   `mypy .`; ruff skips it (see "Commands" above).

@@ -4,7 +4,7 @@ A Python algorithmic-trading and backtesting platform for retrieving historical 
 
 The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **217 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live and with 3 charts implemented, before proceeding onto deployment.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **217 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live with 3 charts and a performance statistics panel implemented, before proceeding onto deployment.
 
 ## Features
 
@@ -177,7 +177,7 @@ The database schema is managed by Alembic (`migrations/`), not created at applic
 ### Database Tables
 
 - `summary` — one performance summary per backtest run
-- `trades` — completed trades
+- `trades` — completed trades, with commission and slippage cost per trade
 - `log_events` — execution and backtest lifecycle events
 - `equities` — daily marked-to-market equity per run
 - `drawdowns` — daily drawdown from the running equity peak per run
@@ -214,6 +214,7 @@ summary of the run that produced it.
 | GET | `/prices_backtest_run_number/{backtest_run_number}` | Retrieve the closing prices and running average for one run, ordered by day |
 | DELETE | `/price_id/{id}` | Delete a price row by database ID |
 | DELETE | `/prices_backtest_run_number/{backtest_run_number}` | Delete the price series for one run |
+| GET | `/final_equity/{id}`, `/total_net_profit/{id}`, `/return_pct/{id}`, `/annualized_pct/{id}`, `/sharpe_ratio/{id}`, `/maximum_drawdown/{id}`, `/calmar_ratio/{id}`, `/total_trades/{id}`, `/winning_trades/{id}`, `/losing_trades/{id}`, `/win_rate/{id}`, `/profit_factor/{id}`, `/expectancy/{id}`, `/average_win/{id}`, `/average_loss/{id}`, `/payoff_ratio/{id}`, `/starting_cash/{id}`, `/total_commission/{id}`, `/total_slippage_cost/{id}` | One performance statistic for one run, computed from the database |
 
 The current `/run_backtest` route builds an `ExecutionState` from the request body, fetches Alpaca data for the request's `timeframe`, `start`, `end` and `limit` (defaults `1Day`, `2024-01-16`, `2026-01-13`, `1000`; a `start` after `end` is rejected with a 422), executes the trading engine, calculates the run summary, and persists the summary, trades, log events, equities, drawdowns, and prices to PostgreSQL.
 
@@ -242,6 +243,7 @@ AlgoTrading/
 │   │   ├── router_equities.py
 │   │   ├── router_log_events.py
 │   │   ├── router_prices.py
+│   │   ├── router_statistics.py
 │   │   ├── router_summary.py
 │   │   ├── router_trades.py
 │   │   └── services/              # Async database service classes
@@ -257,6 +259,7 @@ AlgoTrading/
 │       ├── PriceChart.jsx         # Close, running average and buy/sell markers
 │       ├── EquityCurve.jsx        # Equity curve of the selected run
 │       ├── DrawdownSeriesChart.jsx # Drawdown % of the selected run
+│       ├── PerformanceStatistics.jsx # Statistics panel of the selected run
 │       └── index.css              # Dark theme, table and chart layout
 ├── data_loading/
 │   ├── compute_average.py         # Cumulative-average calculation
@@ -378,7 +381,7 @@ existing one, which is why it was replaced.
   does not remove it.
 - `migrations/script.py.mako` imports `sqlmodel`, because autogenerate writes `str` columns as
   `sqlmodel.sql.sqltypes.AutoString()`.
-- The initial revision, `9bf48830f47f`, creates `summary`, `log_events`, `trades`, `equities`, `drawdowns` and `prices` from
+- The initial revision, `74bc25b2f973`, creates `summary`, `log_events`, `trades`, `equities`, `drawdowns` and `prices` from
   `models.py`, so `alembic upgrade head` builds the full schema on an empty database.
 
 ```bash
@@ -435,6 +438,7 @@ results. It calls the API at `http://localhost:8000`; the API's CORS settings al
 - Price chart: closing price, running average, and buy/sell markers at each trade's entry and exit
 - Equity-curve chart of the selected run
 - Drawdown chart (% below the running peak) of the selected run
+- Performance statistics panel of the selected run
 - Dark theme, right-aligned tabular numbers, profit/loss colouring
 
 With the API running:
@@ -597,11 +601,10 @@ The pipeline is passing all of these stages.
 - Pre-commit hooks
 - GitHub Actions pipeline running the full test suite
 - Alembic schema migrations
-- React dashboard — parameter panel, run summaries, log events and trades per run, prices, equities and drawdowns charts
+- React dashboard — parameter panel, run summaries, log events and trades per run, prices, equities and drawdowns charts, performance statistics panel
 
 ### Current work
 
-- Performance statistics by querying the database 
 - Further API/database cleanup
 - Removing the date window still hard-coded in the standalone runner (`ExperimentRunner.fetch_bars_by_symbol`)
 
