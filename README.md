@@ -2,9 +2,9 @@
 
 A Python algorithmic-trading and backtesting platform for retrieving historical US equity data, running rule-based strategies, modelling execution costs, evaluating performance, visualising results, and persisting backtest outputs through a FastAPI/PostgreSQL API.
 
-The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, aggregation and plotting layers, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
+The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, a plotting layer, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
-> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **217 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live with 3 charts and a performance statistics panel implemented, before proceeding onto deployment.
+> **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **205 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live with 3 charts and a performance statistics panel implemented, before proceeding onto deployment.
 
 ## Features
 
@@ -284,11 +284,11 @@ AlgoTrading/
 │   │   ├── record_ohlcv_pickle.py # Re-records ohlcv.pkl (one live call)
 │   │   └── results.txt            # Golden-master expected output
 │   ├── conftest.py
-│   └── test_*.py                  # 123 tests across 10 files, plus 1 opt-in live test
+│   └── test_*.py                  # 111 tests across 10 files, plus 1 opt-in live test
 ├── .pre-commit-config.yaml        # Local quality hooks
 ├── alembic.ini                    # Alembic config (URL is set in migrations/env.py)
 ├── conftest.py                    # Empty; marks the rootdir for pytest
-├── main.py                        # Engine, aggregation, plotting, experiment runner
+├── main.py                        # Engine, plotting, experiment runner
 ├── mypy.ini
 ├── pytest.ini                     # Registers heavy_test and deselects it by default
 ├── requirements.txt               # Pinned Python dependencies
@@ -457,14 +457,14 @@ Run the full local test directory with:
 pytest -v tests/
 ```
 
-The suite currently gives **217 passed, 1 deselected**, and covers every module in the project. The
+The suite currently gives **205 passed, 1 deselected**, and covers every module in the project. The
 deselected test is the opt-in live Alpaca check described below.
 
-Engine, strategy, and data layers — 123 tests:
+Engine, strategy, and data layers — 111 tests:
 
 | File | Tests | Area under test |
 |---|---|---|
-| `tests/test_main.py` | 61 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation layer, experiment runner |
+| `tests/test_main.py` | 49 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, experiment runner |
 | `tests/test_performance_metrics.py` | 29 | Performance-metric functions |
 | `tests/test_data_loader.py` | 8 | Alpaca retrieval, pagination, and DataFrame preparation |
 | `tests/test_compute_average.py` | 5 | Cumulative moving average |
@@ -580,7 +580,6 @@ The pipeline is passing all of these stages.
 - Performance metrics
 - Structured DataFrame outputs
 - Multi-ticker experiment runner
-- Aggregation layer
 - Plotly visualisation layer
 - Alpaca historical-market-data integration
 - FastAPI routers and dependency injection

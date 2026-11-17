@@ -8,7 +8,7 @@ import main
 
 @pytest.fixture()
 def results_data_frames() -> dict[str, pd.DataFrame]:
-    """hand-built results_data_frames to pass in as an argument to AggregationLayer's object instantiation
+    """hand-built results_data_frames to pass in to the tests that need the results dictionary
 
     Returns:
         dict : the dictionary of final data frames coming out of ExperimentRunner

@@ -32,9 +32,9 @@ alembic revision --autogenerate -m "describe the change"
 alembic upgrade head
 
 # Tests
-pytest -v tests/                                            # full suite (217 passed, 1 deselected)
+pytest -v tests/                                            # full suite (205 passed, 1 deselected)
 pytest tests/api/                                           # API layer only (94 tests)
-pytest tests/test_main.py                                   # one file (61 tests)
+pytest tests/test_main.py                                   # one file (49 tests)
 pytest tests/test_main.py::TestExecutionState::test_reset   # one test
 pytest -m heavy_test                                        # only the opt-in live Alpaca check
 
@@ -284,13 +284,13 @@ This is intentional at the boundary — match whichever convention the file you 
 
 ## Test suite
 
-`pytest tests/` gives **217 passed, 1 deselected** — 123 outside `api/` plus 94 in `tests/api/`;
+`pytest tests/` gives **205 passed, 1 deselected** — 111 outside `api/` plus 94 in `tests/api/`;
 the deselected one is the opt-in `heavy_test`. Every module in the project has coverage, and CI runs
 all of it.
 
 | File | Tests | Covers |
 |---|---|---|
-| `tests/test_main.py` | 61 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, aggregation, `ExperimentRunner` |
+| `tests/test_main.py` | 49 | `ExecutionState`, `TradingEngine` helpers, DataFrame builders, `ExperimentRunner` |
 | `tests/test_performance_metrics.py` | 29 | every function in `metrics/performance_metrics.py` |
 | `tests/test_data_loader.py` | 8 | `read_ticker_dataframe` and the Alpaca request/pagination helpers |
 | `tests/test_compute_average.py` | 5 | `averageUpToDay` |
