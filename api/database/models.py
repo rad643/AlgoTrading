@@ -49,6 +49,8 @@ class Trade(SQLModel, table=True):
     exit_day: int
     exit_price: float
     profit: float
+    commission: float
+    slippage_cost: float
     return_pct: float
     labels: str
     number_trades_took_place: int

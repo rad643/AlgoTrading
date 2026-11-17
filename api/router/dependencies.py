@@ -8,6 +8,7 @@ from api.router.services.drawdown_services import DrawdownsService
 from api.router.services.equities_service import EquitiesService
 from api.router.services.log_events_service import LogEventsService
 from api.router.services.prices_service import PricesService
+from api.router.services.statistics_service import StatisticsService
 from api.router.services.summary_service import SummaryService
 from api.router.services.trades_service import TradesService
 
@@ -54,3 +55,10 @@ def get_prices_service(session: SessionDep):
 
 
 PricesServiceDep = Annotated[PricesService, Depends(get_prices_service)]
+
+
+def get_statistics_service(session: SessionDep):
+    return StatisticsService(session)
+
+
+StatisticsServiceDep = Annotated[StatisticsService, Depends(get_statistics_service)]

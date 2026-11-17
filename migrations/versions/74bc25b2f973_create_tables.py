@@ -1,8 +1,8 @@
-"""add all tables
+"""create tables
 
-Revision ID: 9bf48830f47f
+Revision ID: 74bc25b2f973
 Revises:
-Create Date: 2026-11-12 21:06:20.657758
+Create Date: 2026-11-17 23:06:02.443522
 
 """
 
@@ -13,7 +13,7 @@ import sqlmodel.sql.sqltypes
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "9bf48830f47f"
+revision: str = "74bc25b2f973"
 down_revision: str | Sequence[str] | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -119,6 +119,8 @@ def upgrade() -> None:
         sa.Column("exit_day", sa.Integer(), nullable=False),
         sa.Column("exit_price", sa.Float(), nullable=False),
         sa.Column("profit", sa.Float(), nullable=False),
+        sa.Column("commission", sa.Float(), nullable=False),
+        sa.Column("slippage_cost", sa.Float(), nullable=False),
         sa.Column("return_pct", sa.Float(), nullable=False),
         sa.Column("labels", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("number_trades_took_place", sa.Integer(), nullable=False),

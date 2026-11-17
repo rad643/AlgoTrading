@@ -267,3 +267,56 @@ tbody tr:hover {
   font-weight: 600;
   margin: 4px 0 8px;
 }
+
+/* Performance Statistics: right-hand column, same card look as the params panel */
+.performance-statistics-panel {
+  order: 1;
+  flex: 0 0 260px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.performance-statistics-panel h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--surface-hover);
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-row:last-child {
+  border-bottom: none;
+}
+
+.stats-label {
+  color: var(--text-muted);
+}
+
+.stats-value {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}

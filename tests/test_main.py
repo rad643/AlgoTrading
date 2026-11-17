@@ -171,7 +171,7 @@ class TestTradingEngineWiringFunctions(TestCase):
         self.assertIs(dict_drawdown_serie["drawdown_pct"], drawdown_pct)
 
     def test_build_one_completed_trade_row(self):
-        """build 10 simple abstract variables (values can be anything).
+        """build 12 simple abstract variables (values can be anything).
         Tests that the method builds the dictionary keys from passed in arguments.
         Checks that the dictionary values are the same objects as the arguments that were passed in
         and not just copies (identical content)"""
@@ -184,6 +184,8 @@ class TestTradingEngineWiringFunctions(TestCase):
         exit_day = 120
         exit_price = 315.23
         profit = 100.23
+        commission = 0.12
+        slippage_cost = 0.34
         return_pct = 5.67
         labels = "Apple-Trend"
 
@@ -196,11 +198,13 @@ class TestTradingEngineWiringFunctions(TestCase):
             exit_day,
             exit_price,
             profit,
+            commission,
+            slippage_cost,
             return_pct,
             labels,
         )
 
-        self.assertEqual(len(dict_df), 10)
+        self.assertEqual(len(dict_df), 12)
         self.assertIs(dict_df["run_number"], run_number)
         self.assertIs(dict_df["ticker"], ticker)
         self.assertIs(dict_df["strategy"], strategy)
@@ -209,6 +213,8 @@ class TestTradingEngineWiringFunctions(TestCase):
         self.assertIs(dict_df["exit_day"], exit_day)
         self.assertIs(dict_df["exit_price"], exit_price)
         self.assertIs(dict_df["profit"], profit)
+        self.assertIs(dict_df["commission"], commission)
+        self.assertIs(dict_df["slippage_cost"], slippage_cost)
         self.assertIs(dict_df["return_pct"], return_pct)
         self.assertIs(dict_df["labels"], labels)
 
@@ -798,7 +804,7 @@ class TestBuildingDictionaries(TestCase):
             2,
         )
 
-        main.TradingEngine.build_dictionary_trades(state_trend)
+        main.TradingEngine.build_dictionary_trades(state_trend, 10)
 
         row = state_trend.list_dictionaries_completed_trades[0]
 
@@ -810,12 +816,16 @@ class TestBuildingDictionaries(TestCase):
         self.assertEqual(row["exit_day"], state_trend.exit_day)
         self.assertEqual(row["exit_price"], state_trend.exitPriceTrend)
         self.assertEqual(row["profit"], state_trend.profitTrend)
+        # 2 fees x 10 shares x 0.005
+        self.assertEqual(row["commission"], 0.1)
+        # 10 x (345.6 - 345.6 / 1.0005) + 10 x (543.0 / 0.9995 - 543.0)
+        self.assertEqual(row["slippage_cost"], 4.443)
         self.assertEqual(row["return_pct"], state_trend.return_pct)
         self.assertEqual(row["labels"], "Google-Trend")
 
         self.assertEqual(len(state_trend.list_dictionaries_completed_trades), 1)
 
-        main.TradingEngine.build_dictionary_trades(state_mean_reversion)
+        main.TradingEngine.build_dictionary_trades(state_mean_reversion, 7)
 
         row = state_mean_reversion.list_dictionaries_completed_trades[0]
 
@@ -829,6 +839,10 @@ class TestBuildingDictionaries(TestCase):
         self.assertEqual(row["exit_day"], state_mean_reversion.exit_day)
         self.assertEqual(row["exit_price"], state_mean_reversion.exitPriceMeanReversion)
         self.assertEqual(row["profit"], state_mean_reversion.profitMeanReversion)
+        # 2 fees x 7 shares x 0.005
+        self.assertEqual(row["commission"], 0.07)
+        # 7 x (534.6 - 534.6 / 1.0005) + 7 x (432.6 / 0.9995 - 432.6)
+        self.assertEqual(row["slippage_cost"], 3.385)
         self.assertEqual(row["return_pct"], state_mean_reversion.return_pct)
         self.assertEqual(row["labels"], "Google-Mean Reversion")
 
@@ -1347,6 +1361,8 @@ class TestBuildDataFrames:
                 "exit_day": [19, 38],
                 "exit_price": [105.720, 103.900],
                 "profit": [73.200, -61.500],
+                "commission": [0.1, 0.1],
+                "slippage_cost": [0.098, 0.098],
                 "return_pct": [7.44, -5.59],
                 "labels": ["Google-Trend", "Google-Trend"],
                 "number_trades_took_place": [1, 2],
@@ -1369,6 +1385,8 @@ class TestBuildDataFrames:
                 "exit_day",
                 "exit_price",
                 "profit",
+                "commission",
+                "slippage_cost",
                 "return_pct",
                 "labels",
                 "number_trades_took_place",
@@ -1550,6 +1568,8 @@ class TestBacktestRun:
                 "exit_day",
                 "exit_price",
                 "profit",
+                "commission",
+                "slippage_cost",
                 "return_pct",
                 "labels",
                 "number_trades_took_place",

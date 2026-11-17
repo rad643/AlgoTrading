@@ -274,6 +274,8 @@ class TradingEngine:
         exit_day: int,
         exit_price: float,
         profit: float,
+        commission: float,
+        slippage_cost: float,
         return_pct: float,
         labels: str,
     ) -> dict[str, Any]:
@@ -289,6 +291,8 @@ class TradingEngine:
             "exit_day": exit_day,
             "exit_price": exit_price,
             "profit": profit,
+            "commission": commission,
+            "slippage_cost": slippage_cost,
             "return_pct": return_pct,
             "labels": labels,
         }
@@ -793,15 +797,27 @@ class TradingEngine:
         return tuple_results
 
     @staticmethod
-    def build_dictionary_trades(state: ExecutionState) -> None:
+    def build_dictionary_trades(state: ExecutionState, shares: int) -> None:
         """
         Builds one completed trade as a dictionary and adds it to the list of all
         completed trades. Works for either strategy — the accessors pick the right
         entry price, exit price and profit off the state.
 
+        Commission is the per-share fee paid on the buy and on the sell.
+        Slippage cost is what fixed_bps added to the buy price and took off the sell price,
+        times the shares: the opening prices are recovered from the execution prices.
+
         Args:
             state (ExecutionState): the state object which represents either Trend or Mean Reversion strategy
+            shares (int): how many shares the trade bought and sold
         """
+
+        entry_open = TradingEngine.entry_price(state) / (1 + state.fixed_bps)
+        exit_open = TradingEngine.exit_price(state) / (1 - state.fixed_bps)
+        commission = 2 * shares * state.flat_fee_per_share
+        slippage_cost = shares * (
+            TradingEngine.entry_price(state) - entry_open
+        ) + shares * (exit_open - TradingEngine.exit_price(state))
 
         one_completed_trade_row = TradingEngine.build_one_completed_trade_row(
             ExecutionState.backtest_run_number + 1,
@@ -812,6 +828,8 @@ class TradingEngine:
             state.exit_day,
             round(TradingEngine.exit_price(state), 3),
             round(TradingEngine.profit(state), 3),
+            round(commission, 3),
+            round(slippage_cost, 3),
             round(
                 (
                     (TradingEngine.exit_price(state) - TradingEngine.entry_price(state))
@@ -875,7 +893,8 @@ class TradingEngine:
 
         # change in profit => SELL day
         if (TradingEngine.profit(state) - previousProfit) != 0:
-            TradingEngine.build_dictionary_trades(state)
+            # the shares held before the SELL day are the shares this trade sold
+            TradingEngine.build_dictionary_trades(state, previous_position)
 
             state.totalProfit += TradingEngine.profit(state)
 
@@ -980,6 +999,8 @@ class TradingEngine:
                     "exit_day",
                     "exit_price",
                     "profit",
+                    "commission",
+                    "slippage_cost",
                     "return_pct",
                     "labels",
                     "number_trades_took_place",

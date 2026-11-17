@@ -2,7 +2,10 @@ import { useState } from "react";
 
 
 
-function Summary ( {summaries, fetchLogEvents, fetchTrades, fetchEquities, fetchDrawdowns, fetchPrices} ) {
+function Summary ( {summaries, fetchLogEvents, fetchTrades, fetchEquities, fetchDrawdowns, fetchPrices,
+	fetchFinalEquity, fetchTotalNetProfit, fetchReturnPct, fetchSharpeRatio, fetchAnnualizedPct,fetchMdd,fetchCalmarRatio,
+	fetchTotalTrades, fetchWinningTrades, fetchLosingTrades, fetchWinRate, fetchProfitFactor, fetchExpectancy, fetchAverageWin, fetchAverageLoss, fetchPayoffRatio, fetchStartingCash, fetchTotalCommission, fetchTotalSlippageCost
+} ) {
 
 		const [selectedTicker,setTicker]=useState("");
 
@@ -32,6 +35,25 @@ function Summary ( {summaries, fetchLogEvents, fetchTrades, fetchEquities, fetch
 						   fetchEquities={fetchEquities}
 						   fetchDrawdowns={fetchDrawdowns}
 					   fetchPrices={fetchPrices}
+					   fetchFinalEquity={fetchFinalEquity}
+					   fetchTotalNetProfit={fetchTotalNetProfit}
+					   fetchReturnPct={fetchReturnPct}
+					   fetchSharpeRatio={fetchSharpeRatio}
+					   fetchAnnualizedPct={fetchAnnualizedPct}
+					   fetchMdd={fetchMdd}
+					   fetchCalmarRatio={fetchCalmarRatio}
+					   fetchTotalTrades={fetchTotalTrades}
+					   fetchWinningTrades={fetchWinningTrades}
+					   fetchLosingTrades={fetchLosingTrades}
+					   fetchWinRate={fetchWinRate}
+					   fetchProfitFactor={fetchProfitFactor}
+					   fetchExpectancy={fetchExpectancy}
+					   fetchAverageWin={fetchAverageWin}
+					   fetchAverageLoss={fetchAverageLoss}
+					   fetchPayoffRatio={fetchPayoffRatio}
+					   fetchStartingCash={fetchStartingCash}
+					   fetchTotalCommission={fetchTotalCommission}
+					   fetchTotalSlippageCost={fetchTotalSlippageCost}
 					/>
 
 				</div>
@@ -44,7 +66,10 @@ function Summary ( {summaries, fetchLogEvents, fetchTrades, fetchEquities, fetch
 
 
 
-function Table( {filteredItems, fetchLogEvents, fetchTrades, fetchEquities, fetchDrawdowns, fetchPrices} ){
+function Table( {filteredItems, fetchLogEvents, fetchTrades, fetchEquities, fetchDrawdowns, fetchPrices, 
+	fetchFinalEquity, fetchTotalNetProfit,fetchReturnPct, fetchSharpeRatio, fetchAnnualizedPct,fetchMdd,fetchCalmarRatio,
+	fetchTotalTrades, fetchWinningTrades, fetchLosingTrades, fetchWinRate, fetchProfitFactor, fetchExpectancy, fetchAverageWin, fetchAverageLoss, fetchPayoffRatio, fetchStartingCash, fetchTotalCommission, fetchTotalSlippageCost
+} ){
 
 	return(
 		<div>
@@ -79,6 +104,25 @@ function Table( {filteredItems, fetchLogEvents, fetchTrades, fetchEquities, fetc
 											fetchEquities(summaryRow);
 											fetchDrawdowns(summaryRow);
 											fetchPrices(summaryRow);
+											fetchFinalEquity(summaryRow);
+											fetchTotalNetProfit(summaryRow);
+											fetchReturnPct(summaryRow)
+											fetchSharpeRatio(summaryRow)
+											fetchAnnualizedPct(summaryRow)
+											fetchMdd(summaryRow)
+											fetchCalmarRatio(summaryRow)
+											fetchTotalTrades(summaryRow)
+											fetchWinningTrades(summaryRow)
+											fetchLosingTrades(summaryRow)
+											fetchWinRate(summaryRow)
+											fetchProfitFactor(summaryRow)
+											fetchExpectancy(summaryRow)
+											fetchAverageWin(summaryRow)
+											fetchAverageLoss(summaryRow)
+											fetchPayoffRatio(summaryRow)
+											fetchStartingCash(summaryRow)
+											fetchTotalCommission(summaryRow)
+											fetchTotalSlippageCost(summaryRow)
 										} }
 								>
 
