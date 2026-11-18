@@ -6,8 +6,6 @@ from datetime import date
 from typing import Any
 
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 
 import data_loading.data_loader as dl
 from engine import process_1_day
@@ -1254,169 +1252,6 @@ class TradingEngine:
         return pd.DataFrame(data=run_data_frame, index=[0])
 
 
-class PlottingLayer:
-    """
-
-    Visualization layer that generates interactive Plotly charts from structured backtest results.
-    Accepts the results dictionary from ExperimentRunner.structured_data_outputs() and exposes one
-    method per chart type. user_interface_oriented_plotting_price_chart() is parameterized by ticker
-    and strategy — all other methods plot all 6 runs at once.
-
-    """
-
-    def __init__(self, results_data_frames):
-        self.results_data_frames = results_data_frames
-
-    def user_interface_oriented_plotting_equity_curve(self):
-
-        equity_curve_line_chart = px.line(
-            data_frame=self.results_data_frames["Equity Curve"],
-            x="day",
-            y="equity",
-            color="labels",
-            title="Equity Curve Chart",
-            labels={
-                "day": "Trading Day",
-                "equity": "Equity ($)",
-                "labels": "run_label",
-            },
-        )
-        equity_curve_line_chart.show()
-
-    def user_interface_oriented_plotting_drawdown_series(self):
-
-        drawdown_series_chart = px.line(
-            data_frame=self.results_data_frames["Drawdown Series"],
-            x="day",
-            y="drawdown_pct",
-            color="labels",
-            title="Drawdown Series Chart",
-            labels={
-                "day": "Trading Day",
-                "drawdown_pct": "Drawdown (%)",
-                "labels": "run_label",
-            },
-        )
-        drawdown_series_chart.show()
-
-    def user_interface_oriented_plotting_completed_trades(self):
-
-        drawdown_series_chart = px.bar(
-            data_frame=self.results_data_frames["Completed Trades"],
-            x="number_trades_took_place",
-            y="profit",
-            color="labels",
-            title="Completed Trades Chart",
-            labels={
-                "number_trades_took_place": "Trade number",
-                "profit": "Profit ($)",
-                "labels": "run_label",
-            },
-            barmode="group",
-        )
-        drawdown_series_chart.show()
-
-    def user_interface_oriented_plotting_log_events(self):
-
-        log_events_chart = px.scatter(
-            data_frame=self.results_data_frames["Log Events"],
-            x="day",
-            y="event_type",
-            color="labels",
-            hover_data=["cash", "equity", "position", "execution_price", "pnl"],
-            title="Log Events Chart",
-        )
-        log_events_chart.show()
-
-    def user_interface_oriented_plotting_run_data_frame(self):
-
-        run_data_frame_chart = px.bar(
-            data_frame=self.results_data_frames["Final Data Frame Run"],
-            x="labels",
-            y="total_net_profit",
-            color="labels",
-            title="Run Chart",
-            barmode="group",
-        )
-        run_data_frame_chart.show()
-
-    def user_interface_oriented_plotting_price_chart(self, ticker, strategy):
-
-        # Price BUY/SELL Marker Chart
-
-        # markers (buy/sell markers) -> log events data frame
-        ticker_strategy_data_frame_log_events = self.results_data_frames["Log Events"][
-            self.results_data_frames["Log Events"]["labels"] == f"{ticker}-{strategy}"
-        ]
-        ticker_strategy_data_frame_buy_executed = ticker_strategy_data_frame_log_events[
-            ticker_strategy_data_frame_log_events["event_type"] == "BUY_EXECUTED"
-        ]
-        ticker_strategy_data_frame_buy_executed_price = (
-            ticker_strategy_data_frame_buy_executed["execution_price"]
-        )
-        ticker_strategy_data_frame_sell_executed = (
-            ticker_strategy_data_frame_log_events[
-                ticker_strategy_data_frame_log_events["event_type"] == "SELL_EXECUTED"
-            ]
-        )
-        ticker_strategy_data_frame_sell_executed_price = (
-            ticker_strategy_data_frame_sell_executed["execution_price"]
-        )
-        strategy_chart = go.Figure()
-
-        # closing price + average (lines) -> prices data frame
-        ticker_strategy_data_frame = self.results_data_frames["Prices"][
-            (self.results_data_frames["Prices"]["ticker"] == f"{ticker}")
-            & (self.results_data_frames["Prices"]["strategy"] == f"{strategy}")
-        ]
-        ticker_strategy_closing_prices = ticker_strategy_data_frame["closing_price"]
-        ticker_strategy_averages = ticker_strategy_data_frame["average"]
-
-        # add the closing prices line and averages line to the y-axis of the price chart
-        strategy_chart.add_trace(
-            go.Scatter(
-                x=ticker_strategy_data_frame["day"],
-                y=ticker_strategy_closing_prices,
-                mode="lines",
-                name="Closing Prices",
-            )
-        )
-        strategy_chart.add_trace(
-            go.Scatter(
-                x=ticker_strategy_data_frame["day"],
-                y=ticker_strategy_averages,
-                mode="lines",
-                name="Averages",
-            )
-        )
-
-        # add the buy/sell markers to the price chart
-        strategy_chart.add_trace(
-            go.Scatter(
-                x=ticker_strategy_data_frame_buy_executed["day"],
-                y=ticker_strategy_data_frame_buy_executed_price,
-                mode="markers",
-                name="BUY_EXECUTED",
-                marker_size=15,
-            )
-        )
-        strategy_chart.add_trace(
-            go.Scatter(
-                x=ticker_strategy_data_frame_sell_executed["day"],
-                y=ticker_strategy_data_frame_sell_executed_price,
-                mode="markers",
-                name="SELL_EXECUTED",
-                marker_size=15,
-            )
-        )
-        strategy_chart.update_layout(
-            xaxis_title="Trading Day",
-            yaxis_title="Price",
-            title=f"Price chart BUY/SELL markers: {ticker}-{strategy}",
-        )
-        strategy_chart.show()
-
-
 class ExperimentRunner:
     """
     Orchestrates multiple backtest runs across different tickers and strategies.
@@ -1574,15 +1409,6 @@ if __name__ == "__main__":
     # selected_tickers = input( "Enter the desired selected tickers: " )
 
     results = ExperimentRunner.structured_data_outputs(selected_tickers)
-
-    plottedChart = PlottingLayer(results)
-
-    plottedChart.user_interface_oriented_plotting_equity_curve()
-    plottedChart.user_interface_oriented_plotting_drawdown_series()
-    plottedChart.user_interface_oriented_plotting_completed_trades()
-    plottedChart.user_interface_oriented_plotting_log_events()
-    plottedChart.user_interface_oriented_plotting_run_data_frame()
-    plottedChart.user_interface_oriented_plotting_price_chart("AAPL", "Trend")
 
     print(results["Final Data Frame Run"])
     print(results["Completed Trades"])

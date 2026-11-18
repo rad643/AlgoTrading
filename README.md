@@ -2,7 +2,7 @@
 
 A Python algorithmic-trading and backtesting platform for retrieving historical US equity data, running rule-based strategies, modelling execution costs, evaluating performance, visualising results, and persisting backtest outputs through a FastAPI/PostgreSQL API.
 
-The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, a plotting layer, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
+The project began as a small CSV-based backtester and has been progressively refactored into a modular application with a reusable trading engine, structured pandas outputs, Alpaca market-data integration, asynchronous database persistence, automated tests, static analysis, and continuous integration on GitHub Actions.
 
 > **Status:** active development. The standalone backtesting pipeline, Alpaca data integration, FastAPI/PostgreSQL persistence layer with Alembic schema migrations, and CI quality checks are implemented. The test suite is complete across every module, API layer included — **205 tests passing**, plus one opt-in live-data check — and CI runs it in full, offline. React dashboard is live with 3 charts and a performance statistics panel implemented, before proceeding onto deployment.
 
@@ -18,7 +18,6 @@ The project began as a small CSV-based backtester and has been progressively ref
 - Performance metrics including Sharpe ratio and maximum drawdown
 - Multi-ticker / multi-strategy experiment runner
 - Structured pandas DataFrame outputs for downstream API/UI use
-- Interactive Plotly visualisations
 - FastAPI backend
 - SQLModel models with asynchronous PostgreSQL sessions
 - Read/delete API routes for summaries, trades, log events, equities, drawdowns, and prices 
@@ -126,10 +125,6 @@ AAPL, GOOGL, MSFT
 ```
 
 with both Trend Following and Mean Reversion run for each symbol.
-
-### `PlottingLayer`
-
-The Plotly layer creates interactive visualisations from the structured outputs, including equity, drawdown, trade, run-summary, and price/strategy views.
 
 ## Performance Metrics
 
@@ -288,7 +283,7 @@ AlgoTrading/
 ├── .pre-commit-config.yaml        # Local quality hooks
 ├── alembic.ini                    # Alembic config (URL is set in migrations/env.py)
 ├── conftest.py                    # Empty; marks the rootdir for pytest
-├── main.py                        # Engine, plotting, experiment runner
+├── main.py                        # Engine, experiment runner
 ├── mypy.ini
 ├── pytest.ini                     # Registers heavy_test and deselects it by default
 ├── requirements.txt               # Pinned Python dependencies
@@ -409,7 +404,7 @@ From the repository root:
 python main.py
 ```
 
-The current standalone runner downloads Alpaca data for `AAPL,GOOGL,MSFT`, executes both strategies for each symbol, aggregates the results, and builds Plotly outputs.
+The current standalone runner downloads Alpaca data for `AAPL,GOOGL,MSFT`, executes both strategies for each symbol, and prints the resulting DataFrames.
 
 ## Running the API
 
@@ -580,7 +575,6 @@ The pipeline is passing all of these stages.
 - Performance metrics
 - Structured DataFrame outputs
 - Multi-ticker experiment runner
-- Plotly visualisation layer
 - Alpaca historical-market-data integration
 - FastAPI routers and dependency injection
 - SQLModel/PostgreSQL persistence with async sessions

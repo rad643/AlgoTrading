@@ -15,7 +15,7 @@ Run everything from the repository root. The virtualenv is `.venv/`.
 ```bash
 source .venv/bin/activate
 
-# Standalone backtest (AAPL, GOOGL, MSFT x both strategies) + Plotly output
+# Standalone backtest (AAPL, GOOGL, MSFT x both strategies), prints the DataFrames
 python main.py
 
 # API
